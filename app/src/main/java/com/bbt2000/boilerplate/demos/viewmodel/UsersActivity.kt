@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 
 class UsersActivity : AppCompatActivity() {
-    // ?
     val model: UserViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {

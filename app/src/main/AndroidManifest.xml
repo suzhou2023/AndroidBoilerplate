@@ -13,9 +13,9 @@
         android:theme="@style/AppTheme"
         tools:targetApi="31">
         <activity
-            android:name=".demos.compose.ViewComposeActivity"
+            android:name=".demos.compose.DemoActivity"
             android:exported="true"
-            android:theme="@style/AppCompatTheme">
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
