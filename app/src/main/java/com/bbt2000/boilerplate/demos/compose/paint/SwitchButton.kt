@@ -1,6 +1,9 @@
 package com.bbt2000.boilerplate.demos.compose.paint
 
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -31,6 +34,12 @@ fun SwitchButton(widthDp: Dp, heightDp: Dp, textSize: TextUnit, onChecked: (Bool
     val transition = updateTransition(currentState, label = "btn state")
     val leftPos by transition.animateDp(
         label = "left position",
+        transitionSpec = {
+            spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        }
     ) { state ->
         when (state) {
             BtnState.Capture -> 2.dp
