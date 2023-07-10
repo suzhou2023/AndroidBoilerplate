@@ -26,7 +26,13 @@ private enum class BtnState {
 }
 
 @Composable
-fun SwitchButton(widthDp: Dp, heightDp: Dp, textSize: TextUnit, onChecked: (Boolean) -> Unit) {
+fun SwitchButton(
+    widthDp: Dp,
+    heightDp: Dp,
+    textSize: TextUnit,
+    modifier: Modifier,
+    onChecked: (Boolean) -> Unit
+) {
     var currentState by remember { mutableStateOf(BtnState.Capture) }
     val transition = updateTransition(currentState, label = "btn state")
     val leftPos by transition.animateDp(
@@ -39,7 +45,7 @@ fun SwitchButton(widthDp: Dp, heightDp: Dp, textSize: TextUnit, onChecked: (Bool
     }
 
     Canvas(
-        modifier = Modifier
+        modifier = modifier
             .size(widthDp, heightDp)
             .pointerInput(Unit) {
                 detectTapGestures(
