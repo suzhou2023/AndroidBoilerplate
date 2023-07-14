@@ -3,7 +3,7 @@
 //
 
 #include <cstdlib>
-#include "gl_util.h"
+#include "GlUtil.h"
 
 
 GLuint GlUtil::loadShader(GLenum shaderType, const char *pSource) {

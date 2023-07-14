@@ -1,3 +1,7 @@
+//
+// Created by sz on 2023/7/13.
+//
+
 #include "jni.h"
 #include <GLES3/gl3.h>
 #include <cstdlib>
@@ -126,7 +130,7 @@ JNIEXPORT void JNICALL native_OnDrawFrame(JNIEnv *env, jobject instance) {
 }
 
 // 完整类名
-#define NATIVE_RENDER_CLASS_NAME "com/bbt2000/boilerplate/demos/opengles/NativeRender"
+#define NATIVE_RENDER_CLASS_NAME "com/bbt2000/boilerplate/demos/opengles/NativeRenderer"
 
 static JNINativeMethod g_RenderMethods[] = {
         {"native_OnSurfaceCreated", "()V",   (void *) (native_OnSurfaceCreated)},

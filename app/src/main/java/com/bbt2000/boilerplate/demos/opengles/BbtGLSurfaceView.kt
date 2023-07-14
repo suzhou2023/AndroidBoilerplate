@@ -12,39 +12,30 @@ import javax.microedition.khronos.opengles.GL10
  *  description :
  */
 
-class BbtGLSurfaceView : GLSurfaceView {
+class BbtGLSurfaceView : GLSurfaceView, GLSurfaceView.Renderer {
     constructor(context: Context) : this(context, null)
-    constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet)
-
-    private val mGLRender: GLRender
-    private val mNativeRender: NativeRender
-
-    init {
+    constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet) {
         setEGLContextClientVersion(3)
-        mNativeRender = NativeRender()
-        mGLRender = GLRender(mNativeRender)
-        setRenderer(mGLRender)
-        renderMode = RENDERMODE_CONTINUOUSLY
+        _nativeRenderer = NativeRenderer()
+        setRenderer(this)
     }
 
-    class GLRender internal constructor(nativeRender: NativeRender) : Renderer {
-        private val mNativeRender: NativeRender
+    private var _nativeRenderer: NativeRenderer
 
-        init {
-            mNativeRender = nativeRender
-        }
+    override fun onSurfaceCreated(p0: GL10?, p1: EGLConfig?) {
+        _nativeRenderer.native_OnSurfaceCreated()
+    }
 
-        override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
-            mNativeRender.native_OnSurfaceCreated()
-        }
+    override fun onSurfaceChanged(p0: GL10?, p1: Int, p2: Int) {
+        _nativeRenderer.native_OnSurfaceChanged(p1, p2)
+    }
 
-        override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
-            mNativeRender.native_OnSurfaceChanged(width, height)
-        }
+    override fun onDrawFrame(p0: GL10?) {
+        _nativeRenderer.native_OnDrawFrame()
+    }
 
-        override fun onDrawFrame(gl: GL10) {
-            mNativeRender.native_OnDrawFrame()
-        }
+    companion object {
+        private const val TAG = "BbtGLSurfaceView"
     }
 }
 

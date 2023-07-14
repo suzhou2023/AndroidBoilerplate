@@ -6,7 +6,9 @@ package com.bbt2000.boilerplate.demos.opengles
  *  description :
  */
 
-class NativeRender {
+class NativeRenderer {
+    external fun native_OnInit()
+    external fun native_OnDestroy()
     external fun native_OnSurfaceCreated()
     external fun native_OnSurfaceChanged(width: Int, height: Int)
     external fun native_OnDrawFrame()
