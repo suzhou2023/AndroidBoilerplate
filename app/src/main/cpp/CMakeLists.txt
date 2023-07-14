@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22.1)
 
-project(hello VERSION 1.0)
+project(gles3_0_course VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -13,11 +13,7 @@ add_library(
 
         SHARED
 
-        hello_jni.cpp
-        samples/01_triangle/01_triangle.cpp
-        samples/01_triangle/gl_util.cpp
         samples/01_triangle/native_render_jni.cpp
-        samples/01_triangle/GlRenderContext.cpp
 )
 
 

@@ -4,11 +4,13 @@
 
 #include <GLES3/gl3.h>
 #include "GlRenderContext.h"
+#include "log_util.h"
 
 
 GlRenderContext *GlRenderContext::m_pContext = nullptr;
 
 GlRenderContext::GlRenderContext() {
+    m_pCurSample = new Triangle();
     m_pBeforeSample = nullptr;
 }
 
@@ -22,23 +24,24 @@ GlRenderContext::~GlRenderContext() {
         delete m_pBeforeSample;
         m_pBeforeSample = nullptr;
     }
-
 }
 
 
 void GlRenderContext::onSurfaceCreated() {
+    LOGD("onSurfaceCreated");
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void GlRenderContext::onSurfaceChanged(int width, int height) {
+    LOGD("onSurfaceChanged");
     glViewport(0, 0, width, height);
     m_ScreenW = width;
     m_ScreenH = height;
 }
 
 void GlRenderContext::onDrawFrame() {
+    LOGD("onDrawFrame");
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
     if (m_pBeforeSample) {
         m_pBeforeSample->destroy();
         delete m_pBeforeSample;
@@ -49,6 +52,7 @@ void GlRenderContext::onDrawFrame() {
         m_pCurSample->init();
         m_pCurSample->draw(m_ScreenW, m_ScreenH);
     }
+    LOGD("onDrawFrame end");
 }
 
 GlRenderContext *GlRenderContext::getInstance() {
