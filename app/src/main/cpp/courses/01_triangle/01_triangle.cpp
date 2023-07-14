@@ -3,8 +3,8 @@
 //
 
 #include "01_triangle.h"
-#include "log_util.h"
-#include "gl_util.h"
+#include "LogUtil.h"
+#include "GlUtil.h"
 
 
 Triangle::Triangle() {
@@ -32,7 +32,7 @@ void Triangle::init() {
             "   fragColor = vec4 ( 1.0, 0.0, 0.0, 1.0 );  \n"
             "}                                            \n";
 
-    m_ProgramObj = GlUtil::createProgram(vShaderStr, fShaderStr, m_VertexShader, m_FragmentShader);
+    m_Program = GlUtil::createProgram(vShaderStr, fShaderStr, m_VertexShader, m_FragmentShader);
 
 }
 
@@ -43,14 +43,14 @@ void Triangle::draw(int screenW, int screenH) {
             0.5f, -0.5f, 0.0f,
     };
 
-    if (m_ProgramObj == 0)
+    if (m_Program == 0)
         return;
 
     glClear(GL_STENCIL_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(1.0, 1.0, 1.0, 1.0);
 
     // Use the program object
-    glUseProgram(m_ProgramObj);
+    glUseProgram(m_Program);
 
     // Load the vertex data
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vVertices);
@@ -61,8 +61,8 @@ void Triangle::draw(int screenW, int screenH) {
 }
 
 void Triangle::destroy() {
-    if (m_ProgramObj) {
-        glDeleteProgram(m_ProgramObj);
-        m_ProgramObj = GL_NONE;
+    if (m_Program) {
+        glDeleteProgram(m_Program);
+        m_Program = GL_NONE;
     }
 }

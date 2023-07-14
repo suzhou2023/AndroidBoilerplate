@@ -2,8 +2,8 @@
 // Created by sz on 2023/7/13.
 //
 
-#ifndef ANDROIDBOILERPLATE_GL_UTIL_H
-#define ANDROIDBOILERPLATE_GL_UTIL_H
+#ifndef ANDROIDBOILERPLATE_GLUTIL_H
+#define ANDROIDBOILERPLATE_GLUTIL_H
 
 #include <GLES2/gl2.h>
 
@@ -17,4 +17,4 @@ public:
                                 GLuint &fragShaderHandle);
 };
 
-#endif //ANDROIDBOILERPLATE_GL_UTIL_H
+#endif //ANDROIDBOILERPLATE_GLUTIL_H

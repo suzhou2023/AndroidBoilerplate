@@ -13,11 +13,10 @@ add_library(
 
         SHARED
 
-        hello_jni.cpp
-        samples/01_triangle/01_triangle.cpp
-        samples/01_triangle/gl_util.cpp
-        samples/01_triangle/native_render_jni.cpp
-        samples/01_triangle/GlRenderContext.cpp
+        courses/01_triangle/01_triangle.cpp
+        util/GlUtil.cpp
+        NativeRenderer_Jni.cpp
+        NativeRenderer.cpp
 )
 
 
@@ -35,7 +34,7 @@ find_library( # Sets the name of the path variable.
 target_link_libraries( # Specifies the target library.
         gles3_0_course
 
-        # 链接gles3
+        # link libGLESv3.so
         GLESv3
         # Links the target library to the log library
         # included in the NDK.
