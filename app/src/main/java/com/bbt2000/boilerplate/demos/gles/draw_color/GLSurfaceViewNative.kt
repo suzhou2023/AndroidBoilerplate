@@ -1,4 +1,4 @@
-package com.bbt2000.boilerplate.demos.gles.egl
+package com.bbt2000.boilerplate.demos.gles.draw_color
 
 import android.content.Context
 import android.opengl.GLSurfaceView
@@ -23,8 +23,15 @@ class GLSurfaceViewNative(
         setRenderer(this)
     }
 
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        Log.d(TAG, "onAttachedToWindow: ${System.currentTimeMillis()}")
+    }
+
     override fun surfaceCreated(holder: SurfaceHolder) {
-//        Log.d(TAG, "surfaceCreated: ${System.currentTimeMillis()}")
+        Log.d(TAG, "surfaceCreated: ${System.currentTimeMillis()}")
+        Log.d(TAG, "currentThread: ${Thread.currentThread().name}")
         Thread(this).start()
     }
 
@@ -41,16 +48,16 @@ class GLSurfaceViewNative(
     override fun onDrawFrame(gl: GL10?) {}
 
     override fun run() {
-        drawTriangleNative(holder.surface)
+        drawColorNative(holder.surface, 250)
     }
 
-    private external fun drawTriangleNative(surface: Any)
+    private external fun drawColorNative(surface: Any, color: Int)
 
     companion object {
         const val TAG = "GLSurfaceViewNative"
 
         init {
-            System.loadLibrary("egl_triangle")
+            System.loadLibrary("camera")
         }
     }
 }

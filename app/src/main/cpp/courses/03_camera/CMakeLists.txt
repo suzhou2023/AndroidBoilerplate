@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22.1)
 
-set(PROJECT_NAME triangle)
+set(PROJECT_NAME camera)
 project(${PROJECT_NAME} VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -34,8 +34,11 @@ find_library( # Sets the name of the path variable.
 target_link_libraries( # Specifies the target library.
         ${PROJECT_NAME}
 
-        # link libGLESv3.so
+        # for openGLES
         GLESv3
+        # for EGL
+        EGL
+        android
         # Links the target library to the log library
         # included in the NDK.
         ${log-lib})

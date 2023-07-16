@@ -53,6 +53,8 @@ EglConfigInfo *configEGL(JNIEnv *env, jobject surface) {
     ANativeWindow *nativeWindow = ANativeWindow_fromSurface(env, surface);
     p_eglConfigInfo->eglSurface = eglCreateWindowSurface(p_eglConfigInfo->display, eglConfig,
                                                          nativeWindow, nullptr);
+    // todo: 是在这里释放吗？对后续代码貌似没有影响
+    ANativeWindow_release(nativeWindow);
     if (p_eglConfigInfo->eglSurface == EGL_NO_SURFACE) {
         LOGE("EGL create window surface failed.");
         return nullptr;
