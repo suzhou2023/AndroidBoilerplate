@@ -18,7 +18,7 @@
         android:theme="@style/AppTheme"
         tools:targetApi="31">
         <activity
-            android:name=".demos.opengles.DemoActivity"
+            android:name=".demos.gles.egl.EGLTriangleActivity"
             android:exported="true"
             android:theme="@style/AppCompatTheme">
             <intent-filter>

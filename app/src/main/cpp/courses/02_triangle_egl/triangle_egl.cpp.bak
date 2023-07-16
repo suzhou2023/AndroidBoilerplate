@@ -1,0 +1,128 @@
+/**
+ *  author : suzhou
+ *  date : 2023/7/15 
+ *  description : 
+ */
+
+#include "jni.h"
+#include <GLES3/gl3.h>
+#include <EGL/egl.h>
+#include <android/native_window_jni.h>
+#include "JniUtil.h"
+#include "LogUtil.h"
+#include "GlUtil.h"
+#include "ShaderUtil.h"
+
+static char vShaderStr[] =
+        "#version 300 es                          \n"
+        "layout(location = 0) in vec4 vPosition;  \n"
+        "void main()                              \n"
+        "{                                        \n"
+        "   gl_Position = vPosition;              \n"
+        "}                                        \n";
+static char fShaderStr[] =
+        "#version 300 es                              \n"
+        "precision mediump float;                     \n"
+        "out vec4 fragColor;                          \n"
+        "void main()                                  \n"
+        "{                                            \n"
+        "   fragColor = vec4 ( 1.0, 0.0, 0.0, 1.0 );  \n"
+        "}                                            \n";
+
+extern "C"
+JNIEXPORT void JNICALL drawTriangleNative(JNIEnv *env,
+                                          jobject thiz,
+                                          jobject surface) {
+    /*****开始EGL的配置*****/
+    EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (display == EGL_NO_DISPLAY) {
+        LOGE("EGL get display failed.");
+        return;
+    }
+
+    if (EGL_TRUE != eglInitialize(display, nullptr, nullptr)) {
+        LOGE("EGL initialize failed");
+        return;
+    }
+
+    EGLConfig eglConfig;
+    EGLint configNum;
+    EGLint configSpec[] = {
+            EGL_RED_SIZE, 8,
+            EGL_GREEN_SIZE, 8,
+            EGL_BLUE_SIZE, 8,
+            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_NONE
+    };
+
+    if (EGL_TRUE != eglChooseConfig(display, configSpec, &eglConfig,
+                                    1, &configNum)) {
+        LOGE("EGL choose config failed.");
+        return;
+    }
+
+    ANativeWindow *nativeWindow = ANativeWindow_fromSurface(env, surface);
+    EGLSurface windowSurface = eglCreateWindowSurface(display, eglConfig,
+                                                      nativeWindow, nullptr);
+    if (windowSurface == EGL_NO_SURFACE) {
+        LOGE("EGL create window surface failed.");
+        return;
+    }
+
+    const EGLint ctxAttr[] = {
+            EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
+    };
+
+    EGLContext context = eglCreateContext(display, eglConfig,
+                                          EGL_NO_CONTEXT, ctxAttr);
+    if (context == EGL_NO_CONTEXT) {
+        LOGE("EGL create context failed.");
+        return;
+    }
+
+    if (EGL_TRUE != eglMakeCurrent(display, windowSurface,
+                                   windowSurface, context)) {
+        LOGE("EGL make current failed.");
+        return;
+    }
+    /*****结束EGL的配置*****/
+
+    // 加载着色器并创建渲染程序
+    GLuint program = useShader(vShaderStr, fShaderStr);
+
+    /*****将顶点数据传入图形渲染管线*****/
+    static float triangleVer[] = {
+            0.8f, -0.8f, 0.0f,
+            -0.8f, -0.8f, 0.0f,
+            0.0f, 0.8f, 0.0f,
+    };
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, triangleVer);
+    glEnableVertexAttribArray(0);
+
+    /*****将图形渲染到屏幕*****/
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
+    eglSwapBuffers(display, windowSurface);
+
+    deleteProgram(program);
+}
+
+/******************************************jni注册方法表*****************************************/
+#define JNI_JAVA_CLASS_FULLNAME "com/bbt2000/boilerplate/demos/gles/egl/MyGLSurfaceView"
+static JNINativeMethod g_Methods[] = {
+        {"drawTriangleNative", "(Ljava/lang/Object)V", (void *) (drawTriangleNative)},
+};
+
+const char *GetFullJavaClassNameForNativeRegister() {
+    return JNI_JAVA_CLASS_FULLNAME;
+}
+
+JNINativeMethod *GetJniNativeMethodTableForRegister() {
+    return g_Methods;
+}
+
+jint GetJniNativeMethodTableLengthForRegister() {
+    return sizeof(g_Methods) / sizeof(JNINativeMethod);
+}
+/******************************************jni注册方法表*****************************************/

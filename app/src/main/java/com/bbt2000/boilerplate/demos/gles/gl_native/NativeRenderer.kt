@@ -1,4 +1,4 @@
-package com.bbt2000.boilerplate.demos.opengles
+package com.bbt2000.boilerplate.demos.gles.gl_native
 
 /**
  *  author : sz
@@ -15,7 +15,7 @@ class NativeRenderer {
 
     companion object {
         init {
-            System.loadLibrary("gles3_0_course")
+            System.loadLibrary("egl_demo")
         }
     }
 }

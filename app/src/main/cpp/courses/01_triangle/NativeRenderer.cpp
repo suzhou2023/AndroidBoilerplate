@@ -4,7 +4,7 @@
 
 #include <GLES3/gl3.h>
 #include "NativeRenderer.h"
-#include "courses/01_triangle/01_triangle.h"
+#include "01_triangle.h"
 
 
 NativeRenderer::NativeRenderer() {

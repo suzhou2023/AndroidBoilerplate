@@ -1,8 +1,9 @@
-package com.bbt2000.boilerplate.demos.opengles
+package com.bbt2000.boilerplate.demos.gles.widget
 
 import android.content.Context
 import android.opengl.GLSurfaceView
 import android.util.AttributeSet
+import com.bbt2000.boilerplate.demos.gles.gl_native.NativeRenderer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -12,7 +13,7 @@ import javax.microedition.khronos.opengles.GL10
  *  description :
  */
 
-class BbtGLSurfaceView : GLSurfaceView, GLSurfaceView.Renderer {
+class BbtGLSurfaceViewNative : GLSurfaceView, GLSurfaceView.Renderer {
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet) {
         setEGLContextClientVersion(3)

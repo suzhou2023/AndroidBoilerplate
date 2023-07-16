@@ -28,7 +28,7 @@ JNIEXPORT void JNICALL native_OnDrawFrame(JNIEnv *env, jobject instance) {
 }
 #endif
 
-#define NATIVE_RENDER_CLASS_NAME "com/bbt2000/boilerplate/demos/opengles/NativeRenderer"
+#define NATIVE_RENDER_CLASS_NAME "com/bbt2000/boilerplate/demos/gles/gl_native/NativeRenderer"
 
 static JNINativeMethod g_RenderMethods[] = {
         {"native_OnSurfaceCreated", "()V",   (void *) (native_OnSurfaceCreated)},
@@ -41,7 +41,8 @@ static int RegisterNativeMethods(JNIEnv *env, const char *className, JNINativeMe
     if (clazz == nullptr) {
         return JNI_FALSE;
     }
-    if (env->RegisterNatives(clazz, methods, 3) < 0) {
+    if (env->RegisterNatives(clazz, methods,
+                             sizeof(g_RenderMethods) / sizeof(g_RenderMethods[0])) < 0) {
         return JNI_FALSE;
     }
     return JNI_TRUE;
@@ -78,4 +79,3 @@ extern "C" void JNI_OnUnload(JavaVM *jvm, void *p) {
 
     UnregisterNativeMethods(env, NATIVE_RENDER_CLASS_NAME);
 }
-

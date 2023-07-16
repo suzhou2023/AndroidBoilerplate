@@ -3,10 +3,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextureView
+    <com.bbt2000.boilerplate.demos.gles.widget.AutoFitTextureView
         android:id="@+id/texture_view"
         android:layout_width="match_parent"
-        android:layout_height="200dp" />
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
 
+    <com.bbt2000.boilerplate.demos.gles.widget.BbtGLSurfaceView
+        android:id="@+id/gl_surface_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:visibility="visible" />
 
 </RelativeLayout>
