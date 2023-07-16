@@ -28,7 +28,7 @@ static char fShaderStr[] =
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles_egl_GLSurfaceViewNative_drawTriangleNative(
+Java_com_bbt2000_boilerplate_demos_gles__102_1native_1egl_1triangle_SurfaceViewTest_drawTriangleWithNativeEGL(
         JNIEnv *env,
         jobject thiz,
         jobject surface) {

@@ -1,4 +1,4 @@
-package com.bbt2000.boilerplate.demos.gles.egl
+package com.bbt2000.boilerplate.demos.gles._02_native_egl_triangle
 
 import android.os.Bundle
 import android.view.WindowManager
@@ -11,10 +11,10 @@ import androidx.appcompat.app.AppCompatActivity
  *  description :
  */
 
-class EGLTriangleActivity : AppCompatActivity() {
+class DemoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        setContentView(GLSurfaceViewNative(this))
+        setContentView(SurfaceViewTest(this))
     }
 }

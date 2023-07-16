@@ -1,4 +1,4 @@
-package com.bbt2000.boilerplate.demos.gles.camera_gl
+package com.bbt2000.boilerplate.demos.gles._03_camera
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -18,13 +18,9 @@ import android.view.Surface
 import android.view.TextureView
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
 import com.bbt2000.boilerplate.R
 import com.bbt2000.boilerplate.demos.gles.util.CameraUtils
-import com.bbt2000.boilerplate.demos.gles.widget.BbtGLSurfaceView
 import com.permissionx.guolindev.PermissionX
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 
 /**
@@ -32,14 +28,14 @@ import kotlinx.coroutines.launch
  *  date : 2023/7/13 14:54
  *  description : Camera2 api
  */
-class CameraActivity : AppCompatActivity() {
+class DemoActivity : AppCompatActivity() {
     private var mCameraId: String? = null
     private var mCameraDevice: CameraDevice? = null
     private val mCameraManager: CameraManager by lazy {
         applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
     }
 
-    private lateinit var mGLSurfaceView: BbtGLSurfaceView
+    private lateinit var mGLSurfaceViewTest: GLSurfaceViewTest
     private var mSurface: Surface? = null
 
     private val mMainLooperHandler = Handler(Looper.getMainLooper())
@@ -49,14 +45,15 @@ class CameraActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        setContentView(R.layout.activity_camera)
-        mGLSurfaceView = findViewById(R.id.gl_surface_view)
-//        mGLSurfaceView.surfaceTextureListener = surfaceTextureListener
+        setContentView(R.layout.activity_camera_oes)
+        mGLSurfaceViewTest = findViewById(R.id.glSurfaceViewTest)
 
         for (id in mCameraManager.cameraIdList) {
+            Log.d(TAG, "id = $id")
             val characteristics = mCameraManager.getCameraCharacteristics(id)
             val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
-            if (facing == CameraCharacteristics.LENS_FACING_FRONT) {
+            // 注意有的手机有多颗后置镜头，这里打开第一个
+            if (facing == CameraCharacteristics.LENS_FACING_BACK) {
                 mCameraId = id
                 break
             }
@@ -102,8 +99,10 @@ class CameraActivity : AppCompatActivity() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun openCamera() = lifecycleScope.launch(Dispatchers.Main) {
-        mCameraManager.openCamera(mCameraId!!, cameraStateCallback, mCameraHandler)
+    private fun openCamera() {
+        if (PermissionX.isGranted(this, Manifest.permission.CAMERA)) {
+            mCameraManager.openCamera(mCameraId!!, cameraStateCallback, mCameraHandler)
+        }
     }
 
     private val cameraStateCallback = object : CameraDevice.StateCallback() {
@@ -111,10 +110,9 @@ class CameraActivity : AppCompatActivity() {
             mCameraDevice = camera
             try {
                 mMainLooperHandler.post {
-                    if (mGLSurfaceView.isAvailable()) {
+                    if (mGLSurfaceViewTest.isAvailable()) {
                         createCaptureSession()
                     }
-//                    mGLSurfaceView.surfaceTextureListener = surfaceTextureListener
                 }
             } catch (t: Throwable) {
                 release()
@@ -134,10 +132,10 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun createCaptureSession() {
-        if (mCameraDevice == null || !mGLSurfaceView.isAvailable()) return
+        if (mCameraDevice == null || !mGLSurfaceViewTest.isAvailable()) return
 
         val targetTexture = mCameraManager.getCameraCharacteristics(mCameraId!!).let {
-            CameraUtils.buildTargetTexture(mGLSurfaceView, it)
+            CameraUtils.buildTargetTexture(mGLSurfaceViewTest, it)
         }
 
         this.mSurface = Surface(targetTexture)
@@ -162,7 +160,7 @@ class CameraActivity : AppCompatActivity() {
                     CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
                 )
                 cameraCaptureSession.setRepeatingRequest(
-                    previewRequestBuilder?.build()!!, captureCallback, mCameraHandler
+                    previewRequestBuilder?.build()!!, null, mCameraHandler
                 )
             } catch (t: Throwable) {
                 Log.e(TAG, "Failed to open camera preview.", t)
@@ -172,10 +170,6 @@ class CameraActivity : AppCompatActivity() {
         override fun onConfigureFailed(cameraCaptureSession: CameraCaptureSession) {
             Log.e(TAG, "Failed to configure camera.")
         }
-    }
-
-    private val captureCallback = object : CameraCaptureSession.CaptureCallback() {
-
     }
 
     private fun release() {

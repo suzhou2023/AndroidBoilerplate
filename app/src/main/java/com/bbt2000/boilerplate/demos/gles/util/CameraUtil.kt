@@ -6,6 +6,7 @@ import android.opengl.GLSurfaceView
 import android.util.Log
 import android.util.Size
 import android.view.TextureView
+import com.bbt2000.boilerplate.demos.gles._03_camera.GLSurfaceViewTest
 import com.bbt2000.boilerplate.demos.gles.widget.BbtGLSurfaceView
 
 object CameraUtils {
@@ -43,7 +44,7 @@ object CameraUtils {
     }
 
     fun buildTargetTexture(
-        containerView: BbtGLSurfaceView,
+        containerView: GLSurfaceViewTest,
         characteristics: CameraCharacteristics
     ): SurfaceTexture? {
         val windowSize = Size(containerView.width, containerView.height)
