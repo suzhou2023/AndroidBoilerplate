@@ -11,20 +11,24 @@
 
 
 static char vShaderStr[] =
-        "#version 300 es                          \n"
-        "layout(location = 0) in vec4 vPosition;  \n"
-        "void main()                              \n"
-        "{                                        \n"
-        "   gl_Position = vPosition;              \n"
-        "}                                        \n";
+        "#version 300 es\n"
+        "layout(location = 0)\n"
+        "in vec4 vPosition;\n"
+        "void main()\n"
+        "{\n"
+        "   gl_Position = vPosition;\n"
+        "   gl_PointSize = 50.0;\n"
+        "}\n";
+
 static char fShaderStr[] =
-        "#version 300 es                              \n"
-        "precision mediump float;                     \n"
-        "out vec4 fragColor;                          \n"
-        "void main()                                  \n"
-        "{                                            \n"
-        "   fragColor = vec4 ( 1.0, 0.0, 0.0, 1.0 );  \n"
-        "}                                            \n";
+        "#version 300 es\n"
+        "precision mediump float;\n"
+        "out vec4 fragColor;\n"
+        "void main()\n"
+        "{\n"
+        "   fragColor = vec4 ( 1.0, 0.0, 0.0, 1.0 );\n"
+        "}\n";
+
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -37,23 +41,28 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1native_1egl_1triangle_SurfaceViewT
     EglConfigInfo *p_eglConfigInfo = configEGL(env, surface);
     if (p_eglConfigInfo == nullptr) return;
 
-    // 加载着色器并创建渲染程序
-    GLuint program = useShader(vShaderStr, fShaderStr);
+    useShader(vShaderStr, fShaderStr);
 
-    /*****将顶点数据传入图形渲染管线*****/
-    static float triangleVer[] = {
-            0.8f, -0.8f, 0.0f,
-            -0.8f, -0.8f, 0.0f,
+    static float pointsVer[] = {
+            0.8f, 0.8f, 0.0f,
             0.0f, 0.8f, 0.0f,
+            0.4f, 0.4f, 0.0f,
+            -0.8f, 0.5f, 0.0f,
+            -0.4f, 0.8f, 0.0f,
+            -0.8f, 0.8f, 0.0f,
     };
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, triangleVer);
+
+    //通过layout传输数据，传给了着色器中layout为0的变量
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, pointsVer);
+    //打开layout为0的变量传输开关
     glEnableVertexAttribArray(0);
 
-    /*****将图形渲染到屏幕*****/
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
-    eglSwapBuffers(p_eglConfigInfo->display, p_eglConfigInfo->eglSurface);
 
-    glDeleteProgram(program);
+
+    glLineWidth(10);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 6);
+    //窗口显示，交换后备缓冲区到前台
+    eglSwapBuffers(p_eglConfigInfo->display, p_eglConfigInfo->eglSurface);
 }

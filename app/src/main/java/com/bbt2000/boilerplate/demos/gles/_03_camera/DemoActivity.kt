@@ -107,6 +107,7 @@ class DemoActivity : AppCompatActivity() {
 
     private val cameraStateCallback = object : CameraDevice.StateCallback() {
         override fun onOpened(camera: CameraDevice) {
+            Log.d(TAG, "Camera opened.")
             mCameraDevice = camera
             try {
                 mMainLooperHandler.post {
@@ -127,7 +128,7 @@ class DemoActivity : AppCompatActivity() {
 
         override fun onError(camera: CameraDevice, error: Int) {
             mCameraDevice = camera
-            Log.e(TAG, "On error: $error")
+            Log.e(TAG, "Error: $error")
         }
     }
 
@@ -138,7 +139,7 @@ class DemoActivity : AppCompatActivity() {
             CameraUtils.buildTargetTexture(mGLSurfaceViewTest, it)
         }
 
-        this.mSurface = Surface(targetTexture)
+        mSurface = Surface(targetTexture)
         try {
             mCameraDevice?.createCaptureSession(
                 listOf(mSurface), sessionStateCallback, mCameraHandler
@@ -150,6 +151,7 @@ class DemoActivity : AppCompatActivity() {
 
     private val sessionStateCallback = object : CameraCaptureSession.StateCallback() {
         override fun onConfigured(cameraCaptureSession: CameraCaptureSession) {
+            Log.d(TAG, "Capture session configured.")
             try {
                 val previewRequestBuilder = mCameraDevice?.createCaptureRequest(
                     CameraDevice.TEMPLATE_PREVIEW
@@ -182,7 +184,7 @@ class DemoActivity : AppCompatActivity() {
     }
 
     companion object {
-        const val TAG = "CameraActivity"
+        const val TAG = "DemoActivity"
     }
 }
 

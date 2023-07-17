@@ -1,9 +1,7 @@
 package com.bbt2000.boilerplate.demos.gles.camera_gl
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
-import android.media.MediaPlayer.OnVideoSizeChangedListener
 import android.opengl.GLES11Ext
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
@@ -11,7 +9,6 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.Surface
-import java.nio.ByteBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -21,17 +18,13 @@ import javax.microedition.khronos.opengles.GL10
  *  description :
  */
 class GLSurfaceViewNative : GLSurfaceView {
-    private val mTestBmp: Bitmap? = null
     private var mRenderer: Renderer? = null
     private var mDemoPlayer: Player? = null
 
     /**图层native指针 */
     private var mLayer = Long.MIN_VALUE
     private var mRenderOES = Long.MIN_VALUE
-    private var mRenderNoiseReduction = Long.MIN_VALUE
-    private val mRenderConvolutionDemo = Long.MIN_VALUE
-    private var mRenderLut = Long.MIN_VALUE
-    private var mRenderDeBackground = Long.MIN_VALUE
+
 
     //Android画面数据输入Surface
     private var mDataInputSurface: Surface? = null
@@ -71,54 +64,6 @@ class GLSurfaceViewNative : GLSurfaceView {
         }
     }
 
-    /**对比度调整 */
-    fun setRenderContrast(contrast: Float) {
-        if (mRenderOES != Long.MIN_VALUE) {
-            JniBridge.setContrast(mRenderOES, contrast)
-        }
-    }
-
-    /**白平衡调整 */
-    fun setRenderWhiteBalance(rWeight: Float, gWeight: Float, bWeight: Float) {
-        if (mRenderOES != Long.MIN_VALUE) {
-            JniBridge.setWhiteBalance(mRenderOES, rWeight, gWeight, bWeight)
-        }
-    }
-
-    /**降噪渲染器开关 */
-    fun setRenderNoiseReductionOnOff(sw: Boolean) {
-        if (mLayer != Long.MIN_VALUE) {
-            if (mRenderNoiseReduction != Long.MIN_VALUE) {
-                if (sw) {
-                    JniBridge.addRenderToLayer(mLayer, mRenderNoiseReduction)
-                } else {
-                    JniBridge.removeRenderForLayer(mLayer, mRenderNoiseReduction)
-                }
-            }
-        }
-    }
-
-    /**滤镜开关 */
-    fun setRenderLutOnOff(sw: Boolean) {
-        if (mLayer != Long.MIN_VALUE && mRenderLut != Long.MIN_VALUE) {
-            if (sw) {
-                JniBridge.addRenderToLayer(mLayer, mRenderLut)
-            } else {
-                JniBridge.removeRenderForLayer(mLayer, mRenderLut)
-            }
-        }
-    }
-
-    /**背景去除程序开关 */
-    fun setRenderDeBackgroundOnOff(sw: Boolean) {
-        if (mLayer != Long.MIN_VALUE && mRenderDeBackground != Long.MIN_VALUE) {
-            if (sw) {
-                JniBridge.addRenderToLayer(mLayer, mRenderDeBackground)
-            } else {
-                JniBridge.removeRenderForLayer(mLayer, mRenderDeBackground)
-            }
-        }
-    }
 
     /**长宽缩放 */
     fun setScale(sx: Float, sy: Float) {
@@ -141,16 +86,6 @@ class GLSurfaceViewNative : GLSurfaceView {
         }
     }
 
-    /**加载滤镜 */
-    fun setLut(lutBMP: Bitmap) {
-        if (mLayer != Long.MIN_VALUE && mRenderLut != Long.MIN_VALUE) {
-            val b = ByteArray(lutBMP.byteCount)
-            val bb = ByteBuffer.wrap(b)
-            lutBMP.copyPixelsToBuffer(bb)
-            JniBridge.renderLutTextureLoad(mRenderLut, b, lutBMP.width, lutBMP.height, lutBMP.width)
-            Log.i("cjztest", "lut pixels size:" + lutBMP.byteCount)
-        }
-    }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
@@ -214,22 +149,19 @@ class GLSurfaceViewNative : GLSurfaceView {
             }
             //创建一个demo播放器
             if (mDemoPlayer == null) {
-                mDemoPlayer = Player(context, getSurface()!!,
-                    OnVideoSizeChangedListener { mp, width, height ->
-                        /**设置OES图层内容得大小 */
-                        /**设置OES图层内容得大小 */
-                        /**设置OES图层内容得大小 */
-
-                        /**设置OES图层内容得大小 */
-                        if ((width != mVideoWidth || height != mVideoHeight) && width > 0 && height > 0) {
-                            Log.i(
-                                "cjztest",
-                                String.format("onSurfaceChanged: w:%d, h:%d", width, height)
-                            )
-                            mVideoWidth = width
-                            mVideoHeight = height
-                        }
-                    })
+                mDemoPlayer = Player(
+                    context, getSurface()!!
+                ) { _, width, height ->
+                    /**设置OES图层内容得大小 */
+                    if ((width != mVideoWidth || height != mVideoHeight) && width > 0 && height > 0) {
+                        Log.i(
+                            "cjztest",
+                            String.format("onSurfaceChanged: w:%d, h:%d", width, height)
+                        )
+                        mVideoWidth = width
+                        mVideoHeight = height
+                    }
+                }
             }
         }
 
@@ -260,16 +192,7 @@ class GLSurfaceViewNative : GLSurfaceView {
                     //添加一个oes渲染器
                     mRenderOES =
                         JniBridge.makeRender(JniBridge.RENDER_PROGRAM_KIND.RENDER_OES_TEXTURE.ordinal) //添加oes纹理
-
-//                    mRenderConvolutionDemo = JniBridge.addRenderForLayer(mLayer, JniBridge.RENDER_PROGRAM_KIND.RENDER_CONVOLUTION.ordinal()); //添加卷积图像处理demo
-                    mRenderNoiseReduction =
-                        JniBridge.makeRender(JniBridge.RENDER_PROGRAM_KIND.NOISE_REDUCTION.ordinal) //添加降噪渲染器
-                    mRenderLut =
-                        JniBridge.makeRender(JniBridge.RENDER_PROGRAM_KIND.RENDER_LUT.ordinal) //添加Lut渲染器
-                    mRenderDeBackground =
-                        JniBridge.makeRender(JniBridge.RENDER_PROGRAM_KIND.DE_BACKGROUND.ordinal) //创建背景去除渲染程序
                     JniBridge.addRenderToLayer(mLayer, mRenderOES)
-                    JniBridge.addRenderToLayer(mLayer, mRenderNoiseReduction)
                     mIsFirstFrame = false
                 }
             }
