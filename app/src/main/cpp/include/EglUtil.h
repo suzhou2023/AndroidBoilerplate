@@ -20,18 +20,18 @@ typedef struct {
     EGLSurface eglSurface;
 } EglConfigInfo;
 
-EglConfigInfo *configEGL(JNIEnv *env, jobject surface) {
-    EglConfigInfo *p_eglConfigInfo = static_cast<EglConfigInfo *>(malloc(sizeof(EglConfigInfo)));
+static EglConfigInfo g_EglConfigInfo;
 
-    p_eglConfigInfo->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (p_eglConfigInfo->display == EGL_NO_DISPLAY) {
+static GLint configEGL(JNIEnv *env, jobject surface) {
+    g_EglConfigInfo.display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (g_EglConfigInfo.display == EGL_NO_DISPLAY) {
         LOGE("EGL get display failed.");
-        return nullptr;
+        return -1;
     }
 
-    if (EGL_TRUE != eglInitialize(p_eglConfigInfo->display, nullptr, nullptr)) {
+    if (EGL_TRUE != eglInitialize(g_EglConfigInfo.display, nullptr, nullptr)) {
         LOGE("EGL initialize failed");
-        return nullptr;
+        return -1;
     }
 
     EGLConfig eglConfig;
@@ -44,39 +44,40 @@ EglConfigInfo *configEGL(JNIEnv *env, jobject surface) {
             EGL_NONE
     };
 
-    if (EGL_TRUE != eglChooseConfig(p_eglConfigInfo->display, configSpec, &eglConfig,
+    if (EGL_TRUE != eglChooseConfig(g_EglConfigInfo.display, configSpec, &eglConfig,
                                     1, &configNum)) {
         LOGE("EGL choose config failed.");
-        return nullptr;
+        return -1;
     }
 
     ANativeWindow *nativeWindow = ANativeWindow_fromSurface(env, surface);
-    p_eglConfigInfo->eglSurface = eglCreateWindowSurface(p_eglConfigInfo->display, eglConfig,
-                                                         nativeWindow, nullptr);
+    g_EglConfigInfo.eglSurface = eglCreateWindowSurface(g_EglConfigInfo.display, eglConfig,
+                                                        nativeWindow, nullptr);
     // todo: 是在这里释放吗？对后续代码貌似没有影响
     ANativeWindow_release(nativeWindow);
-    if (p_eglConfigInfo->eglSurface == EGL_NO_SURFACE) {
+    if (g_EglConfigInfo.eglSurface == EGL_NO_SURFACE) {
         LOGE("EGL create window surface failed.");
-        return nullptr;
+        return -1;
     }
 
     const EGLint ctxAttr[] = {
             EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
     };
 
-    EGLContext context = eglCreateContext(p_eglConfigInfo->display, eglConfig,
+    EGLContext context = eglCreateContext(g_EglConfigInfo.display, eglConfig,
                                           EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
         LOGE("EGL create context failed.");
-        return nullptr;
+        return -1;
     }
 
-    if (EGL_TRUE != eglMakeCurrent(p_eglConfigInfo->display, p_eglConfigInfo->eglSurface,
-                                   p_eglConfigInfo->eglSurface, context)) {
+    if (EGL_TRUE != eglMakeCurrent(g_EglConfigInfo.display, g_EglConfigInfo.eglSurface,
+                                   g_EglConfigInfo.eglSurface, context)) {
         LOGE("EGL make current failed.");
-        return nullptr;
+        return -1;
     }
-    return p_eglConfigInfo;
+
+    return 0;
 }
 
 #endif //ANDROIDBOILERPLATE_EGLUTIL_H

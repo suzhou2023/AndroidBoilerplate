@@ -11,7 +11,7 @@
 #include "LogUtil.h"
 
 
-GLuint loadShader(const char *source, GLuint type) {
+static GLuint loadShader(const char *source, GLuint type) {
     // 创建shader
     GLuint shader = glCreateShader(type);
     if (shader == 0) {
@@ -39,7 +39,7 @@ GLuint loadShader(const char *source, GLuint type) {
     return shader;
 }
 
-GLuint useShader(const char *source_vShader, const char *source_fShader) {
+static GLuint useShader(const char *source_vShader, const char *source_fShader) {
     GLuint vShader = loadShader(source_vShader, GL_VERTEX_SHADER);
     GLuint fShader = loadShader(source_fShader, GL_FRAGMENT_SHADER);
     // 创建渲染程序

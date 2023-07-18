@@ -46,3 +46,10 @@ Java_com_bbt2000_boilerplate_demos_gles_draw_1color_GLSurfaceViewNative_drawColo
 
     ANativeWindow_release(nativeWindow);
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bbt2000_boilerplate_demos_gles__104_1camera_GLSurfaceViewTest_onSurfaceCreated(JNIEnv *env,
+                                                                                        jobject thiz) {
+
+}

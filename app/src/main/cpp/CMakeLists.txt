@@ -7,3 +7,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(courses/01_glsurfaceview_egl)
 add_subdirectory(courses/02_native_egl_triangle)
+add_subdirectory(courses/03_texture)
+add_subdirectory(courses/04_camera)
