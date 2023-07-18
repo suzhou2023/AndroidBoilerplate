@@ -1,9 +1,7 @@
-package com.bbt2000.boilerplate.demos.gles._01_glsurfaceview_egl
+package com.bbt2000.boilerplate.demos.gles._01_egl
 
 import android.content.Context
-import android.os.Handler
 import android.util.AttributeSet
-import android.util.Log
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 
@@ -22,11 +20,11 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         /*****不通过EGL直接操作native window来控制屏幕颜色*****/
-//        drawSurfaceWithoutEGL(holder.surface, 250)
+//        draw_native_window(holder.surface, 250)
         /*****不通过EGL直接操作native window来控制屏幕颜色*****/
 
         /*****通过在native层手动配置EGL环境，来操作屏幕*****/
-        drawWithNativeEGL(holder.surface)
+        draw_EGL(holder.surface)
         /*****通过在native层手动配置EGL环境，来操作屏幕*****/
     }
 
@@ -38,15 +36,15 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
 
     }
 
-    private external fun drawSurfaceWithoutEGL(surface: Any, color: Int)
-    private external fun drawWithNativeEGL(surface: Any)
+    private external fun draw_native_window(surface: Any, color: Int)
+    private external fun draw_EGL(surface: Any)
 
 
     companion object {
         const val TAG = "SurfaceViewTest"
 
         init {
-            System.loadLibrary("glsurfaceview_egl")
+            System.loadLibrary("egl_test")
         }
     }
 }

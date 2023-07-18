@@ -14,9 +14,8 @@
  */
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__101_1glsurfaceview_1egl_SurfaceViewTest_drawWithNativeEGL(
-        JNIEnv *env, jobject obj,
-        jobject surface, jint color) {
+Java_com_bbt2000_boilerplate_demos_gles__101_1egl_SurfaceViewTest_draw_1EGL(
+        JNIEnv *env, jobject obj, jobject surface) {
 
     // 配置EGL环境
     if (configEGL(env, surface) < 0) return;

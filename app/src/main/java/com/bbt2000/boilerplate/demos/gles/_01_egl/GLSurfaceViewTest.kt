@@ -1,4 +1,4 @@
-package com.bbt2000.boilerplate.demos.gles._01_glsurfaceview_egl
+package com.bbt2000.boilerplate.demos.gles._01_egl
 
 import android.content.Context
 import android.opengl.GLES20

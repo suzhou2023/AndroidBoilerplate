@@ -17,9 +17,8 @@
  */
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__101_1glsurfaceview_1egl_SurfaceViewTest_drawSurfaceWithoutEGL(
-        JNIEnv *env, jobject obj,
-        jobject surface, jint color) {
+Java_com_bbt2000_boilerplate_demos_gles__101_1egl_SurfaceViewTest_draw_1native_1window(
+        JNIEnv *env, jobject obj, jobject surface, jint color) {
 
     // 拿到java层surface对应的native window
     ANativeWindow *nativeWindow = ANativeWindow_fromSurface(env, surface);

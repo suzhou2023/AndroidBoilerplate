@@ -1,4 +1,4 @@
-package com.bbt2000.boilerplate.demos.gles._02_native_egl_triangle
+package com.bbt2000.boilerplate.demos.gles._02_gl_api
 
 import android.content.Context
 import android.util.AttributeSet
@@ -19,7 +19,7 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
-        drawTriangleWithNativeEGL(holder.surface)
+        glApiPractice(holder.surface)
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
@@ -30,14 +30,14 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
 
     }
 
-    private external fun drawTriangleWithNativeEGL(surface: Any)
+    private external fun glApiPractice(surface: Any)
 
 
     companion object {
         const val TAG = "SurfaceViewTest"
 
         init {
-            System.loadLibrary("native_egl_triangle")
+            System.loadLibrary("gl_api_practice")
         }
     }
 }

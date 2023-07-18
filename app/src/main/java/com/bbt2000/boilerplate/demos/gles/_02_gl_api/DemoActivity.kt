@@ -1,4 +1,4 @@
-package com.bbt2000.boilerplate.demos.gles._01_glsurfaceview_egl
+package com.bbt2000.boilerplate.demos.gles._02_gl_api
 
 import android.os.Bundle
 import android.view.WindowManager
@@ -15,7 +15,6 @@ class DemoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-//        setContentView(GLSurfaceViewTest(this))
         setContentView(SurfaceViewTest(this))
     }
 }
