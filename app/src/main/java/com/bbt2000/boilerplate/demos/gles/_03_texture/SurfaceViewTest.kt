@@ -23,7 +23,8 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         val bitmap = resources.getDrawable(R.drawable.wy_300x200).toBitmap()
-        drawTexture(holder.surface, bitmap)
+        val bitmap2 = resources.getDrawable(R.drawable.profile_picture).toBitmap()
+        drawTexture(holder.surface, bitmap, bitmap2)
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
@@ -34,7 +35,7 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
 
     }
 
-    private external fun drawTexture(surface: Any, bitmap: Bitmap)
+    private external fun drawTexture(surface: Any, bitmap1: Bitmap, bitmap2: Bitmap)
 
 
     companion object {

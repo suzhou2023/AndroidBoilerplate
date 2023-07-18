@@ -22,7 +22,7 @@
         android:theme="@style/AppTheme"
         tools:targetApi="31">
         <activity
-            android:name=".demos.gles._02_gl_api.DemoActivity"
+            android:name=".demos.gles._03_texture.DemoActivity"
             android:exported="true"
             android:theme="@style/AppCompatTheme">
             <intent-filter>

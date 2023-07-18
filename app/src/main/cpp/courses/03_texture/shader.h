@@ -22,7 +22,8 @@ static const char V_SHADER[] =
         "void main()\n"
         "{\n"
         "   gl_Position = vPosition;\n"
-        "   fTexCoord = vec2(texCoord.x, 1.0 - texCoord.y);\n"
+        "   fTexCoord = texCoord;\n"
+        "   //fTexCoord = vec2(texCoord.x, 1.0 - texCoord.y);\n"
         "}\n";
 
 
@@ -34,10 +35,11 @@ static const char F_SHADER[] =
         "out vec4 FragColor;\n"
 
         "uniform sampler2D ourTexture;\n"
+        "uniform sampler2D ourTexture2;\n"
 
         "void main()\n"
         "{\n"
-        "    FragColor = texture(ourTexture, fTexCoord);\n"
+        "    FragColor = mix(texture(ourTexture, fTexCoord),texture(ourTexture2, fTexCoord),0.7);\n"
         "}\n";
 
 
