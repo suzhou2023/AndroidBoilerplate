@@ -1,4 +1,4 @@
-package com.bbt2000.boilerplate.demos.gles._03_camera
+package com.bbt2000.boilerplate.demos.gles._04_camera.gl
 
 import java.nio.ByteBuffer
 import java.nio.ByteOrder

@@ -1,4 +1,4 @@
-package com.bbt2000.boilerplate.demos.gles._03_camera
+package com.bbt2000.boilerplate.demos.gles._04_camera
 
 import android.Manifest
 import android.annotation.SuppressLint

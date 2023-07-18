@@ -1,6 +1,8 @@
-package com.bbt2000.boilerplate.demos.gles._04_camera
+package com.bbt2000.boilerplate.demos.gles._04_camera.gl
 
 
+import android.opengl.GLES20.GL_FRAGMENT_SHADER
+import android.opengl.GLES20.GL_VERTEX_SHADER
 import android.opengl.GLES20.glAttachShader
 import android.opengl.GLES20.glCompileShader
 import android.opengl.GLES20.glCreateProgram
@@ -16,7 +18,7 @@ import android.opengl.GLES20.glUseProgram
  *  description :
  */
 object Util {
-    fun loadShader(type: Int, shaderSource: String?): Int {
+    private fun loadShader(type: Int, shaderSource: String?): Int {
         val shader = glCreateShader(type)
         if (shader <= 0) return -1
 
@@ -26,12 +28,17 @@ object Util {
         return shader
     }
 
-    fun createProgram(verShader: Int, fragShader: Int): Int {
+    fun createProgram(vShaderStr: String, fShaderStr: String): Int {
+        val vShader = loadShader(GL_VERTEX_SHADER, vShaderStr)
+        if (vShader <= 0) return -1
+        val fShader = loadShader(GL_FRAGMENT_SHADER, fShaderStr)
+        if (fShader <= 0) return -1
+
         val program = glCreateProgram()
         if (program <= 0) return -1
 
-        glAttachShader(program, verShader)
-        glAttachShader(program, fragShader)
+        glAttachShader(program, vShader)
+        glAttachShader(program, fShader)
 
         glLinkProgram(program)
         glUseProgram(program)

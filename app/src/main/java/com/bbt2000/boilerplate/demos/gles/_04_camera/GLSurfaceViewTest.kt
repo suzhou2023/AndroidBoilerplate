@@ -1,12 +1,10 @@
-package com.bbt2000.boilerplate.demos.gles._03_camera
+package com.bbt2000.boilerplate.demos.gles._04_camera
 
 import android.content.Context
 import android.graphics.SurfaceTexture
 import android.opengl.GLES20
-import android.opengl.GLES20.GL_FRAGMENT_SHADER
 import android.opengl.GLES20.GL_TRIANGLES
 import android.opengl.GLES20.GL_UNSIGNED_SHORT
-import android.opengl.GLES20.GL_VERTEX_SHADER
 import android.opengl.GLES20.glActiveTexture
 import android.opengl.GLES20.glDrawElements
 import android.opengl.GLES20.glEnableVertexAttribArray
@@ -17,15 +15,14 @@ import android.opengl.GLES20.glVertexAttribPointer
 import android.opengl.Matrix
 import android.util.AttributeSet
 import android.util.Log
-import com.bbt2000.boilerplate.demos.gles._03_camera.Buffer.createBuffer
-import com.bbt2000.boilerplate.demos.gles._03_camera.Buffer.indexData
-import com.bbt2000.boilerplate.demos.gles._03_camera.Buffer.texData
-import com.bbt2000.boilerplate.demos.gles._03_camera.Buffer.vertexData
-import com.bbt2000.boilerplate.demos.gles._03_camera.Shader.FRAGMENT_SHADER
-import com.bbt2000.boilerplate.demos.gles._03_camera.Shader.VERTEX_SHADER
-import com.bbt2000.boilerplate.demos.gles._03_camera.Tex.createOESTextureObject
-import com.bbt2000.boilerplate.demos.gles._03_camera.Util.createProgram
-import com.bbt2000.boilerplate.demos.gles._03_camera.Util.loadShader
+import com.bbt2000.boilerplate.demos.gles._04_camera.gl.Buffer.createBuffer
+import com.bbt2000.boilerplate.demos.gles._04_camera.gl.Buffer.indexData
+import com.bbt2000.boilerplate.demos.gles._04_camera.gl.Buffer.texData
+import com.bbt2000.boilerplate.demos.gles._04_camera.gl.Buffer.vertexData
+import com.bbt2000.boilerplate.demos.gles._04_camera.gl.Shader.F_SHADER
+import com.bbt2000.boilerplate.demos.gles._04_camera.gl.Shader.V_SHADER
+import com.bbt2000.boilerplate.demos.gles._04_camera.gl.Tex.createOESTexture
+import com.bbt2000.boilerplate.demos.gles._04_camera.gl.Util.createProgram
 import com.bbt2000.boilerplate.demos.gles.widget.AutoFitGLSurfaceView
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
@@ -68,7 +65,7 @@ class GLSurfaceViewTest(context: Context, attributeSet: AttributeSet? = null) :
     inner class GLRenderer : Renderer {
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             Log.d(TAG, "Surface created.")
-            mOESTextureId = createOESTextureObject()
+            mOESTextureId = createOESTexture()
             mSurfaceTexture = SurfaceTexture(mOESTextureId)
             mSurfaceTexture?.setOnFrameAvailableListener {
                 queueEvent {
@@ -77,12 +74,9 @@ class GLSurfaceViewTest(context: Context, attributeSet: AttributeSet? = null) :
                 }
             }
 
-            val vShader = loadShader(GL_VERTEX_SHADER, VERTEX_SHADER)
-            val fShader = loadShader(GL_FRAGMENT_SHADER, FRAGMENT_SHADER)
-
-            mProgram = createProgram(vShader, fShader)
+            mProgram = createProgram(V_SHADER, F_SHADER)
             vPositionLoc = glGetAttribLocation(mProgram, "a_Position")
-            texCoordLoc = glGetAttribLocation(mProgram, "a_TexCoordinate")
+            texCoordLoc = glGetAttribLocation(mProgram, "a_TexCoord")
             textureLoc = glGetUniformLocation(mProgram, "u_Texture")
             matrixLoc = glGetUniformLocation(mProgram, "matrix")
             mVertexBuffer = createBuffer(vertexData)
@@ -90,16 +84,11 @@ class GLSurfaceViewTest(context: Context, attributeSet: AttributeSet? = null) :
             mIndexBuffer = createBuffer(indexData)
         }
 
-
         override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
             Log.d(TAG, "Surface changed.")
-//            matrixLoc = glGetUniformLocation(mProgram, "matrix")
-//            mSurfaceTexture?.getTransformMatrix(rotateMatrix)
             Matrix.setIdentityM(rotateMatrix, 0);
-            Matrix.rotateM(rotateMatrix, 0, 90f, 0f, 0f, 1f)
-            Log.d(TAG, "rotateMatrix = $rotateMatrix")
+            Matrix.rotateM(rotateMatrix, 0, 270f, 0f, 0f, 1f)
         }
-
 
         override fun onDrawFrame(gl: GL10?) {
             // 设置顶点数据
@@ -114,7 +103,7 @@ class GLSurfaceViewTest(context: Context, attributeSet: AttributeSet? = null) :
             glActiveTexture(GLES20.GL_TEXTURE0)
             glUniform1i(textureLoc, 0)
             // 矩阵
-//            GLES20.glUniformMatrix4fv(matrixLoc, 1, false, rotateMatrix, 0)
+            GLES20.glUniformMatrix4fv(matrixLoc, 1, false, rotateMatrix, 0)
             glDrawElements(GL_TRIANGLES, indexData.size, GL_UNSIGNED_SHORT, mIndexBuffer)
         }
     }

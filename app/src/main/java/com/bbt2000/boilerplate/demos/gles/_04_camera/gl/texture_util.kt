@@ -1,4 +1,4 @@
-package com.bbt2000.boilerplate.demos.gles._03_camera
+package com.bbt2000.boilerplate.demos.gles._04_camera.gl
 
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
@@ -11,7 +11,7 @@ import javax.microedition.khronos.opengles.GL10
  */
 
 object Tex {
-    fun createOESTextureObject(): Int {
+    fun createOESTexture(): Int {
         val tex = IntArray(1)
         GLES20.glGenTextures(1, tex, 0)
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, tex[0])

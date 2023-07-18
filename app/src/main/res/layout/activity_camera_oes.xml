@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.bbt2000.boilerplate.demos.gles._03_camera.GLSurfaceViewTest
+    <com.bbt2000.boilerplate.demos.gles._04_camera.GLSurfaceViewTest
         android:id="@+id/glSurfaceViewTest"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
