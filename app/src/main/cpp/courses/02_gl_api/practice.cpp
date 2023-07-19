@@ -246,7 +246,7 @@ void vao(JNIEnv *env, jobject thiz, jobject surface) {
     glDeleteProgram(program);
 }
 
-// todo: 不出图，没找到问题
+// 结合使用
 extern "C"
 void vao_vbo_ebo(JNIEnv *env, jobject thiz, jobject surface) {
     // 配置EGL
@@ -277,23 +277,20 @@ void vao_vbo_ebo(JNIEnv *env, jobject thiz, jobject surface) {
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
 
-    //依次绑定VAO,VBO,EBO,顺序不能错
+    //依次绑定VAO,VBO,EBO
     glBindVertexArray(VAO);
     //VBO
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    //EBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 24, (void *) 0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 24, (void *) (3 * 4));
     glEnableVertexAttribArray(1);
-
-    //解绑顺序和绑定要相反
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    //EBO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    //VAO解绑时，要保持EBO的绑定状态，那样，在绘制阶段重新绑定VAO时，EBO才可用
     glBindVertexArray(0);
 
     //清屏
@@ -302,8 +299,9 @@ void vao_vbo_ebo(JNIEnv *env, jobject thiz, jobject surface) {
     //绘制三角形
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void *) 0);
-    //窗口显示，交换双缓冲区
     eglSwapBuffers(g_EglConfigInfo.display, g_EglConfigInfo.eglSurface);
+    //todo: 这里还需要解绑EBO吗？
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     glDeleteProgram(program);
 }

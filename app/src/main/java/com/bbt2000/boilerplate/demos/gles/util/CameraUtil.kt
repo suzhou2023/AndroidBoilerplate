@@ -5,7 +5,7 @@ import android.hardware.camera2.CameraCharacteristics
 import android.util.Log
 import android.util.Size
 import android.view.TextureView
-import com.bbt2000.boilerplate.demos.gles._04_camera.GLSurfaceViewTest
+import com.bbt2000.boilerplate.demos.gles._05_camera.GLSurfaceViewTest
 
 object CameraUtils {
 

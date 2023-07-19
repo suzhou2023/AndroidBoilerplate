@@ -34,12 +34,12 @@ static const char F_SHADER[] =
         "in vec2 fTexCoord;\n"
         "out vec4 FragColor;\n"
 
-        "uniform sampler2D ourTexture;\n"
-        "uniform sampler2D ourTexture2;\n"
+        "uniform sampler2D texture1;\n"
+        "uniform sampler2D texture2;\n"
 
         "void main()\n"
         "{\n"
-        "    FragColor = mix(texture(ourTexture, fTexCoord),texture(ourTexture2, fTexCoord),0.7);\n"
+        "    FragColor=mix(texture(texture1,fTexCoord),texture(texture2,fTexCoord),0.7);\n"
         "}\n";
 
 
