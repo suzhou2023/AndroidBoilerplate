@@ -71,6 +71,7 @@ class GLSurfaceViewTest(context: Context, attributeSet: AttributeSet? = null) :
                 queueEvent {
                     mSurfaceTexture?.updateTexImage()
                     requestRender()
+//                    mSurfaceTexture?.getTransformMatrix()
                 }
             }
 

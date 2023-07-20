@@ -11,16 +11,18 @@
 
 static const char V_SHADER[] =
         "#version 300 es\n"
-        "layout (location = 0) \n"
+        "layout (location = 0)\n"
         "in vec4 v_position;\n"
         "//新增的接收纹理坐标的变量\n"
-        "layout (location = 1) \n"
+        "layout (location = 1)\n"
         "in vec2 texCoord;\n"
         "//纹理坐标输出给片段着色器使用\n"
         "out vec2 texCoord2;\n"
+        "//变换矩阵\n"
+        "uniform mat4 matrix;\n"
         "\n"
         "void main() {\n"
-        "    gl_Position = v_position;\n"
+        "    gl_Position = matrix * v_position;\n"
         "    //纹理坐标传给片段着色器\n"
         "    texCoord2 = texCoord;\n"
         "}";

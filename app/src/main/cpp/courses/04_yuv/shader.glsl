@@ -6,9 +6,11 @@ layout (location = 1)
 in vec2 texCoord;
 //纹理坐标输出给片段着色器使用
 out vec2 texCoord2;
+//变换矩阵
+uniform mat4 matrix;
 
 void main() {
-    gl_Position = v_position;
+    gl_Position = matrix * v_position;
     //纹理坐标传给片段着色器
     texCoord2 = texCoord;
 }
@@ -35,9 +37,9 @@ void main() {
     yuv.z = texture(vTexture, texCoord2).b - 0.5;
     //yuv转化为rgb
     rgb = mat3(
-        1.0, 1.0, 1.0,
-        0.0, -0.183, 1.816,
-        1.540, -0.459, 0.0
+    1.0, 1.0, 1.0,
+    0.0, -0.183, 1.816,
+    1.540, -0.459, 0.0
     ) * yuv;
     //gl_FragColor是OpenGL内置的
     fragColor = vec4(rgb, 1.0);

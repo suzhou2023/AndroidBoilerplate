@@ -25,10 +25,10 @@ Java_com_bbt2000_boilerplate_demos_gles__104_1yuv_SurfaceViewTest_loadYuv(
     // 顶点坐标和纹理坐标
     float vertices[] = {
             // 前3个图元顶点坐标，后两个纹理坐标
-            1.0f, -0.3f, 0.0f, 0.9f, 0.9f, // top right
-            1.0f, 0.3f, 0.0f, 0.9f, 0.0f, // bottom right
-            -1.0f, 0.3f, 0.0f, 0.0f, 0.0f, // bottom left
-            -1.0f, -0.3f, 0.0f, 0.0f, 0.9f  // top left
+            1.0f, -0.99f, 0.0f, 0.9f, 0.9f, // top right
+            1.0f, 0.99f, 0.0f, 0.9f, 0.0f, // bottom right
+            -1.0f, 0.99f, 0.0f, 0.0f, 0.0f, // bottom left
+            -1.0f, -0.99f, 0.0f, 0.0f, 0.9f  // top left
     };
     // 顶点属性索引
     unsigned int indices[] = {
@@ -61,6 +61,16 @@ Java_com_bbt2000_boilerplate_demos_gles__104_1yuv_SurfaceViewTest_loadYuv(
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     // 为索引缓冲对象创建存储，并利用data进行初始化
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // 顶点变换矩阵
+    float matrix[16] = {
+            0.5, 0.0, 0.0, 0.0, //第一列
+            0.0, 0.5, 0.0, 0.0, //第二列
+            0.0, 0.0, 1.0, 0.0, //第三列
+            0.0, 0.0, 0.0, 1.0 //第四列
+    };
+    GLint m_location = glGetUniformLocation(program, "matrix");
+    glUniformMatrix4fv(m_location, 1, false, matrix);
 
     // 通过Java层传入的AssetManager对象得到AAssetManager对象指针
     AAssetManager *aAssetManager = AAssetManager_fromJava(env, asset_manager);
