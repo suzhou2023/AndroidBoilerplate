@@ -10,28 +10,30 @@
 #include "LogUtil.h"
 #include "EglUtil.h"
 #include "shader.h"
-#include "GLRenderer.h"
+#include "GLContext.h"
 
-static GLRenderer s_glRenderer = GLRenderer::getInstance();
 
+// surfaceView创建
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeSurfaceCreated(
         JNIEnv *env, jobject thiz, jobject surface) {
-
-    EglConfigInfo *p_EglConfigInfo = s_glRenderer.getEglConfigInfo();
+    // config EGL
+    EglConfigInfo *p_EglConfigInfo = static_cast<EglConfigInfo *>(malloc(sizeof(EglConfigInfo)));
     if (configEGL(env, surface, p_EglConfigInfo) < 0) return;
+    GLContext::getInstance().setEglConfigInfo(p_EglConfigInfo);
+
     // 创建并使用着色器程序
     GLuint program = useShader(V_SHADER, F_SHADER);
-    s_glRenderer.setProgram(program);
+    GLContext::getInstance().setProgram(program);
 
     // 顶点坐标和纹理坐标
     float vertices[] = {
             // 前3个图元顶点坐标，后两个纹理坐标
-            1.0f, -0.5f, 0.0f, 1.0f, 1.0f, // top right
-            1.0f, 0.5f, 0.0f, 1.0f, 0.0f, // bottom right
-            -1.0f, 0.5f, 0.0f, 0.0f, 0.0f, // bottom left
-            -1.0f, -0.5f, 0.0f, 0.0f, 1.0f  // top left
+            1.0f, -1.0f, 0.0f, 1.0f, 1.0f, // top right
+            1.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+            -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, // bottom left
+            -1.0f, -1.0f, 0.0f, 0.0f, 1.0f  // top left
     };
     // 顶点属性索引
     unsigned int indices[] = {
@@ -63,33 +65,45 @@ Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeSurfa
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 }
 
+
+// 创建一个纹理对象并绑定到OES目标
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeCreateTexture(
-        JNIEnv *env, jobject thiz, jobject surface) {
+        JNIEnv *env, jobject thiz) {
     GLuint texture;
     glGenTextures(1, &texture);
 
     // 绑定一个纹理对象到将要使用的纹理类型
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture);
-    s_glRenderer.setOESTextureId(texture);
+    GLContext::getInstance().setOESTextureId(texture);
     return texture;
 }
 
 
+// surfaceView改变尺寸
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeSurfaceChanged(
+        JNIEnv *env, jobject thiz, jint width, jint height) {
+    GLContext::getInstance().setSize(width, height);
+}
+
+
+// 绘制帧
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeDrawFrame(
         JNIEnv *env, jobject thiz) {
-
-    EglConfigInfo *p_EglConfigInfo = s_glRenderer.getEglConfigInfo();
-    GLuint program = s_glRenderer.getProgram();
-    GLuint oesTextureId = s_glRenderer.getOESTextureId();
+    EglConfigInfo *p_EglConfigInfo = GLContext::getInstance().getEglConfigInfo();
+    GLuint program = GLContext::getInstance().getProgram();
+    GLuint oesTextureId = GLContext::getInstance().getOESTextureId();
 
     // 对着色器中的纹理单元变量进行赋值
     glUniform1i(glGetUniformLocation(program, "oesTexture"), 0);
     // 激活纹理单元
     glActiveTexture(GL_TEXTURE0);
+    // todo: 不加这行也能运行？
 //    glBindTexture(GL_TEXTURE_2D, oesTextureId);
     /*****绘制*****/
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -100,8 +114,20 @@ Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeDrawF
 }
 
 
-
-
-
-
-
+// surfaceView销毁
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeSurfaceDestroyed(
+        JNIEnv *env, jobject thiz) {
+    // 删除着色器程序
+    GLuint program = GLContext::getInstance().getProgram();
+    glDeleteProgram(program);
+    GLContext::getInstance().setProgram(0);
+    // 销毁EGL context，释放资源
+    EglConfigInfo *p_EglConfigInfo = GLContext::getInstance().getEglConfigInfo();
+    if (p_EglConfigInfo != nullptr) {
+        destroyEGL(p_EglConfigInfo);
+        free(p_EglConfigInfo);
+        GLContext::getInstance().setEglConfigInfo(nullptr);
+    }
+}

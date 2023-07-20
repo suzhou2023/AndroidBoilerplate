@@ -11,22 +11,23 @@
 #include "EglUtil.h"
 
 
-class GLRenderer {
-
-
+class GLContext {
 public:
-    static GLRenderer getInstance() {
-        static GLRenderer instance;
+    static GLContext &getInstance() {
+        static GLContext instance;
         return instance;
     }
 
-    GLRenderer() {};
+    GLContext() {};
 
-    ~GLRenderer() {};
-
+    ~GLContext() {};
 
     EglConfigInfo *getEglConfigInfo() {
-        return &mEglConfigInfo;
+        return p_EglConfigInfo;
+    }
+
+    void setEglConfigInfo(EglConfigInfo *p) {
+        p_EglConfigInfo = p;
     }
 
     GLuint getProgram() {
@@ -45,12 +46,25 @@ public:
         mOESTextureId = textureId;
     }
 
+    int getWidth() const {
+        return mWidth;
+    }
+
+    int getHeight() const {
+        return mHeight;
+    }
+
+    void setSize(int width, int height) {
+        mWidth = width;
+        mHeight = height;
+    }
+
 private:
-    EglConfigInfo mEglConfigInfo;
-    GLuint mProgram;
-    GLuint mOESTextureId;
-    int mWidth;
-    int mHeight;
+    EglConfigInfo *p_EglConfigInfo{nullptr};
+    GLuint mProgram{0};
+    GLuint mOESTextureId{0};
+    int mWidth{0};
+    int mHeight{0};
 };
 
 

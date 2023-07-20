@@ -18,6 +18,7 @@
 typedef struct {
     EGLDisplay display;
     EGLSurface eglSurface;
+    EGLContext context;
 } EglConfigInfo;
 
 
@@ -59,26 +60,35 @@ static GLint configEGL(JNIEnv *env, jobject surface, EglConfigInfo *p_EglConfigI
         return -1;
     }
 
-    const EGLint ctxAttr[] = {
-            EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
-    };
+    const EGLint ctxAttr[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
 
-    EGLContext context = eglCreateContext(p_EglConfigInfo->display, eglConfig,
-                                          EGL_NO_CONTEXT, ctxAttr);
-    if (context == EGL_NO_CONTEXT) {
+    p_EglConfigInfo->context = eglCreateContext(p_EglConfigInfo->display, eglConfig,
+                                                EGL_NO_CONTEXT, ctxAttr);
+    if (p_EglConfigInfo->context == EGL_NO_CONTEXT) {
         LOGE("EGL create context failed.");
+        eglDestroySurface(p_EglConfigInfo->display, p_EglConfigInfo->eglSurface);
         return -1;
     }
 
-    if (EGL_TRUE !=
-        eglMakeCurrent(p_EglConfigInfo->display, p_EglConfigInfo->eglSurface,
-                       p_EglConfigInfo->eglSurface,
-                       context)) {
+    EGLBoolean ret = eglMakeCurrent(p_EglConfigInfo->display, p_EglConfigInfo->eglSurface,
+                                    p_EglConfigInfo->eglSurface, p_EglConfigInfo->context);
+    if (ret != EGL_TRUE) {
         LOGE("EGL make current failed.");
+        eglDestroyContext(p_EglConfigInfo->display, p_EglConfigInfo->context);
+        eglDestroySurface(p_EglConfigInfo->display, p_EglConfigInfo->eglSurface);
+        eglTerminate(p_EglConfigInfo->display);
         return -1;
     }
+    LOGI("Config EGL success.");
 
     return 0;
+}
+
+
+void destroyEGL(EglConfigInfo *p_EglConfigInfo) {
+    eglDestroySurface(p_EglConfigInfo->display, p_EglConfigInfo->eglSurface);
+    eglDestroyContext(p_EglConfigInfo->display, p_EglConfigInfo->context);
+    eglTerminate(p_EglConfigInfo->display);
 }
 
 #endif //ANDROIDBOILERPLATE_EGLUTIL_H
