@@ -35,7 +35,7 @@ class DemoActivity : AppCompatActivity() {
         applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
     }
 
-    private lateinit var mGLSurfaceViewTest: GLSurfaceViewTest
+    private lateinit var mSurfaceViewTest: SurfaceViewTest
     private var mSurface: Surface? = null
 
     private val mMainLooperHandler = Handler(Looper.getMainLooper())
@@ -46,7 +46,7 @@ class DemoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(R.layout.activity_camera_oes)
-        mGLSurfaceViewTest = findViewById(R.id.glSurfaceViewTest)
+        mSurfaceViewTest = findViewById(R.id.surfaceViewTest)
 
         for (id in mCameraManager.cameraIdList) {
             Log.d(TAG, "id = $id")
@@ -111,7 +111,7 @@ class DemoActivity : AppCompatActivity() {
             mCameraDevice = camera
             try {
                 mMainLooperHandler.post {
-                    if (mGLSurfaceViewTest.isAvailable()) {
+                    if (mSurfaceViewTest.isAvailable()) {
                         createCaptureSession()
                     }
                 }
@@ -133,10 +133,10 @@ class DemoActivity : AppCompatActivity() {
     }
 
     private fun createCaptureSession() {
-        if (mCameraDevice == null || !mGLSurfaceViewTest.isAvailable()) return
+        if (mCameraDevice == null || !mSurfaceViewTest.isAvailable()) return
 
         val targetTexture = mCameraManager.getCameraCharacteristics(mCameraId!!).let {
-            CameraUtils.buildTargetTexture(mGLSurfaceViewTest, it)
+            CameraUtils.buildTargetTexture(mSurfaceViewTest, it)
         }
 
         mSurface = Surface(targetTexture)

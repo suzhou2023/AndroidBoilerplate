@@ -15,7 +15,8 @@
 extern "C"
 void vbo(JNIEnv *env, jobject thiz, jobject surface) {
     // 配置EGL
-    if (configEGL(env, surface) < 0) return;
+    EglConfigInfo eglConfigInfo;
+    if (configEGL(env, surface, &eglConfigInfo) < 0) return;
 
     const char *V_SHADER =
             "#version 300 es\n"
@@ -67,7 +68,7 @@ void vbo(JNIEnv *env, jobject thiz, jobject surface) {
     glClear(GL_COLOR_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLES, 0, 4);
     //窗口显示，交换双缓冲区
-    eglSwapBuffers(g_EglConfigInfo.display, g_EglConfigInfo.eglSurface);
+    eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
     //解绑EBO
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glDeleteBuffers(1, VBOs);
@@ -78,7 +79,8 @@ void vbo(JNIEnv *env, jobject thiz, jobject surface) {
 extern "C"
 void ebo(JNIEnv *env, jobject thiz, jobject surface) {
     // 配置EGL
-    if (configEGL(env, surface) < 0) return;
+    EglConfigInfo eglConfigInfo;
+    if (configEGL(env, surface, &eglConfigInfo) < 0) return;
 
     const char *V_SHADER =
             "#version 300 es\n"
@@ -141,7 +143,7 @@ void ebo(JNIEnv *env, jobject thiz, jobject surface) {
     //通过顶点索引绘制图元，注意这里已经绑定了EBO，所以最后一个参数传入的内存是数据再EBO中内存的起始地址偏移量
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void *) 0);
     //窗口显示，交换双缓冲区
-    eglSwapBuffers(g_EglConfigInfo.display, g_EglConfigInfo.eglSurface);
+    eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
     //解绑EBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glDeleteBuffers(1, &EBO);
@@ -152,7 +154,8 @@ void ebo(JNIEnv *env, jobject thiz, jobject surface) {
 extern "C"
 void vao(JNIEnv *env, jobject thiz, jobject surface) {
     // 配置EGL
-    if (configEGL(env, surface) < 0) return;
+    EglConfigInfo eglConfigInfo;
+    if (configEGL(env, surface, &eglConfigInfo) < 0) return;
 
     const char *V_SHADER =
             "#version 300 es\n"
@@ -240,7 +243,7 @@ void vao(JNIEnv *env, jobject thiz, jobject surface) {
     glBindVertexArray(VAOs[0]);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     //窗口显示，交换双缓冲区
-    eglSwapBuffers(g_EglConfigInfo.display, g_EglConfigInfo.eglSurface);
+    eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
     //解绑VAO[0]
     glBindVertexArray(0);
     glDeleteProgram(program);
@@ -250,7 +253,8 @@ void vao(JNIEnv *env, jobject thiz, jobject surface) {
 extern "C"
 void vao_vbo_ebo(JNIEnv *env, jobject thiz, jobject surface) {
     // 配置EGL
-    if (configEGL(env, surface) < 0) return;
+    EglConfigInfo eglConfigInfo;
+    if (configEGL(env, surface, &eglConfigInfo) < 0) return;
     // program
     GLuint program = useShader(V_SHADER, F_SHADER);
 
@@ -299,7 +303,7 @@ void vao_vbo_ebo(JNIEnv *env, jobject thiz, jobject surface) {
     //绘制三角形
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void *) 0);
-    eglSwapBuffers(g_EglConfigInfo.display, g_EglConfigInfo.eglSurface);
+    eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
     //todo: 这里还需要解绑EBO吗？
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);

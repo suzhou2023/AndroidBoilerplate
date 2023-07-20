@@ -18,10 +18,11 @@ Java_com_bbt2000_boilerplate_demos_gles__101_1egl_SurfaceViewTest_draw_1EGL(
         JNIEnv *env, jobject obj, jobject surface) {
 
     // 配置EGL环境
-    if (configEGL(env, surface) < 0) return;
+    EglConfigInfo eglConfigInfo;
+    if (configEGL(env, surface, &eglConfigInfo) < 0) return;
 
     // 屏幕设置颜色
     glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    eglSwapBuffers(g_EglConfigInfo.display, g_EglConfigInfo.eglSurface);
+    eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
 }

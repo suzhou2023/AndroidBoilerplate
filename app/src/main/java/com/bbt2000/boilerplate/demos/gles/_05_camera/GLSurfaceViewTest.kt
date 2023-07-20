@@ -71,6 +71,8 @@ class GLSurfaceViewTest(context: Context, attributeSet: AttributeSet? = null) :
                 queueEvent {
                     mSurfaceTexture?.updateTexImage()
                     requestRender()
+                    mSurfaceTexture?.getTransformMatrix(rotateMatrix)
+                    Log.d(TAG, "rotateMatrix = ${rotateMatrix.contentToString()}")
                 }
             }
 
@@ -87,7 +89,7 @@ class GLSurfaceViewTest(context: Context, attributeSet: AttributeSet? = null) :
         override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
             Log.d(TAG, "Surface changed.")
             Matrix.setIdentityM(rotateMatrix, 0);
-            Matrix.rotateM(rotateMatrix, 0, 270f, 0f, 0f, 1f)
+//            Matrix.rotateM(rotateMatrix, 0, 270f, 0f, 0f, 1f)
         }
 
         override fun onDrawFrame(gl: GL10?) {

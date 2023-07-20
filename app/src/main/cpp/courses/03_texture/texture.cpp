@@ -32,7 +32,8 @@ Java_com_bbt2000_boilerplate_demos_gles__103_1texture_SurfaceViewTest_drawTextur
     AndroidBitmap_lockPixels(env, bitmap2, &bmpPixels2);
 
     // EGL配置
-    if (configEGL(env, surface) < 0) return;
+    EglConfigInfo eglConfigInfo;
+    if (configEGL(env, surface, &eglConfigInfo) < 0) return;
     // 创建并使用着色器程序
     GLuint program = useShader(V_SHADER, F_SHADER);
     // 顶点坐标和纹理坐标
@@ -78,9 +79,9 @@ Java_com_bbt2000_boilerplate_demos_gles__103_1texture_SurfaceViewTest_drawTextur
                  GL_STATIC_DRAW);
 
     GLuint texture1, texture2;
-    // 生成纹理名字
+    // 生成纹理名字（已经创建纹理对象？）
     glGenTextures(1, &texture1);
-    // 绑定纹理目标到这个名字
+    // 绑定一个纹理对象到将要使用的纹理类型
     glBindTexture(GL_TEXTURE_2D, texture1);
     // 横坐标环绕配置
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -93,7 +94,6 @@ Java_com_bbt2000_boilerplate_demos_gles__103_1texture_SurfaceViewTest_drawTextur
     // 指定纹理图片
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmpInfo1.width, bmpInfo1.height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, bmpPixels1);
-    // todo: unlock的位置对吗？
     AndroidBitmap_unlockPixels(env, bitmap1);
     // 下面的一样
     glGenTextures(1, &texture2);
@@ -104,29 +104,26 @@ Java_com_bbt2000_boilerplate_demos_gles__103_1texture_SurfaceViewTest_drawTextur
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmpInfo2.width, bmpInfo2.height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, bmpPixels2);
-    // todo: unlock的位置对吗？
     AndroidBitmap_unlockPixels(env, bitmap2);
 
-    // todo: 查看官方api
-    //对着色器中的纹理单元变量进行赋值
+    // 对着色器中的纹理单元变量进行赋值，这里分别赋值为0和1
     glUniform1i(glGetUniformLocation(program, "texture1"), 0);
     glUniform1i(glGetUniformLocation(program, "texture2"), 1);
-    //将纹理单元和纹理对象进行绑定
-    //激活纹理单元，下面的绑定就会和当前激活的纹理单元关联上
+    // 激活纹理单元，下面的绑定就会将对应的纹理对象和激活的纹理单元关联上，不得不说有点绕
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture1);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture2);
 
-    // 开始绘制
+    /*****绘制*****/
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    // 绘制三角形
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void *) 0);
+    eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
     glBindVertexArray(0);
-    // 窗口显示，交换双缓冲区
-    eglSwapBuffers(g_EglConfigInfo.display, g_EglConfigInfo.eglSurface);
+    /*****绘制*****/
+
     // 释放着色器程序对象
     glDeleteProgram(program);
 }

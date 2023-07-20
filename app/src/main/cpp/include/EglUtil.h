@@ -20,16 +20,15 @@ typedef struct {
     EGLSurface eglSurface;
 } EglConfigInfo;
 
-static EglConfigInfo g_EglConfigInfo;
 
-static GLint configEGL(JNIEnv *env, jobject surface) {
-    g_EglConfigInfo.display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (g_EglConfigInfo.display == EGL_NO_DISPLAY) {
+static GLint configEGL(JNIEnv *env, jobject surface, EglConfigInfo *p_EglConfigInfo) {
+    p_EglConfigInfo->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (p_EglConfigInfo->display == EGL_NO_DISPLAY) {
         LOGE("EGL get display failed.");
         return -1;
     }
 
-    if (EGL_TRUE != eglInitialize(g_EglConfigInfo.display, nullptr, nullptr)) {
+    if (EGL_TRUE != eglInitialize(p_EglConfigInfo->display, nullptr, nullptr)) {
         LOGE("EGL initialize failed");
         return -1;
     }
@@ -44,18 +43,18 @@ static GLint configEGL(JNIEnv *env, jobject surface) {
             EGL_NONE
     };
 
-    if (EGL_TRUE != eglChooseConfig(g_EglConfigInfo.display, configSpec, &eglConfig,
+    if (EGL_TRUE != eglChooseConfig(p_EglConfigInfo->display, configSpec, &eglConfig,
                                     1, &configNum)) {
         LOGE("EGL choose config failed.");
         return -1;
     }
 
     ANativeWindow *nativeWindow = ANativeWindow_fromSurface(env, surface);
-    g_EglConfigInfo.eglSurface = eglCreateWindowSurface(g_EglConfigInfo.display, eglConfig,
-                                                        nativeWindow, nullptr);
+    p_EglConfigInfo->eglSurface = eglCreateWindowSurface(p_EglConfigInfo->display, eglConfig,
+                                                         nativeWindow, nullptr);
     // todo: 是在这里释放吗？对后续代码貌似没有影响
     ANativeWindow_release(nativeWindow);
-    if (g_EglConfigInfo.eglSurface == EGL_NO_SURFACE) {
+    if (p_EglConfigInfo->eglSurface == EGL_NO_SURFACE) {
         LOGE("EGL create window surface failed.");
         return -1;
     }
@@ -64,15 +63,17 @@ static GLint configEGL(JNIEnv *env, jobject surface) {
             EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
     };
 
-    EGLContext context = eglCreateContext(g_EglConfigInfo.display, eglConfig,
+    EGLContext context = eglCreateContext(p_EglConfigInfo->display, eglConfig,
                                           EGL_NO_CONTEXT, ctxAttr);
     if (context == EGL_NO_CONTEXT) {
         LOGE("EGL create context failed.");
         return -1;
     }
 
-    if (EGL_TRUE != eglMakeCurrent(g_EglConfigInfo.display, g_EglConfigInfo.eglSurface,
-                                   g_EglConfigInfo.eglSurface, context)) {
+    if (EGL_TRUE !=
+        eglMakeCurrent(p_EglConfigInfo->display, p_EglConfigInfo->eglSurface,
+                       p_EglConfigInfo->eglSurface,
+                       context)) {
         LOGE("EGL make current failed.");
         return -1;
     }
