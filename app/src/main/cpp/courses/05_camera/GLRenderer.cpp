@@ -86,9 +86,9 @@ Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeDrawF
     GLuint program = s_glRenderer.getProgram();
     GLuint oesTextureId = s_glRenderer.getOESTextureId();
 
-    // 对着色器中的纹理单元变量进行赋值，这里分别赋值为0和1
+    // 对着色器中的纹理单元变量进行赋值
     glUniform1i(glGetUniformLocation(program, "oesTexture"), 0);
-    // 激活纹理单元，下面的绑定就会将对应的纹理对象和激活的纹理单元关联上，不得不说有点绕
+    // 激活纹理单元
     glActiveTexture(GL_TEXTURE0);
 //    glBindTexture(GL_TEXTURE_2D, oesTextureId);
     /*****绘制*****/
