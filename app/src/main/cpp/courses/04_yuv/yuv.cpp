@@ -20,7 +20,8 @@ JNIEXPORT void JNICALL
 Java_com_bbt2000_boilerplate_demos_gles__104_1yuv_SurfaceViewTest_loadYuv(
         JNIEnv *env, jobject thiz, jobject surface, jobject asset_manager) {
 
-    if (configEGL(env, surface) < 0) return;
+    EglConfigInfo eglConfigInfo;
+    if (configEGL(env, surface, &eglConfigInfo) < 0) return;
     GLuint program = useShader(V_SHADER, F_SHADER);
     // 顶点坐标和纹理坐标
     float vertices[] = {
@@ -61,6 +62,31 @@ Java_com_bbt2000_boilerplate_demos_gles__104_1yuv_SurfaceViewTest_loadYuv(
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     // 为索引缓冲对象创建存储，并利用data进行初始化
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBindVertexArray(0);
+
+    GLuint textures[3];
+    // 创建若干个纹理对象，并且得到纹理名字
+    glGenTextures(3, textures);
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE,
+                 GL_UNSIGNED_BYTE, nullptr);
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width / 2, height / 2, 0, GL_LUMINANCE,
+                 GL_UNSIGNED_BYTE, nullptr);
+    glBindTexture(GL_TEXTURE_2D, textures[2]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width / 2, height / 2, 0, GL_LUMINANCE,
+                 GL_UNSIGNED_BYTE, nullptr);
+
+    // 设置着色器变量的值
+    glUniform1i(glGetUniformLocation(program, "yTexture"), 0);
+    glUniform1i(glGetUniformLocation(program, "uTexture"), 1);
+    glUniform1i(glGetUniformLocation(program, "vTexture"), 2);
 
     // 顶点变换矩阵
     float matrix[16] = {
@@ -87,7 +113,7 @@ Java_com_bbt2000_boilerplate_demos_gles__104_1yuv_SurfaceViewTest_loadYuv(
     buf[1] = new unsigned char[width * height / 4]; // u
     buf[2] = new unsigned char[width * height / 4]; // v
 
-    //读取每帧的YUV数据
+    // 读取每帧的YUV数据
     for (int i = 0; i < totalFrame; ++i) {
         // 读取y分量
         int yBytesRead = AAsset_read(aAsset, buf[0], width * height);
@@ -95,61 +121,37 @@ Java_com_bbt2000_boilerplate_demos_gles__104_1yuv_SurfaceViewTest_loadYuv(
         int uBytesRead = AAsset_read(aAsset, buf[1], width * height / 4);
         // 读取v分量
         int vBytesRead = AAsset_read(aAsset, buf[2], width * height / 4);
-        //读到文件末尾或遇到错误
+        // 读到文件末尾或遇到错误
         if (yBytesRead <= 0 || uBytesRead <= 0 || vBytesRead <= 0) {
             AAsset_close(aAsset);
             break;
         }
 
-        //纹理ID
-        GLuint textures[3];
-        //创建若干个纹理对象，并且得到纹理ID
-        glGenTextures(3, textures);
-        glBindTexture(GL_TEXTURE_2D, textures[0]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE,
-                     GL_UNSIGNED_BYTE, nullptr);
-        glBindTexture(GL_TEXTURE_2D, textures[1]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width / 2, height / 2, 0, GL_LUMINANCE,
-                     GL_UNSIGNED_BYTE, nullptr);
-        glBindTexture(GL_TEXTURE_2D, textures[2]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width / 2, height / 2, 0, GL_LUMINANCE,
-                     GL_UNSIGNED_BYTE, nullptr);
-        //对sampler变量，使用函数glUniform1i和glUniform1iv进行设置
-        glUniform1i(glGetUniformLocation(program, "yTexture"), 0);
-        glUniform1i(glGetUniformLocation(program, "uTexture"), 1);
-        glUniform1i(glGetUniformLocation(program, "vTexture"), 2);
-        // 激活纹理单元
+        // 激活纹理单元 y分量
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textures[0]);
-        //替换纹理，比重新使用glTexImage2D性能高多
+        // 替换纹理，比重新使用glTexImage2D性能高多
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE,
                         buf[0]);
-
+        // u分量
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, textures[1]);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width / 2, height / 2, GL_LUMINANCE,
                         GL_UNSIGNED_BYTE, buf[1]);
-
+        // v分量
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, textures[2]);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width / 2, height / 2, GL_LUMINANCE,
                         GL_UNSIGNED_BYTE, buf[2]);
 
-        // 开始绘制
+        /*****绘制*****/
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        // 绘制三角形
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void *) 0);
+        eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
         glBindVertexArray(0);
-        // 窗口显示，交换双缓冲区
-        eglSwapBuffers(g_EglConfigInfo.display, g_EglConfigInfo.eglSurface);
+        /*****绘制*****/
         // 线程休眠
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }

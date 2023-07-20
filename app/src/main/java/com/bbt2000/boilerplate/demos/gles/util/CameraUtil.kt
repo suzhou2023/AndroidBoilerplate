@@ -6,6 +6,7 @@ import android.util.Log
 import android.util.Size
 import android.view.TextureView
 import com.bbt2000.boilerplate.demos.gles._05_camera.GLSurfaceViewTest
+import com.bbt2000.boilerplate.demos.gles._05_camera.SurfaceViewTest
 
 object CameraUtils {
 
@@ -43,6 +44,17 @@ object CameraUtils {
 
     fun buildTargetTexture(
         containerView: GLSurfaceViewTest,
+        characteristics: CameraCharacteristics
+    ): SurfaceTexture? {
+        val windowSize = Size(containerView.width, containerView.height)
+        val previewSize = findBestPreviewSize(windowSize, characteristics)
+        return containerView.getTexture()?.apply {
+            setDefaultBufferSize(previewSize.width, previewSize.height)
+        }
+    }
+
+    fun buildTargetTexture(
+        containerView: SurfaceViewTest,
         characteristics: CameraCharacteristics
     ): SurfaceTexture? {
         val windowSize = Size(containerView.width, containerView.height)
