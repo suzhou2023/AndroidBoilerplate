@@ -24,8 +24,8 @@ import com.bbt2000.boilerplate.demos.gles._05_camera.gl.Shader.V_SHADER
 import com.bbt2000.boilerplate.demos.gles._05_camera.gl.Tex.createOESTexture
 import com.bbt2000.boilerplate.demos.gles._05_camera.gl.Util.createProgram
 import com.bbt2000.boilerplate.demos.gles.widget.AutoFitGLSurfaceView
-import java.nio.FloatBuffer
 import java.nio.ShortBuffer
+import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 

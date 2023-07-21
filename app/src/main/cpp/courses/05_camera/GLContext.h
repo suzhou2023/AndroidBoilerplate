@@ -38,33 +38,9 @@ public:
         mProgram = program;
     }
 
-    GLuint getOESTextureId() const {
-        return mOESTextureId;
-    }
-
-    void setOESTextureId(GLuint textureId) {
-        mOESTextureId = textureId;
-    }
-
-    int getWidth() const {
-        return mWidth;
-    }
-
-    int getHeight() const {
-        return mHeight;
-    }
-
-    void setSize(int width, int height) {
-        mWidth = width;
-        mHeight = height;
-    }
-
 private:
     EglConfigInfo *p_EglConfigInfo{nullptr};
     GLuint mProgram{0};
-    GLuint mOESTextureId{0};
-    int mWidth{0};
-    int mHeight{0};
 };
 
 

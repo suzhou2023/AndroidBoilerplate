@@ -20,6 +20,15 @@ object CameraUtils {
                 ?.sortedWith(SizeComparator)
                 ?: emptyList()
 
+        val array: List<Size> =
+            characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+                ?.getOutputSizes(SurfaceTexture::class.java)
+                ?.filter { true }
+                ?: emptyList()
+        Log.d("CameraUtils", "array = ${array}")
+        Log.d("CameraUtils", "array[0] = ${array[0]}")
+        Log.d("CameraUtils", "supportedPreviewSizes[0] = ${supportedPreviewSizes[0]}")
+
         return supportedPreviewSizes.getOrElse(0) { Size(0, 0) }
     }
 
@@ -59,6 +68,7 @@ object CameraUtils {
     ): SurfaceTexture? {
         val windowSize = Size(containerView.width, containerView.height)
         val previewSize = findBestPreviewSize(windowSize, characteristics)
+        containerView.setPreviewRatioWH(previewSize.width / previewSize.height.toFloat())
         return containerView.getTexture()?.apply {
             setDefaultBufferSize(previewSize.width, previewSize.height)
         }

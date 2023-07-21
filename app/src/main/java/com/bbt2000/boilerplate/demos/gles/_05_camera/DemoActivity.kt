@@ -13,7 +13,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
-import android.provider.SyncStateContract.Constants
 import android.util.Log
 import android.view.Surface
 import android.view.TextureView
@@ -48,6 +47,7 @@ class DemoActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(R.layout.activity_camera_oes)
         mSurfaceViewTest = findViewById(R.id.surfaceViewTest)
+        mSurfaceViewTest.setAspectRatio(1, 1)
 
         for (id in mCameraManager.cameraIdList) {
             Log.d(TAG, "id = $id")
@@ -56,6 +56,14 @@ class DemoActivity : AppCompatActivity() {
             // 注意有的手机有多颗后置镜头，这里打开第一个
             if (facing == CameraCharacteristics.LENS_FACING_BACK) {
                 mCameraId = id
+                val sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
+                val displayRotation = windowManager.defaultDisplay.rotation
+                val previewRotation: Float
+                if (sensorOrientation != null) {
+                    previewRotation = ((sensorOrientation - displayRotation) % 360).toFloat()
+                    mSurfaceViewTest.setPreviewRotation(previewRotation)
+                    Log.d(TAG, "previewRotation = $previewRotation")
+                }
                 break
             }
         }

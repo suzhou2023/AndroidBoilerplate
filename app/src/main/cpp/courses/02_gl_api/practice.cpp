@@ -43,13 +43,13 @@ void vbo(JNIEnv *env, jobject thiz, jobject surface) {
     GLuint program = useShader(V_SHADER, F_SHADER);
 
     static float triangleVerWithColor[] = {
-            0.0f, 0.8f, 0.0f,//顶点
+            0.5f, 0.5f, 0.0f,//顶点
             1.0, 0.0, 0.0,//颜色
 
-            0.8f, 0.8f, 0.0f,//顶点
+            -0.5f, 0.5f, 0.0f,//顶点
             0.0, 1.0, 0.0,//颜色
 
-            0.0f, 0.0f, 0.0f,//顶点
+            0.0f, -0.5f, 0.0f,//顶点
             0.0, 0.0, 1.0,//颜色
     };
 
@@ -317,5 +317,5 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1gl_1api_SurfaceViewTest_glApiPract
         jobject thiz,
         jobject surface) {
 
-    vao_vbo_ebo(env, thiz, surface);
+    vbo(env, thiz, surface);
 }

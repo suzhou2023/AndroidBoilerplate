@@ -55,7 +55,7 @@ class CameraActivity : AppCompatActivity() {
             val characteristics = mCameraManager.getCameraCharacteristics(id)
             val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
             // 注意有的手机有多颗后置镜头，这里打开第一个
-            if (facing == CameraCharacteristics.LENS_FACING_BACK) {
+            if (facing == CameraCharacteristics.LENS_FACING_FRONT) {
                 mCameraId = id
                 break
             }
