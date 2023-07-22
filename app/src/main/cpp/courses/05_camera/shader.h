@@ -19,6 +19,7 @@ static const char V_SHADER[] =
         "uniform mat4 matrix;\n"
         "void main() {\n"
         "    gl_Position = matrix * v_position;\n"
+        "    //bitmap/oes纹理需要做翻转？？？\n"
         "    texCoord2 = vec2(texCoord.x, 1.0 - texCoord.y);\n"
         "}";
 

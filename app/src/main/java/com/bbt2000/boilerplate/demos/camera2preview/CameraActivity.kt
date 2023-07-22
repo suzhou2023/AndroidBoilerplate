@@ -19,7 +19,7 @@ import android.view.TextureView
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import com.bbt2000.boilerplate.R
-import com.bbt2000.boilerplate.demos.gles.util.CameraUtils
+import com.bbt2000.boilerplate.demos.gles._05_camera.CameraUtils
 import com.bbt2000.boilerplate.demos.gles.widget.AutoFitTextureView
 import com.permissionx.guolindev.PermissionX
 

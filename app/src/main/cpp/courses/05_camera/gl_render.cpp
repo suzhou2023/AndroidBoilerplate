@@ -13,7 +13,6 @@
 #include "GLContext.h"
 
 
-// surfaceView创建
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeSurfaceCreated(
@@ -57,7 +56,8 @@ Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeSurfa
                           (void *) (3 * sizeof(float)));
     // 启用纹理坐标数组
     glEnableVertexAttribArray(1);
-    // 生成缓冲对象名字
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // 生成缓冲对象
     glGenBuffers(1, &EBO);
     // 绑定索引缓冲对象
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -73,18 +73,14 @@ Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeSurfa
     glUniform1i(glGetUniformLocation(program, "oesTexture"), 0);
     // 激活纹理单元
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
     return texture;
 }
 
 
-// surfaceView改变尺寸
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeSurfaceChanged(
-        JNIEnv *env, jobject thiz, jint width, jint height, jfloatArray matrix) {
-
-
+Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeSetMatrix(
+        JNIEnv *env, jobject thiz, jfloatArray matrix) {
     auto *p = (jfloat *) env->GetFloatArrayElements(matrix, nullptr);
     float array[] = {
             p[0], p[1], p[2], p[3],
@@ -92,10 +88,6 @@ Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeSurfa
             p[8], p[9], p[10], p[11],
             p[12], p[13], p[14], p[15]
     };
-
-    for (int i = 0; i < 16; i++) {
-        LOGD("array[%d]: %f", i, array[i]);
-    }
     // 获取matrix在shader中的位置引用
     GLuint program = GLContext::getInstance().getProgram();
     GLint matrixLocation = glGetUniformLocation(program, "matrix");
@@ -104,7 +96,6 @@ Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeSurfa
 }
 
 
-// 绘制帧
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeDrawFrame(
@@ -119,7 +110,6 @@ Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeDrawF
 }
 
 
-// surfaceView销毁
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeSurfaceDestroyed(
@@ -136,3 +126,4 @@ Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewTest_nativeSurfa
         GLContext::getInstance().setEglConfigInfo(nullptr);
     }
 }
+

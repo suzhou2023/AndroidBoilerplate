@@ -3,7 +3,6 @@ package com.bbt2000.boilerplate.demos.gles._05_camera
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
@@ -15,11 +14,9 @@ import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
 import android.view.Surface
-import android.view.TextureView
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import com.bbt2000.boilerplate.R
-import com.bbt2000.boilerplate.demos.gles.util.CameraUtils
 import com.permissionx.guolindev.PermissionX
 
 
@@ -50,19 +47,27 @@ class DemoActivity : AppCompatActivity() {
         mSurfaceViewTest.setAspectRatio(1, 1)
 
         for (id in mCameraManager.cameraIdList) {
-            Log.d(TAG, "id = $id")
+            Log.d(TAG, "Camera id = $id")
+            val displayRotation = windowManager.defaultDisplay.rotation
+            val previewRotation: Int
             val characteristics = mCameraManager.getCameraCharacteristics(id)
             val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
-            // 注意有的手机有多颗后置镜头，这里打开第一个
-            if (facing == CameraCharacteristics.LENS_FACING_BACK) {
+            // 注意有的手机有多颗后置镜头
+            if (facing == CameraFacing) {
                 mCameraId = id
-                val sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
-                val displayRotation = windowManager.defaultDisplay.rotation
-                val previewRotation: Float
+                val sensorOrientation =
+                    characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
                 if (sensorOrientation != null) {
-                    previewRotation = ((sensorOrientation - displayRotation) % 360).toFloat()
-                    mSurfaceViewTest.setPreviewRotation(previewRotation)
-                    Log.d(TAG, "previewRotation = $previewRotation")
+                    Log.i(TAG, "Sensor orientation = $sensorOrientation")
+                    if (CameraFacing == CameraCharacteristics.LENS_FACING_BACK) {
+                        previewRotation = (sensorOrientation - displayRotation) % 360
+                        mSurfaceViewTest.setPreviewRotation(previewRotation)
+                        mSurfaceViewTest.setIsFrontCamera(false)
+                    } else {
+                        previewRotation = (sensorOrientation + displayRotation) % 360
+                        mSurfaceViewTest.setPreviewRotation(previewRotation)
+                        mSurfaceViewTest.setIsFrontCamera(true)
+                    }
                 }
                 break
             }
@@ -71,40 +76,25 @@ class DemoActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (PermissionX.isGranted(this, Manifest.permission.CAMERA)) {
-            openCamera()
-        } else {
-            PermissionX
-                .init(this)
-                .permissions(Manifest.permission.CAMERA)
-                .request { allGranted, _, _ ->
-                    if (allGranted) {
-                        openCamera()
+        mMainLooperHandler.postDelayed({
+            if (PermissionX.isGranted(this, Manifest.permission.CAMERA)) {
+                openCamera()
+            } else {
+                PermissionX
+                    .init(this)
+                    .permissions(Manifest.permission.CAMERA)
+                    .request { allGranted, _, _ ->
+                        if (allGranted) {
+                            openCamera()
+                        }
                     }
-                }
-        }
+            }
+        }, 50)
     }
 
     override fun onPause() {
         super.onPause()
         release()
-    }
-
-    private val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-        override fun onSurfaceTextureAvailable(
-            surface: SurfaceTexture, width: Int, height: Int
-        ) {
-            createCaptureSession()
-        }
-
-        override fun onSurfaceTextureSizeChanged(
-            surface: SurfaceTexture, width: Int, height: Int
-        ) {
-            /*** Codelab -> start a session here ***/
-        }
-
-        override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
-        override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean = false
     }
 
     @SuppressLint("MissingPermission")
@@ -120,6 +110,8 @@ class DemoActivity : AppCompatActivity() {
             mCameraDevice = camera
             try {
                 mMainLooperHandler.post {
+                    // 这里有可能surface view还不可用，导致无法创建session，所以在onResume那里加了延时
+                    Log.d(TAG, "SurfaceView available: ${mSurfaceViewTest.isAvailable()}")
                     if (mSurfaceViewTest.isAvailable()) {
                         createCaptureSession()
                     }
@@ -194,6 +186,7 @@ class DemoActivity : AppCompatActivity() {
 
     companion object {
         const val TAG = "DemoActivity"
+        private const val CameraFacing = CameraCharacteristics.LENS_FACING_BACK
     }
 }
 
