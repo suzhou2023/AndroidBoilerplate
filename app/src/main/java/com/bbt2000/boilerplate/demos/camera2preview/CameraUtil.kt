@@ -1,9 +1,10 @@
-package com.bbt2000.boilerplate.demos.gles._05_camera
+package com.bbt2000.boilerplate.demos.camera2preview
 
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.util.Log
 import android.util.Size
+import com.bbt2000.boilerplate.demos.gles.widget.AutoFitTextureView
 
 object CameraUtils {
     private fun choosePreviewSize(windowSize: Size, characteristics: CameraCharacteristics):
@@ -21,14 +22,12 @@ object CameraUtils {
     }
 
     fun buildTargetTexture(
-        containerView: SurfaceViewTest,
+        containerView: AutoFitTextureView,
         characteristics: CameraCharacteristics
     ): SurfaceTexture? {
         val windowSize = Size(containerView.width, containerView.height)
         val previewSize = choosePreviewSize(windowSize, characteristics)
-        Log.d("CameraUtils", "windowSize=$windowSize, previewSize=$previewSize")
-        containerView.setPreviewSize(previewSize.width, previewSize.height)
-        return containerView.getTexture()?.apply {
+        return containerView.surfaceTexture?.apply {
             setDefaultBufferSize(previewSize.width, previewSize.height)
         }
     }

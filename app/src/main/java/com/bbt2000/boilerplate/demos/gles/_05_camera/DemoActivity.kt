@@ -106,7 +106,7 @@ class DemoActivity : AppCompatActivity() {
 
     private val cameraStateCallback = object : CameraDevice.StateCallback() {
         override fun onOpened(camera: CameraDevice) {
-            Log.d(TAG, "Camera opened.")
+            Log.i(TAG, "Camera opened.")
             mCameraDevice = camera
             try {
                 mMainLooperHandler.post {
@@ -139,7 +139,6 @@ class DemoActivity : AppCompatActivity() {
         val targetTexture = mCameraManager.getCameraCharacteristics(mCameraId!!).let {
             CameraUtils.buildTargetTexture(mSurfaceViewTest, it)
         }
-
         mSurface = Surface(targetTexture)
         try {
             mCameraDevice?.createCaptureSession(
@@ -160,7 +159,7 @@ class DemoActivity : AppCompatActivity() {
                 previewRequestBuilder?.addTarget(mSurface!!)
                 previewRequestBuilder?.set(
                     CaptureRequest.CONTROL_AF_MODE,
-                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
+                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO
                 )
                 cameraCaptureSession.setRepeatingRequest(
                     previewRequestBuilder?.build()!!, null, mCameraHandler
@@ -185,7 +184,7 @@ class DemoActivity : AppCompatActivity() {
     }
 
     companion object {
-        const val TAG = "DemoActivity"
+        private const val TAG = "DemoActivity"
         private const val CameraFacing = CameraCharacteristics.LENS_FACING_BACK
     }
 }

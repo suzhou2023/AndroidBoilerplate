@@ -107,7 +107,7 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
                 var previewRatio = mPreviewWidth!! / mPreviewHeight!!.toFloat()
                 Log.d(TAG, "previewRatio = $previewRatio")
                 if (mPreviewRotation!! % 180 == 90) previewRatio = 1 / previewRatio
-                Log.d(TAG, "previewRatio = $previewRatio")
+                Log.d(TAG, "1/previewRatio = $previewRatio")
                 if (windowRatio > previewRatio) {
                     // todo: 为什么是x坐标放大
                     val scaleX = windowRatio / previewRatio
