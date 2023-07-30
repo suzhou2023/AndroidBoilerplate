@@ -10,7 +10,7 @@ android {
     defaultConfig {
         applicationId "com.bbt2000.boilerplate"
         minSdk 21
-        targetSdk 33
+        targetSdk 30 // todo
         versionCode 1
         versionName "1.0"
 
