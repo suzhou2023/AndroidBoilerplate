@@ -59,6 +59,8 @@ class DemoActivity : AppCompatActivity() {
     private var mPreviewSurface: Surface? = null
     private var mEncodeSurface: Surface? = null
 
+    // 预览控件创建的EGL上下文等信息
+    private var mPreviewEGLConfigInfo: Long = 0
 
     @SuppressLint("InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +75,10 @@ class DemoActivity : AppCompatActivity() {
                         val rootView = LayoutInflater.from(it).inflate(R.layout.layout_surfaceviewgl, null)
                         mSurfaceViewGL = rootView.findViewById(R.id.surfaceView)
                         mSurfaceViewGL.setCallback(object : SurfaceViewGL.Callback {
+                            override fun onEGLConfigInfoAvailable(eglConfigInfo: Long) {
+                                mPreviewEGLConfigInfo = eglConfigInfo
+                            }
+
                             override fun onSurfaceChanged(size: Size) {
                                 mPreviewWindowSize = size
                                 configurePreview()
@@ -145,7 +151,6 @@ class DemoActivity : AppCompatActivity() {
                 mH264Encoder?.setCallback(object : H264Encoder.Callback {
                     override fun onSurfaceAvailable(surface: Surface) {
                         mEncodeSurface = surface
-                        mSurfaceViewGL.setCodecInputSurface(mEncodeSurface!!)
 //                        createCaptureSession()
                     }
 

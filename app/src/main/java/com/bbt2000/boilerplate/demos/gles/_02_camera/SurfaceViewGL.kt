@@ -8,7 +8,6 @@ import android.os.HandlerThread
 import android.util.AttributeSet
 import android.util.Log
 import android.util.Size
-import android.view.Surface
 import android.view.SurfaceHolder
 import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
 
@@ -21,6 +20,7 @@ import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
 class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
     AutoFitSurfaceView(context, attrs), SurfaceHolder.Callback {
 
+    private var mEGLConfigInfo: Long = 0;
     private var mHandlerThread: HandlerThread? = null;
     private var mHandler: Handler? = null;
     private var mSurfaceTexture: SurfaceTexture? = null
@@ -30,36 +30,16 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
     private var mIsFrontCamera: Boolean = false
     private var mCallback: Callback? = null
 
-    // mediacodec的input surface
-    private var mCodecInputSurface: Surface? = null
-
     init {
         holder.addCallback(this)
         mHandlerThread = HandlerThread("gl_render").apply { start() }
         mHandler = Handler(mHandlerThread!!.looper)
     }
 
-    fun setCodecInputSurface(surface: Surface) {
-        mCodecInputSurface = surface
-        mHandler?.post {
-            synchronized(this) {
-                val textureId = nativeSurfaceCreated(mCodecInputSurface!!)
-                if (textureId < 0) return@post
-                mSurfaceTexture = SurfaceTexture(textureId)
-                if (mPreviewSize != null) {
-                    mSurfaceTexture!!.setDefaultBufferSize(mPreviewSize!!.width, mPreviewSize!!.height)
-                    mCallback?.onTextureAvailable(mSurfaceTexture!!)
-                }
-                mSurfaceTexture?.setOnFrameAvailableListener {
-                    Log.d(TAG, "frame availavle.")
-                    mSurfaceTexture?.updateTexImage()
-                    nativeDrawFrame()
-                }
-            }
-        }
-    }
+    fun getEGLConfigInfo() = mEGLConfigInfo
 
     interface Callback {
+        fun onEGLConfigInfoAvailable(eglConfigInfo: Long)
         fun onSurfaceChanged(size: Size)
         fun onTextureAvailable(texture: SurfaceTexture)
     }
@@ -107,6 +87,10 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         Log.d(TAG, "Surface created.")
+        mEGLConfigInfo = nativeEglCreateContext(holder.surface)
+        if (mEGLConfigInfo > 0 && mCallback != null) {
+            mCallback?.onEGLConfigInfoAvailable(mEGLConfigInfo)
+        }
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
@@ -158,10 +142,12 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
         }
     }
 
+    private external fun nativeEglCreateContext(surface: Any): Long
     private external fun nativeSurfaceCreated(surface: Any): Int
     private external fun nativeSurfaceDestroyed()
     private external fun nativeSetMatrix(matrix: FloatArray)
     private external fun nativeDrawFrame()
+
 
     companion object {
         const val TAG = "SurfaceViewGL"

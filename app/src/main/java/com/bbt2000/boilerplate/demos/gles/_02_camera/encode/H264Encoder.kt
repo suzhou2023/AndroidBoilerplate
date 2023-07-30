@@ -171,6 +171,12 @@ class H264Encoder(width: Int, height: Int) {
         return bitRate.toInt()
     }
 
+    fun createSharedContext(eglConfigInfo: Long) {
+        nativeCreateSharedContext(eglConfigInfo)
+    }
+
+    private external fun nativeCreateSharedContext(eglConfigInfo: Long)
+
     companion object {
         private const val TAG = "H264Encoder"
         private const val FRAME_RATE = 30

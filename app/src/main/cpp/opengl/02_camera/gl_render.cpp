@@ -14,10 +14,10 @@
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewGL_nativeSurfaceCreated(
+Java_com_bbt2000_boilerplate_demos_gles__102_1camera_SurfaceViewGL_nativeSurfaceCreated(
         JNIEnv *env, jobject thiz, jobject surface) {
     // config EGL
-    EglConfigInfo *p_EglConfigInfo = static_cast<EglConfigInfo *>(malloc(sizeof(EglConfigInfo)));
+    EGLConfigInfo *p_EglConfigInfo = static_cast<EGLConfigInfo *>(malloc(sizeof(EGLConfigInfo)));
     if (configEGL(env, surface, p_EglConfigInfo) < 0) return -1;
     GLContext::getInstance().setEglConfigInfo(p_EglConfigInfo);
 
@@ -78,7 +78,7 @@ Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewGL_nativeSurface
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewGL_nativeSetMatrix(
+Java_com_bbt2000_boilerplate_demos_gles__102_1camera_SurfaceViewGL_nativeSetMatrix(
         JNIEnv *env, jobject thiz, jfloatArray matrix) {
     auto *p = (jfloat *) env->GetFloatArrayElements(matrix, nullptr);
     float array[] = {
@@ -97,9 +97,9 @@ Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewGL_nativeSetMatr
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewGL_nativeDrawFrame(
+Java_com_bbt2000_boilerplate_demos_gles__102_1camera_SurfaceViewGL_nativeDrawFrame(
         JNIEnv *env, jobject thiz) {
-    EglConfigInfo *p_EglConfigInfo = GLContext::getInstance().getEglConfigInfo();
+    EGLConfigInfo *p_EglConfigInfo = GLContext::getInstance().getEglConfigInfo();
     /*****绘制*****/
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -111,14 +111,14 @@ Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewGL_nativeDrawFra
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewGL_nativeSurfaceDestroyed(
+Java_com_bbt2000_boilerplate_demos_gles__102_1camera_SurfaceViewGL_nativeSurfaceDestroyed(
         JNIEnv *env, jobject thiz) {
     // 删除着色器程序
     GLuint program = GLContext::getInstance().getProgram();
     glDeleteProgram(program);
     GLContext::getInstance().setProgram(0);
     // 销毁EGL context，释放资源
-    EglConfigInfo *p_EglConfigInfo = GLContext::getInstance().getEglConfigInfo();
+    EGLConfigInfo *p_EglConfigInfo = GLContext::getInstance().getEglConfigInfo();
     if (p_EglConfigInfo != nullptr) {
         destroyEGL(p_EglConfigInfo);
         free(p_EglConfigInfo);
@@ -126,3 +126,23 @@ Java_com_bbt2000_boilerplate_demos_gles__105_1camera_SurfaceViewGL_nativeSurface
     }
 }
 
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_com_bbt2000_boilerplate_demos_gles__102_1camera_SurfaceViewGL_nativeEglCreateContext(
+        JNIEnv *env, jobject thiz, jobject surface) {
+    EGLConfigInfo *p_EglConfigInfo = createContext(env, surface);
+    if (p_EglConfigInfo == nullptr) return reinterpret_cast<jlong>(nullptr);
+    return reinterpret_cast<jlong>(p_EglConfigInfo);
+}
+
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bbt2000_boilerplate_demos_gles__102_1camera_encode_H264Encoder_nativeCreateSharedContext(
+        JNIEnv *env, jobject thiz,jlong egl_config_info) {
+
+    createContext(env, )
+    eglCreatePbufferSurface()
+}
