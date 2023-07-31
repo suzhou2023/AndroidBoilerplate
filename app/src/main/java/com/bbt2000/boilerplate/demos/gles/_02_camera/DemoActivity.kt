@@ -59,8 +59,8 @@ class DemoActivity : AppCompatActivity() {
     private var mPreviewSurface: Surface? = null
     private var mEncodeSurface: Surface? = null
 
-    // 预览控件创建的EGL上下文等信息
-    private var mPreviewEGLConfigInfo: Long = 0
+    private var mPreviewGLContext: Long = 0;
+    private var mEncodeGLContext: Long = 0;
 
     @SuppressLint("InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,8 +75,10 @@ class DemoActivity : AppCompatActivity() {
                         val rootView = LayoutInflater.from(it).inflate(R.layout.layout_surfaceviewgl, null)
                         mSurfaceViewGL = rootView.findViewById(R.id.surfaceView)
                         mSurfaceViewGL.setCallback(object : SurfaceViewGL.Callback {
-                            override fun onEGLConfigInfoAvailable(eglConfigInfo: Long) {
-                                mPreviewEGLConfigInfo = eglConfigInfo
+                            override fun onGLContextAvailable(glContext: Long) {
+                                Log.d(TAG, "onGLContextAvailable: $glContext")
+                                mPreviewGLContext = glContext;
+                                mH264Encoder?.setOtherGLContext(mPreviewGLContext)
                             }
 
                             override fun onSurfaceChanged(size: Size) {
@@ -147,16 +149,20 @@ class DemoActivity : AppCompatActivity() {
                 if (mPreviewSize == null) return
                 mSurfaceViewGL.setPreviewSize(mPreviewSize!!)
                 // 录像配置
-                mH264Encoder = H264Encoder(mPreviewSize!!.width, mPreviewSize!!.height)
+//                mH264Encoder = H264Encoder(mPreviewSize!!.width, mPreviewSize!!.height)
+//                mH264Encoder!!.setPreviewHandler(mSurfaceViewGL.getPreviewHandler())
+//                mSurfaceViewGL.setEncodeHandler(mH264Encoder!!.getEncodeHandler())
+                if (mPreviewGLContext > 0) {
+                    mH264Encoder?.setOtherGLContext(mPreviewGLContext)
+                }
                 mH264Encoder?.setCallback(object : H264Encoder.Callback {
                     override fun onSurfaceAvailable(surface: Surface) {
                         mEncodeSurface = surface
-//                        createCaptureSession()
                     }
 
                     override fun onConfigured() {}
                 })
-                mH264Encoder?.configure()
+//                mH264Encoder?.configure()
                 break
             }
         }
@@ -196,7 +202,6 @@ class DemoActivity : AppCompatActivity() {
     private fun startOrStopRecord() {
         if (mH264Encoder!!.getEncodeState() != EncodeState.STARTED) {
             mH264Encoder?.start()
-            createCaptureSession2()
         } else {
             mH264Encoder?.stop()
         }
@@ -227,26 +232,11 @@ class DemoActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * 创建capture session需要三方都准备好：1.相机 2:预览surface 3.录像surface
-     * 因为不知道先后顺序，所以有哪一方准备好了，都来尝试调一下这个方法，最后一个才能成功
-     */
     private fun createCaptureSession() {
         if (mCameraDevice == null || mPreviewSurface == null) return
         try {
             mCameraDevice?.createCaptureSession(
                 listOf(mPreviewSurface), sessionStateCallback, mCameraHandler
-            )
-        } catch (t: Throwable) {
-            Log.e(TAG, "Failed to create session.", t)
-        }
-    }
-
-    private fun createCaptureSession2() {
-        if (mCameraDevice == null || mEncodeSurface == null) return
-        try {
-            mCameraDevice?.createCaptureSession(
-                listOf(mEncodeSurface), sessionStateCallback2, mCameraHandler
             )
         } catch (t: Throwable) {
             Log.e(TAG, "Failed to create session.", t)
@@ -261,32 +251,6 @@ class DemoActivity : AppCompatActivity() {
                     CameraDevice.TEMPLATE_PREVIEW
                 )
                 previewRequestBuilder.addTarget(mPreviewSurface!!)
-                previewRequestBuilder.set(
-                    CaptureRequest.CONTROL_AF_MODE,
-                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO
-                )
-                cameraCaptureSession.setRepeatingRequest(
-                    previewRequestBuilder.build(), null, mCameraHandler
-                )
-            } catch (t: Throwable) {
-                Log.e(TAG, "Failed to open camera preview.", t)
-            }
-        }
-
-        override fun onConfigureFailed(cameraCaptureSession: CameraCaptureSession) {
-            Log.e(TAG, "Failed to configure session.")
-        }
-    }
-
-    private val sessionStateCallback2 = object : CameraCaptureSession.StateCallback() {
-        override fun onConfigured(cameraCaptureSession: CameraCaptureSession) {
-            Log.d(TAG, "Capture session configured.")
-            try {
-                val previewRequestBuilder = mCameraDevice!!.createCaptureRequest(
-                    CameraDevice.TEMPLATE_PREVIEW
-                )
-//                previewRequestBuilder.addTarget(mPreviewSurface!!)
-                previewRequestBuilder.addTarget(mEncodeSurface!!)
                 previewRequestBuilder.set(
                     CaptureRequest.CONTROL_AF_MODE,
                     CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO

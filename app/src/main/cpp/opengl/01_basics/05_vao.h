@@ -15,7 +15,7 @@
 extern "C"
 void vao(JNIEnv *env, jobject thiz, jobject surface) {
     // 配置EGL
-    EglConfigInfo eglConfigInfo;
+    EGLConfigInfo eglConfigInfo;
     if (configEGL(env, surface, &eglConfigInfo) < 0) return;
 
     const char *V_SHADER =
@@ -40,7 +40,8 @@ void vao(JNIEnv *env, jobject thiz, jobject surface) {
             "}";
 
     // program
-    GLuint program = useShader(V_SHADER, F_SHADER);
+    GLuint program = createProgram(V_SHADER, F_SHADER);
+    glUseProgram(program);
 
     //第一个三角形顶点属性数组
     static float triangleVerWithColor[] = {

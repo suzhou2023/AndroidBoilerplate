@@ -14,7 +14,7 @@
 extern "C"
 void vbo(JNIEnv *env, jobject thiz, jobject surface) {
     // 配置EGL
-    EglConfigInfo eglConfigInfo;
+    EGLConfigInfo eglConfigInfo;
     if (configEGL(env, surface, &eglConfigInfo) < 0) return;
 
     const char *V_SHADER =
@@ -39,7 +39,8 @@ void vbo(JNIEnv *env, jobject thiz, jobject surface) {
             "}";
 
     // program
-    GLuint program = useShader(V_SHADER, F_SHADER);
+    GLuint program = createProgram(V_SHADER, F_SHADER);
+    glUseProgram(program);
 
     static float triangleVerWithColor[] = {
             0.5f, 0.5f, 0.0f,//顶点

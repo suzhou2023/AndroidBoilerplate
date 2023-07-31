@@ -9,6 +9,13 @@ import android.util.AttributeSet
 import android.util.Log
 import android.util.Size
 import android.view.SurfaceHolder
+import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeConfigGL
+import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateGLContext
+import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateOESTexture
+import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeDestroyGLContext
+import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeDrawFrame
+import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeEglMakeCurrent
+import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeSetMatrix
 import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
 
 
@@ -20,9 +27,10 @@ import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
 class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
     AutoFitSurfaceView(context, attrs), SurfaceHolder.Callback {
 
-    private var mEGLConfigInfo: Long = 0;
-    private var mHandlerThread: HandlerThread? = null;
-    private var mHandler: Handler? = null;
+    private var mGLContext: Long = 0;
+    private val mHandlerThread: HandlerThread by lazy { HandlerThread("gl_render").apply { start() } }
+    private val mHandler: Handler = Handler(mHandlerThread.looper)
+    private var mEncodeHandler: Handler? = null
     private var mSurfaceTexture: SurfaceTexture? = null
     private var mPreviewRotation: Int? = null
     private var mPreviewSize: Size? = null
@@ -32,14 +40,18 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
 
     init {
         holder.addCallback(this)
-        mHandlerThread = HandlerThread("gl_render").apply { start() }
-        mHandler = Handler(mHandlerThread!!.looper)
     }
 
-    fun getEGLConfigInfo() = mEGLConfigInfo
+    fun getPreviewHandler() = mHandler
+
+    fun setEncodeHandler(handler: Handler) {
+        mEncodeHandler = handler
+    }
+
+    fun getGLContext() = mGLContext
 
     interface Callback {
-        fun onEGLConfigInfoAvailable(eglConfigInfo: Long)
+        fun onGLContextAvailable(glContext: Long)
         fun onSurfaceChanged(size: Size)
         fun onTextureAvailable(texture: SurfaceTexture)
     }
@@ -66,30 +78,29 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
         mIsFrontCamera = isFront
     }
 
-//    override fun surfaceCreated(holder: SurfaceHolder) {
-//        Log.d(TAG, "Surface created.")
-//        mHandler?.post {
-//            synchronized(this) {
-//                val textureId = nativeSurfaceCreated(holder.surface)
-//                if (textureId < 0) return@post
-//                mSurfaceTexture = SurfaceTexture(textureId)
-//                if (mPreviewSize != null) {
-//                    mSurfaceTexture!!.setDefaultBufferSize(mPreviewSize!!.width, mPreviewSize!!.height)
-//                    mCallback?.onTextureAvailable(mSurfaceTexture!!)
-//                }
-//                mSurfaceTexture?.setOnFrameAvailableListener {
-//                    mSurfaceTexture?.updateTexImage()
-//                    nativeDrawFrame()
-//                }
-//            }
-//        }
-//    }
-
     override fun surfaceCreated(holder: SurfaceHolder) {
         Log.d(TAG, "Surface created.")
-        mEGLConfigInfo = nativeEglCreateContext(holder.surface)
-        if (mEGLConfigInfo > 0 && mCallback != null) {
-            mCallback?.onEGLConfigInfoAvailable(mEGLConfigInfo)
+        mHandler.post {
+            mGLContext = nativeCreateGLContext(holder.surface)
+            if (mGLContext <= 0) return@post
+            if (mCallback != null) {
+                mCallback?.onGLContextAvailable(mGLContext)
+            }
+            if (!nativeEglMakeCurrent(mGLContext)) return@post
+            nativeConfigGL(mGLContext)
+            val oesTexture = nativeCreateOESTexture(mGLContext)
+            Log.d(TAG, "oesTexture = $oesTexture")
+            if (oesTexture < 0) return@post
+            mSurfaceTexture = SurfaceTexture(oesTexture)
+            mSurfaceTexture?.setOnFrameAvailableListener {
+                mSurfaceTexture?.updateTexImage()
+                nativeEglMakeCurrent(mGLContext)
+                nativeDrawFrame(mGLContext)
+            }
+            if (mPreviewSize != null) {
+                mSurfaceTexture!!.setDefaultBufferSize(mPreviewSize!!.width, mPreviewSize!!.height)
+                mCallback?.onTextureAvailable(mSurfaceTexture!!)
+            }
         }
     }
 
@@ -97,6 +108,7 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
         Log.d(TAG, "Surface changed: width = $width, height = $height")
         mWindowSize = Size(width, height)
         mCallback?.onSurfaceChanged(mWindowSize!!)
+        mHandler.post { nativeCreateFbo(mGLContext, width, height) }
         setMatrix()
     }
 
@@ -105,12 +117,12 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
         Log.d(TAG, "Surface destroyed.")
         mSurfaceTexture?.release()
         mSurfaceTexture = null
-        mHandler?.post { nativeSurfaceDestroyed() }
+        mHandler.post { nativeDestroyGLContext(mGLContext) }
     }
 
     private fun setMatrix() {
         if (mPreviewRotation != null && mPreviewSize != null && mWindowSize != null) {
-            mHandler?.post {
+            mHandler.post {
                 val matrix = FloatArray(16)
                 Matrix.setIdentityM(matrix, 0)
                 Log.d(TAG, "mPreviewRotation = $mPreviewRotation")
@@ -137,16 +149,12 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
                     Log.d(TAG, "scaleY = $scaleY")
                     Matrix.scaleM(matrix, 0, 1f, scaleY, 1f)
                 }
-                nativeSetMatrix(matrix)
+                nativeSetMatrix(mGLContext, matrix)
             }
         }
     }
 
-    private external fun nativeEglCreateContext(surface: Any): Long
-    private external fun nativeSurfaceCreated(surface: Any): Int
-    private external fun nativeSurfaceDestroyed()
-    private external fun nativeSetMatrix(matrix: FloatArray)
-    private external fun nativeDrawFrame()
+    private external fun nativeCreateFbo(glContext: Long, width: Int, height: Int)
 
 
     companion object {

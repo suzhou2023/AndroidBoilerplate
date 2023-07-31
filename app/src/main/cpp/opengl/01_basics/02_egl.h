@@ -16,7 +16,7 @@ extern "C"
 void egl(JNIEnv *env, jobject obj, jobject surface) {
 
     // 配置EGL环境
-    EglConfigInfo eglConfigInfo;
+    EGLConfigInfo eglConfigInfo;
     if (configEGL(env, surface, &eglConfigInfo) < 0) return;
 
     // 屏幕设置颜色

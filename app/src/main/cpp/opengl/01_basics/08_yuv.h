@@ -18,9 +18,10 @@ static const unsigned short height = 272;
 extern "C"
 void loadYuv(JNIEnv *env, jobject thiz, jobject surface, jobject asset_manager) {
 
-    EglConfigInfo eglConfigInfo;
+    EGLConfigInfo eglConfigInfo;
     if (configEGL(env, surface, &eglConfigInfo) < 0) return;
-    GLuint program = useShader(V_SHADER_YUV, F_SHADER_YUV);
+    GLuint program = createProgram(V_SHADER_YUV, F_SHADER_YUV);
+    glUseProgram(program);
     // 顶点坐标和纹理坐标
     float vertices[] = {
             // 前3个图元顶点坐标，后两个纹理坐标

@@ -14,7 +14,6 @@
 
 extern "C"
 void texture(JNIEnv *env, jobject thiz, jobject surface, jobject bitmap) {
-
     // 获取bitmap的信息和数据指针
     AndroidBitmapInfo bmpInfo;
     if (AndroidBitmap_getInfo(env, bitmap, &bmpInfo) < 0) {
@@ -25,10 +24,11 @@ void texture(JNIEnv *env, jobject thiz, jobject surface, jobject bitmap) {
     AndroidBitmap_lockPixels(env, bitmap, &bmpPixels);
 
     // EGL配置
-    EglConfigInfo eglConfigInfo;
+    EGLConfigInfo eglConfigInfo;
     if (configEGL(env, surface, &eglConfigInfo) < 0) return;
     // 创建并使用着色器程序
-    GLuint program = useShader(V_SHADER_TEX, F_SHADER_TEX);
+    GLuint program = createProgram(V_SHADER_TEX, F_SHADER_TEX);
+    glUseProgram(program);
     // 顶点坐标和纹理坐标
     float vertices[] = {
             // 前3个图元顶点坐标，后两个纹理坐标
@@ -70,12 +70,13 @@ void texture(JNIEnv *env, jobject thiz, jobject surface, jobject bitmap) {
     AndroidBitmap_unlockPixels(env, bitmap);
 
     // todo: 对着色器中的纹理单元变量进行赋值(图层概念？)
-    glUniform1i(glGetUniformLocation(program, "tex"), 10);
+    glUniform1i(glGetUniformLocation(program, "layer"), 3);
     // 激活纹理单元，下面的绑定就会将对应的纹理对象和激活的纹理单元关联上，不得不说有点绕
-    glActiveTexture(GL_TEXTURE10);
+    glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, texture);
     // 绘制
-    draw(eglConfigInfo, 3);
+    glDraw(3);
+    eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
     // 释放着色器程序对象
     glDeleteProgram(program);
 }

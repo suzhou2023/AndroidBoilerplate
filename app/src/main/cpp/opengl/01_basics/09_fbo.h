@@ -9,9 +9,10 @@
 
 void fbo(JNIEnv *env, jobject surface, jobject bitmap) {
 
-    EglConfigInfo eglConfigInfo;
+    EGLConfigInfo eglConfigInfo;
     if (configEGL(env, surface, &eglConfigInfo) < 0) return;
-    GLuint program = useShader(V_SHADER_TEX, F_SHADER_TEX);
+    GLuint program = createProgram(V_SHADER_TEX, F_SHADER_TEX);
+    glUseProgram(program);
 
     // 顶点坐标和纹理坐标
     float vertices[] = {
@@ -73,7 +74,7 @@ void fbo(JNIEnv *env, jobject surface, jobject bitmap) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, tex);
 
-    draw(eglConfigInfo, 6);
+//    draw(eglConfigInfo, 6);
 
 //    glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -81,5 +82,5 @@ void fbo(JNIEnv *env, jobject surface, jobject bitmap) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, tex2);
 
-    draw(eglConfigInfo, 6);
+//    draw(eglConfigInfo, 6);
 }

@@ -39,7 +39,7 @@ static GLuint loadShader(const char *source, GLuint type) {
     return shader;
 }
 
-static GLuint useShader(const char *source_vShader, const char *source_fShader) {
+static GLuint createProgram(const char *source_vShader, const char *source_fShader) {
     GLuint vShader = loadShader(source_vShader, GL_VERTEX_SHADER);
     GLuint fShader = loadShader(source_fShader, GL_FRAGMENT_SHADER);
     // 创建渲染程序
@@ -62,8 +62,6 @@ static GLuint useShader(const char *source_vShader, const char *source_fShader) 
     LOGI("GL link program success.");
     glDeleteShader(vShader);
     glDeleteShader(fShader);
-    // 激活渲染程序
-    glUseProgram(program);
     return program;
 }
 

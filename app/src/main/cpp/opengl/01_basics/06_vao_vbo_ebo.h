@@ -16,10 +16,11 @@
 extern "C"
 void vao_vbo_ebo(JNIEnv *env, jobject thiz, jobject surface) {
     // 配置EGL
-    EglConfigInfo eglConfigInfo;
+    EGLConfigInfo eglConfigInfo;
     if (configEGL(env, surface, &eglConfigInfo) < 0) return;
     // program
-    GLuint program = useShader(V_SHADER_BASIC, F_SHADER_BASIC);
+    GLuint program = createProgram(V_SHADER_BASIC, F_SHADER_BASIC);
+    glUseProgram(program);
 
     float vertices[] = {
             0.0f, 0.8f, 0.0f,//顶点

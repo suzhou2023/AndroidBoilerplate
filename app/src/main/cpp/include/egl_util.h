@@ -8,42 +8,35 @@
 #ifndef ANDROIDBOILERPLATE_EGL_UTIL_H
 #define ANDROIDBOILERPLATE_EGL_UTIL_H
 
+
 #include <EGL/egl.h>
+#include <GLES3/gl3.h>
 #include <android/native_window_jni.h>
 #include <cstdlib>
+#include "GLContext.h"
 #include "log_util.h"
 #include "shader_util.h"
 
 
-typedef struct {
-    EGLDisplay display;
-    EGLSurface eglSurface;
-    EGLContext context;
-} EGLConfigInfo;
-
-
 /**
- * createContext
+ * eglCreateContext
  * @param env
  * @param surface
  * @return
  */
-static EGLConfigInfo *createContext(JNIEnv *env, jobject surface, EGLContext shareContext = EGL_NO_CONTEXT) {
-    EGLConfigInfo *p_EGLConfigInfo = static_cast<EGLConfigInfo *>(malloc(sizeof(EGLConfigInfo)));
-    if (p_EGLConfigInfo == nullptr) return nullptr;
-
-    p_EGLConfigInfo->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (p_EGLConfigInfo->display == EGL_NO_DISPLAY) {
+static int
+eglCreateContext(JNIEnv *env, jobject surface, GLContext *glContext, EGLContext shareContext = EGL_NO_CONTEXT) {
+    glContext->eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (glContext->eglDisplay == EGL_NO_DISPLAY) {
         LOGE("EGL get display failed.");
-        free(p_EGLConfigInfo);
-        return nullptr;
+        return -1;
     }
 
-    if (eglInitialize(p_EGLConfigInfo->display, nullptr, nullptr) != EGL_TRUE) {
+    if (eglInitialize(glContext->eglDisplay, nullptr, nullptr) != EGL_TRUE) {
         LOGE("EGL initialize failed");
-        eglTerminate(p_EGLConfigInfo->display);
-        free(p_EGLConfigInfo);
-        return nullptr;
+        eglTerminate(glContext->eglDisplay);
+        glContext->eglDisplay = nullptr;
+        return -1;
     }
 
     EGLConfig eglConfig;
@@ -57,61 +50,63 @@ static EGLConfigInfo *createContext(JNIEnv *env, jobject surface, EGLContext sha
     };
 
     if (eglChooseConfig(
-            p_EGLConfigInfo->display,
+            glContext->eglDisplay,
             configSpec,
             &eglConfig,
             1,
             &configNum) != EGL_TRUE) {
         LOGE("EGL choose config failed.");
-        eglTerminate(p_EGLConfigInfo->display);
-        free(p_EGLConfigInfo);
-        return nullptr;
+        eglTerminate(glContext->eglDisplay);
+        glContext->eglDisplay = nullptr;
+        return -1;
     }
 
     ANativeWindow *nativeWindow = ANativeWindow_fromSurface(env, surface);
-    p_EGLConfigInfo->eglSurface = eglCreateWindowSurface(
-            p_EGLConfigInfo->display,
+    glContext->eglSurface = eglCreateWindowSurface(
+            glContext->eglDisplay,
             eglConfig,
             nativeWindow,
             nullptr);
     // todo: 是在这里释放吗？对后续代码貌似没有影响
     ANativeWindow_release(nativeWindow);
-    if (p_EGLConfigInfo->eglSurface == EGL_NO_SURFACE) {
+    if (glContext->eglSurface == EGL_NO_SURFACE) {
         LOGE("EGL create window surface failed.");
-        eglTerminate(p_EGLConfigInfo->display);
-        free(p_EGLConfigInfo);
-        return nullptr;
+        eglTerminate(glContext->eglDisplay);
+        glContext->eglDisplay = nullptr;
+        return -1;
     }
 
     const EGLint ctxAttr[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
 
-    p_EGLConfigInfo->context = eglCreateContext(
-            p_EGLConfigInfo->display,
+    glContext->eglContext = eglCreateContext(
+            glContext->eglDisplay,
             eglConfig,
             shareContext,
             ctxAttr
     );
-    if (p_EGLConfigInfo->context == EGL_NO_CONTEXT) {
+    if (glContext->eglContext == EGL_NO_CONTEXT) {
         LOGE("EGL create context failed.");
-        eglTerminate(p_EGLConfigInfo->display);
-        free(p_EGLConfigInfo);
-        return nullptr;
+        eglDestroySurface(glContext->eglDisplay, glContext->eglSurface);
+        glContext->eglSurface = nullptr;
+        eglTerminate(glContext->eglDisplay);
+        glContext->eglDisplay = nullptr;
+        return -1;
     }
 
-    return p_EGLConfigInfo;
+    return 0;
 }
 
 /**
  * makeCurrent
- * @param p_EGLConfigInfo
+ * @param glContext
  * @return
  */
-static EGLBoolean makeCurrent(EGLConfigInfo *p_EGLConfigInfo) {
+static EGLBoolean eglMakeCurrent(GLContext *glContext) {
     EGLBoolean ret = eglMakeCurrent(
-            p_EGLConfigInfo->display,
-            p_EGLConfigInfo->eglSurface,
-            p_EGLConfigInfo->eglSurface,
-            p_EGLConfigInfo->context
+            glContext->eglDisplay,
+            glContext->eglSurface,
+            glContext->eglSurface,
+            glContext->eglContext
     );
     if (ret != EGL_TRUE) {
         LOGE("EGL make current failed.");
@@ -120,6 +115,14 @@ static EGLBoolean makeCurrent(EGLConfigInfo *p_EGLConfigInfo) {
     return EGL_TRUE;
 }
 
+/**
+ * todo: 弃用
+ */
+typedef struct {
+    EGLDisplay display;
+    EGLSurface eglSurface;
+    EGLContext context;
+} EGLConfigInfo;
 
 /**
  * todo: 弃用

@@ -7,6 +7,8 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
 import android.view.Surface
+import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateGLContext
+import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeEglMakeCurrent
 import java.util.concurrent.atomic.AtomicBoolean
 
 enum class EncodeState {
@@ -17,7 +19,8 @@ class H264Encoder(width: Int, height: Int) {
     private val mWidth: Int = width
     private val mHeight: Int = height
     private val mEncodeThread: HandlerThread by lazy { HandlerThread("encode").apply { start() } }
-    private var mEncodeHandler: Handler = Handler(mEncodeThread.looper)
+    private lateinit var mEncodeHandler: Handler
+    private var mPreviewHandler: Handler? = null
     private lateinit var mMediaCodec: MediaCodec
     private var mSurface: Surface? = null
     private val mConfigured: AtomicBoolean by lazy { AtomicBoolean(false) }
@@ -26,6 +29,30 @@ class H264Encoder(width: Int, height: Int) {
     // todo: 多线程访问问题
     private var mEncodeState: EncodeState = EncodeState.INIT
     private var mCallback: Callback? = null
+
+    private var mGLContext: Long = 0
+    private var mOtherGLContext: Long = 0
+
+    init {
+        mEncodeHandler = Handler(mEncodeThread.looper) {
+            if (it.what == 100) {
+                nativeEglMakeCurrent(mGLContext)
+                nativeDrawFrame(mGLContext)
+            }
+
+            true
+        }
+    }
+
+    fun getEncodeHandler() = mEncodeHandler
+
+    fun setPreviewHandler(handler: Handler) {
+        mPreviewHandler = handler
+    }
+
+    fun setOtherGLContext(glContext: Long) {
+        mOtherGLContext = glContext
+    }
 
     fun getEncodeState(): EncodeState {
         return mEncodeState
@@ -89,6 +116,9 @@ class H264Encoder(width: Int, height: Int) {
                 mMediaCodec.setCallback(mCodecCallback)
                 mMediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
                 mSurface = mMediaCodec.createInputSurface()
+                if (mOtherGLContext > 0) {
+                    mGLContext = nativeCreateGLContext(mSurface!!, mOtherGLContext)
+                }
                 mCallback?.onSurfaceAvailable(mSurface!!)
                 mCallback?.onConfigured()
                 mConfigured.set(true)
@@ -171,15 +201,36 @@ class H264Encoder(width: Int, height: Int) {
         return bitRate.toInt()
     }
 
-    fun createSharedContext(eglConfigInfo: Long) {
-        nativeCreateSharedContext(eglConfigInfo)
-    }
+    external fun nativeDrawFrame(glContext: Long)
 
-    private external fun nativeCreateSharedContext(eglConfigInfo: Long)
 
     companion object {
         private const val TAG = "H264Encoder"
         private const val FRAME_RATE = 30
         private const val I_FRAME_INTERVAL = 1
+
+        init {
+            System.loadLibrary("gl_render")
+        }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

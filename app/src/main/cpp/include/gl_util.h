@@ -8,6 +8,7 @@
 #define ANDROIDBOILERPLATE_GL_UTIL_H
 
 #include <GLES3/gl3.h>
+#include <android/bitmap.h>
 
 
 /**
@@ -93,15 +94,15 @@ static void texImage2D(JNIEnv *env, jobject bitmap) {
 
 
 /**
- * 绘制
- * @param info
+ * draw
+ * @param glContext
  * @param vertexNum
  */
-static void draw(EglConfigInfo info, GLuint vertexNum) {
+static void glDraw(GLuint vertexNum) {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glDrawElements(GL_TRIANGLES, vertexNum, GL_UNSIGNED_INT, (void *) 0);
-    eglSwapBuffers(info.display, info.eglSurface);
 }
+
 
 #endif //ANDROIDBOILERPLATE_GL_UTIL_H
