@@ -1,5 +1,7 @@
 package com.bbt2000.boilerplate.demos.gles._02_camera.jni
 
+import android.graphics.Bitmap
+
 /**
  *  author : sz
  *  date : 2023/7/31

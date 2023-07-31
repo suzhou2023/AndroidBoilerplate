@@ -35,18 +35,32 @@ static const char F_SHADER_OES[] =
         "    fColor = texture(oesTexture, fTexCoord);\n"
         "}";
 
+
+static const char V_SHADER2[] =
+        "#version 300 es\n"
+        "layout (location = 0) \n"
+        "in vec4 v_position;\n"
+        "layout (location = 1) \n"
+        "in vec2 texCoord;\n"
+        "out vec2 fTexCoord;\n"
+        "void main() {\n"
+        "    gl_Position = v_position;\n"
+        "    fTexCoord = texCoord;\n"
+        "}";
+
+
 static const char F_SHADER_2D[] =
         "#version 300 es\n"
         "precision mediump float;\n"
 
         "in vec2 fTexCoord;\n"
-        "out vec4 color;\n"
+        "out vec4 fColor;\n"
 
         "uniform sampler2D layer;\n"
 
         "void main()\n"
         "{\n"
-        "    color = texture(layer, fTexCoord);\n"
+        "    fColor = texture(layer, fTexCoord);\n"
         "}\n";
 
 

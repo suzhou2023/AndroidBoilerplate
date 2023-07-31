@@ -32,6 +32,7 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeCreateGLConte
         return reinterpret_cast<jlong>(nullptr);
     }
 
+    LOGD("Create EGL context success.");
     return reinterpret_cast<jlong>(glContext);
 }
 
@@ -56,7 +57,7 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeConfigGL(
     GLuint program = createProgram(V_SHADER, F_SHADER_OES);
     if (program <= 0) return;
     glContext->program[0] = program;
-    GLuint program2 = createProgram(V_SHADER, F_SHADER_2D);
+    GLuint program2 = createProgram(V_SHADER2, F_SHADER_2D);
     if (program2 <= 0) return;
     glContext->program[1] = program2;
 
@@ -84,6 +85,7 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeConfigGL(
     genIndexBuffer(&ebo, indices, sizeof(indices));
     glContext->vbo = vbo;
     glContext->ebo = ebo;
+    LOGD("Config gl success.");
 }
 
 extern "C"
@@ -96,13 +98,21 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeCreateOESText
 
     GLuint texture;
     glGenTextures(1, &texture);
-    // 绑定到OES纹理
+    // todo: OES纹理似乎是永久绑定？
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture);
-    // 为着色器中的变量oesTexture赋值
+    // 着色器变量赋值
     glUseProgram(glContext->program[0]);
+    // OES纹理单元(图层)赋值。
+    // 不赋值的话，后面绘制的时候openGL会默认帮你激活图层0，我们再激活其它图层也是多余的。
+    // 但是你一旦赋值，后面要激活的图层必须是这个值。
+    // 配合FBO使用的时候，貌似只能设置为图层0。(目前测试结果，有待确认)
     glUniform1i(glGetUniformLocation(glContext->program[0], "oesTexture"), 0);
-    glActiveTexture(GL_TEXTURE0);
+    glUseProgram(glContext->program[1]);
+    // 2D纹理图层赋值。
+    glUniform1i(glGetUniformLocation(glContext->program[1], "layer"), 1);
+    LOGD("Create OES texture success.");
 
+    glContext->oesTexture = texture;
     return texture;
 }
 
@@ -115,8 +125,7 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_SurfaceViewGL_nativeCreateF
 
     GLuint fbo, texture;
     genTex2D(&texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 800, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glFramebufferTexture2D(
@@ -126,8 +135,14 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_SurfaceViewGL_nativeCreateF
             texture,
             0
     );
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        LOGE("Frame buffer not complete.");
+        return;
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glContext->fbo = fbo;
+    glContext->fboTexture = texture;
+    LOGD("Create FBO success.");
 }
 
 
@@ -148,10 +163,8 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeSetMatrix(
     glUseProgram(glContext->program[0]);
     GLint matrixLocation = glGetUniformLocation(glContext->program[0], "matrix");
     glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, array);
-    glUseProgram(glContext->program[1]);
-    GLint matrixLocation2 = glGetUniformLocation(glContext->program[1], "matrix");
-    glUniformMatrix4fv(matrixLocation2, 1, GL_FALSE, array);
 }
+
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -163,16 +176,21 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDrawFrame(
     if (glContext->fbo > 0) {
         glUseProgram(glContext->program[0]);
         glBindFramebuffer(GL_FRAMEBUFFER, glContext->fbo);
+        glActiveTexture(GL_TEXTURE0);
         glDraw(6);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-
     glUseProgram(glContext->program[1]);
-    glActiveTexture(GL_TEXTURE0); // 默认
+    // 根据着色器变量赋值，激活对应图层。如果前面没赋值的话，这里可以随便激活一个图层，
+    // 也可能是openGL默认帮我们激活了一个图层，我们这里激活的图层是无效的。有待确认。
+    // 使用的时候尽量对应上吧，因为图层多了，还是需要一一对应的，没必要采用系统默认行为。
+    glActiveTexture(GL_TEXTURE1);
+    // 对于2D纹理，上面激活图层以后，还需要绑定一下2D纹理目标，图层才能和纹理对象关联，
+    // 着色器的采样程序才能正常运行。
     glBindTexture(GL_TEXTURE_2D, glContext->fboTexture);
     glDraw(6);
-    eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface);
     glBindTexture(GL_TEXTURE_2D, 0);
+    eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface);
 }
 
 

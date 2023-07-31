@@ -9,6 +9,8 @@ import android.util.AttributeSet
 import android.util.Log
 import android.util.Size
 import android.view.SurfaceHolder
+import androidx.core.graphics.drawable.toBitmap
+import com.bbt2000.boilerplate.R
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeConfigGL
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateGLContext
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateOESTexture
@@ -94,7 +96,6 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
             mSurfaceTexture = SurfaceTexture(oesTexture)
             mSurfaceTexture?.setOnFrameAvailableListener {
                 mSurfaceTexture?.updateTexImage()
-                nativeEglMakeCurrent(mGLContext)
                 nativeDrawFrame(mGLContext)
             }
             if (mPreviewSize != null) {

@@ -42,7 +42,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeTexture(
         JNIEnv *env, jobject thiz, jobject surface, jobject bitmap) {
-    texture(env, thiz, surface, bitmap);
-//    fbo(env, surface, bitmap);
+//    texture(env, thiz, surface, bitmap);
+    fbo(env, surface, bitmap);
 }
 
