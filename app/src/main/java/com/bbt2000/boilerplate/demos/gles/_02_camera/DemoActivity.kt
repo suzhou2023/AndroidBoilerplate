@@ -52,15 +52,12 @@ class DemoActivity : AppCompatActivity() {
     private val mCameraThread = HandlerThread("CameraThread").apply { start() }
     private val mCameraHandler = Handler(mCameraThread.looper)
 
-    private var mH264Encoder: H264Encoder? = null
     private lateinit var mSurfaceViewGL: SurfaceViewGL
     private var mPreviewWindowSize: Size? = null
     private var mPreviewSize: Size? = null
     private var mPreviewSurface: Surface? = null
-    private var mEncodeSurface: Surface? = null
+    private var mH264Encoder: H264Encoder? = null
 
-    private var mPreviewGLContext: Long = 0;
-    private var mEncodeGLContext: Long = 0;
 
     @SuppressLint("InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,12 +72,6 @@ class DemoActivity : AppCompatActivity() {
                         val rootView = LayoutInflater.from(it).inflate(R.layout.layout_surfaceviewgl, null)
                         mSurfaceViewGL = rootView.findViewById(R.id.surfaceView)
                         mSurfaceViewGL.setCallback(object : SurfaceViewGL.Callback {
-                            override fun onGLContextAvailable(glContext: Long) {
-                                Log.d(TAG, "onGLContextAvailable: $glContext")
-                                mPreviewGLContext = glContext;
-                                mH264Encoder?.setOtherGLContext(mPreviewGLContext)
-                            }
-
                             override fun onSurfaceChanged(size: Size) {
                                 mPreviewWindowSize = size
                                 configurePreview()
@@ -146,23 +137,9 @@ class DemoActivity : AppCompatActivity() {
                 // 预览尺寸配置
                 if (mPreviewWindowSize == null) return
                 mPreviewSize = CameraUtil.choosePreviewSize(mPreviewWindowSize!!, characteristics)
-                if (mPreviewSize == null) return
-                mSurfaceViewGL.setPreviewSize(mPreviewSize!!)
-                // 录像配置
-//                mH264Encoder = H264Encoder(mPreviewSize!!.width, mPreviewSize!!.height)
-//                mH264Encoder!!.setPreviewHandler(mSurfaceViewGL.getPreviewHandler())
-//                mSurfaceViewGL.setEncodeHandler(mH264Encoder!!.getEncodeHandler())
-                if (mPreviewGLContext > 0) {
-                    mH264Encoder?.setOtherGLContext(mPreviewGLContext)
+                if (mPreviewSize != null) {
+                    mSurfaceViewGL.setPreviewSize(mPreviewSize!!)
                 }
-                mH264Encoder?.setCallback(object : H264Encoder.Callback {
-                    override fun onSurfaceAvailable(surface: Surface) {
-                        mEncodeSurface = surface
-                    }
-
-                    override fun onConfigured() {}
-                })
-//                mH264Encoder?.configure()
                 break
             }
         }
@@ -200,10 +177,21 @@ class DemoActivity : AppCompatActivity() {
     }
 
     private fun startOrStopRecord() {
-        if (mH264Encoder!!.getEncodeState() != EncodeState.STARTED) {
+        if (mH264Encoder == null) {
+            mPreviewWindowSize ?: return
+//            mH264Encoder = H264Encoder(mPreviewWindowSize!!.height, mPreviewWindowSize!!.width)
+            mH264Encoder = H264Encoder(1080, 1920)
+            val surface = mH264Encoder?.getSurface()
+            if (surface != null) {
+                mSurfaceViewGL.createEncodeSurface(surface)
+            }
             mH264Encoder?.start()
         } else {
-            mH264Encoder?.stop()
+            if (mH264Encoder?.getEncodeState() == EncodeState.STARTED) {
+                mH264Encoder?.stop()
+            } else {
+                mH264Encoder?.start()
+            }
         }
     }
 
@@ -271,8 +259,11 @@ class DemoActivity : AppCompatActivity() {
     private fun release() {
         try {
             mPreviewSurface?.release()
+            mPreviewSurface = null
             mH264Encoder?.release()
+            mH264Encoder = null
             mCameraDevice?.close()
+            mCameraDevice = null
         } catch (t: Throwable) {
             Log.e(TAG, "Failed to release resources.", t)
         }

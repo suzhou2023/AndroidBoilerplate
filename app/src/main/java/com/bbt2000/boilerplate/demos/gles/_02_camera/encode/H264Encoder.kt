@@ -7,65 +7,21 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
 import android.view.Surface
-import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateGLContext
-import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeEglMakeCurrent
-import java.util.concurrent.atomic.AtomicBoolean
 
 enum class EncodeState {
     INIT, STARTED, PAUSED
 }
 
 class H264Encoder(width: Int, height: Int) {
+    private var mMediaCodec: MediaCodec? = null
+    private val mMp4Muxer: Mp4Muxer by lazy { Mp4Muxer() }
     private val mWidth: Int = width
     private val mHeight: Int = height
     private val mEncodeThread: HandlerThread by lazy { HandlerThread("encode").apply { start() } }
-    private lateinit var mEncodeHandler: Handler
-    private var mPreviewHandler: Handler? = null
-    private lateinit var mMediaCodec: MediaCodec
-    private var mSurface: Surface? = null
-    private val mConfigured: AtomicBoolean by lazy { AtomicBoolean(false) }
-    private val mMp4Muxer: Mp4Muxer by lazy { Mp4Muxer() }
-
-    // todo: 多线程访问问题
+    private var mEncodeHandler: Handler = Handler(mEncodeThread.looper)
+    private var mInputSurface: Surface? = null
+    private var mConfigured: Boolean = false
     private var mEncodeState: EncodeState = EncodeState.INIT
-    private var mCallback: Callback? = null
-
-    private var mGLContext: Long = 0
-    private var mOtherGLContext: Long = 0
-
-    init {
-        mEncodeHandler = Handler(mEncodeThread.looper) {
-            if (it.what == 100) {
-                nativeEglMakeCurrent(mGLContext)
-                nativeDrawFrame(mGLContext)
-            }
-
-            true
-        }
-    }
-
-    fun getEncodeHandler() = mEncodeHandler
-
-    fun setPreviewHandler(handler: Handler) {
-        mPreviewHandler = handler
-    }
-
-    fun setOtherGLContext(glContext: Long) {
-        mOtherGLContext = glContext
-    }
-
-    fun getEncodeState(): EncodeState {
-        return mEncodeState
-    }
-
-    fun setCallback(callback: Callback) {
-        mCallback = callback
-    }
-
-    interface Callback {
-        fun onSurfaceAvailable(surface: Surface)
-        fun onConfigured()
-    }
 
     private val mCodecCallback = object : MediaCodec.Callback() {
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {}
@@ -75,13 +31,12 @@ class H264Encoder(width: Int, height: Int) {
             info: MediaCodec.BufferInfo
         ) {
             try {
-                Log.i(TAG, "onOutputBufferAvailable")
-                val buffer = mMediaCodec.getOutputBuffer(index) ?: return
+                val buffer = codec.getOutputBuffer(index) ?: return
                 if (!mMp4Muxer.isStarted()) {
                     codec.releaseOutputBuffer(index, false)
                     return
                 }
-//                mMp4Muxer.writeSampleData(buffer, info, true)
+                mMp4Muxer.writeSampleData(buffer, info, true)
                 codec.releaseOutputBuffer(index, false)
             } catch (e: Exception) {
                 Log.e(TAG, "Consume output buffer error: ${e.message}")
@@ -94,60 +49,56 @@ class H264Encoder(width: Int, height: Int) {
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
-            Log.i(TAG, "Codec output format changed: $format")
+            Log.i(TAG, "onOutputFormatChanged: $format")
+            // 在这个回调以外的地方启动muxer后面stop muxer的时候会抛异常
+            // 应该是格式设置不正确导致的
+            mMp4Muxer.start(
+                videoFormat = codec.outputFormat,
+                audioFormat = null
+            )
         }
     }
 
-    fun configure() {
-        mEncodeHandler.post {
-            try {
-                mMediaCodec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
-                val mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, mWidth, mHeight)
-                // todo: try different frame rate
-                mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE)
-                mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, getEncodeBitrate(mWidth, mHeight))
-                mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL)
-                // todo: 这个会导致配置失败
-//                mediaFormat.setInteger(MediaFormat.KEY_PROFILE, MediaCodecInfo.CodecProfileLevel.AVCProfileHigh)
-                mediaFormat.setInteger(
-                    MediaFormat.KEY_COLOR_FORMAT,
-                    MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
-                )
-                mMediaCodec.setCallback(mCodecCallback)
-                mMediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-                mSurface = mMediaCodec.createInputSurface()
-                if (mOtherGLContext > 0) {
-                    mGLContext = nativeCreateGLContext(mSurface!!, mOtherGLContext)
-                }
-                mCallback?.onSurfaceAvailable(mSurface!!)
-                mCallback?.onConfigured()
-                mConfigured.set(true)
-                Log.i(TAG, "Configure encoder success.")
-            } catch (e: Exception) {
-                Log.e(TAG, "Configure encoder failed: ${e.message}")
-                e.printStackTrace()
-            }
+    init {
+        try {
+            mMediaCodec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
+            val mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, mWidth, mHeight)
+            // todo: try different frame rate
+            mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE)
+            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, getEncodeBitrate(mWidth, mHeight))
+            mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL)
+            // todo: 这个会导致配置失败
+//            mediaFormat.setInteger(MediaFormat.KEY_PROFILE, MediaCodecInfo.CodecProfileLevel.AVCProfileHigh)
+            mediaFormat.setInteger(
+                MediaFormat.KEY_COLOR_FORMAT,
+                MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
+            )
+            mMediaCodec?.setCallback(mCodecCallback)
+            mMediaCodec?.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+            mInputSurface = mMediaCodec?.createInputSurface()
+            mConfigured = true
+            Log.i(TAG, "Mediacodec configure success.")
+        } catch (e: Exception) {
+            Log.e(TAG, "Mediacodec configure failed.", e)
+            e.printStackTrace()
         }
     }
 
-    private fun getSupportColorFormat(): Int {
-//        return MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar
-        return MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
+    fun getSurface() = mInputSurface
+
+    fun getEncodeState(): EncodeState {
+        return mEncodeState
     }
 
     fun start() {
         mEncodeHandler.post {
             try {
-                if (!mConfigured.get()) return@post
-                mMediaCodec.start()
-                mMp4Muxer.start(
-                    videoFormat = mMediaCodec.outputFormat,
-                    audioFormat = null
-                )
+                if (!mConfigured) return@post
+                mMediaCodec?.start()
                 mEncodeState = EncodeState.STARTED
-                Log.i(TAG, "Start encoder success.")
+                Log.i(TAG, "Mediacodec started.")
             } catch (e: Exception) {
-                Log.e(TAG, "Start encoder failed: ${e.message}")
+                Log.e(TAG, "Start mediacodec failed.", e)
                 e.printStackTrace()
             }
         }
@@ -155,37 +106,41 @@ class H264Encoder(width: Int, height: Int) {
 
     fun pause() {
         mEncodeHandler.post {
+            if (!mConfigured) return@post
             mEncodeState = EncodeState.PAUSED
-            Log.i(TAG, "Encoder paused.")
+            Log.i(TAG, "Mediacodec paused.")
         }
     }
 
     fun resume() {
         mEncodeHandler.post {
+            if (!mConfigured) return@post
             mEncodeState = EncodeState.STARTED
-            Log.i(TAG, "Encoder resumed.")
+            Log.i(TAG, "Mediacodec resumed.")
         }
     }
 
     fun stop() {
         mEncodeHandler.post {
             try {
-                mMediaCodec.signalEndOfInputStream()
-                mMediaCodec.stop()
-                // todo
-//                mEncodeHandler.postDelayed({ mMp4Muxer.stop() }, 2000)
+                if (!mConfigured) return@post
+                mMediaCodec?.signalEndOfInputStream()
+                mMediaCodec?.stop()
+                mMp4Muxer.stop()
                 mEncodeState = EncodeState.INIT
-                Log.i(TAG, "Stop encoder success.")
+                Log.i(TAG, "Mediacodec stopped.")
             } catch (e: Exception) {
-                Log.e(TAG, "Stop encoder failed: ${e.message}")
+                Log.e(TAG, "Stop mediacodec failed.", e)
                 e.printStackTrace()
             }
         }
     }
 
     fun release() {
-        mMediaCodec.release()
-        mSurface?.release()
+        mMediaCodec?.release()
+        mMediaCodec = null
+        mInputSurface?.release()
+        mInputSurface = null
         mEncodeThread.quitSafely()
     }
 
@@ -201,17 +156,10 @@ class H264Encoder(width: Int, height: Int) {
         return bitRate.toInt()
     }
 
-    external fun nativeDrawFrame(glContext: Long)
-
-
     companion object {
         private const val TAG = "H264Encoder"
         private const val FRAME_RATE = 30
         private const val I_FRAME_INTERVAL = 1
-
-        init {
-            System.loadLibrary("gl_render")
-        }
     }
 }
 

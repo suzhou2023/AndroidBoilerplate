@@ -12,7 +12,7 @@ object Jni {
         System.loadLibrary("gl_render")
     }
 
-    external fun nativeCreateGLContext(surface: Any, otherGLContext: Long = 0): Long
+    external fun nativeCreateGLContext(otherGLContext: Long = 0): Long
     external fun nativeEglMakeCurrent(glContext: Long = 0): Boolean
     external fun nativeConfigGL(glContext: Long = 0)
     external fun nativeCreateOESTexture(glContext: Long): Int

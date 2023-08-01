@@ -8,9 +8,8 @@ import android.os.HandlerThread
 import android.util.AttributeSet
 import android.util.Log
 import android.util.Size
+import android.view.Surface
 import android.view.SurfaceHolder
-import androidx.core.graphics.drawable.toBitmap
-import com.bbt2000.boilerplate.R
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeConfigGL
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateGLContext
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateOESTexture
@@ -32,7 +31,6 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
     private var mGLContext: Long = 0;
     private val mHandlerThread: HandlerThread by lazy { HandlerThread("gl_render").apply { start() } }
     private val mHandler: Handler = Handler(mHandlerThread.looper)
-    private var mEncodeHandler: Handler? = null
     private var mSurfaceTexture: SurfaceTexture? = null
     private var mPreviewRotation: Int? = null
     private var mPreviewSize: Size? = null
@@ -44,16 +42,7 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
         holder.addCallback(this)
     }
 
-    fun getPreviewHandler() = mHandler
-
-    fun setEncodeHandler(handler: Handler) {
-        mEncodeHandler = handler
-    }
-
-    fun getGLContext() = mGLContext
-
     interface Callback {
-        fun onGLContextAvailable(glContext: Long)
         fun onSurfaceChanged(size: Size)
         fun onTextureAvailable(texture: SurfaceTexture)
     }
@@ -80,18 +69,23 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
         mIsFrontCamera = isFront
     }
 
+    fun createEncodeSurface(surface: Surface) {
+        if (mGLContext <= 0) return
+        mHandler.post {
+            nativeEGLCreateSurface(mGLContext, surface, 1)
+        }
+    }
+
     override fun surfaceCreated(holder: SurfaceHolder) {
         Log.d(TAG, "Surface created.")
         mHandler.post {
-            mGLContext = nativeCreateGLContext(holder.surface)
+            mGLContext = nativeCreateGLContext()
             if (mGLContext <= 0) return@post
-            if (mCallback != null) {
-                mCallback?.onGLContextAvailable(mGLContext)
-            }
+            val success = nativeEGLCreateSurface(mGLContext, holder.surface, 0)
+            if (!success) return@post
             if (!nativeEglMakeCurrent(mGLContext)) return@post
             nativeConfigGL(mGLContext)
             val oesTexture = nativeCreateOESTexture(mGLContext)
-            Log.d(TAG, "oesTexture = $oesTexture")
             if (oesTexture < 0) return@post
             mSurfaceTexture = SurfaceTexture(oesTexture)
             mSurfaceTexture?.setOnFrameAvailableListener {
@@ -109,16 +103,20 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
         Log.d(TAG, "Surface changed: width = $width, height = $height")
         mWindowSize = Size(width, height)
         mCallback?.onSurfaceChanged(mWindowSize!!)
-        mHandler.post { nativeCreateFbo(mGLContext, width, height) }
         setMatrix()
+        mHandler.post {
+            nativeCreateFbo(mGLContext, width, height)
+        }
     }
 
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         Log.d(TAG, "Surface destroyed.")
-        mSurfaceTexture?.release()
-        mSurfaceTexture = null
-        mHandler.post { nativeDestroyGLContext(mGLContext) }
+        mHandler.post {
+            nativeDestroyGLContext(mGLContext)
+            mSurfaceTexture?.release()
+            mSurfaceTexture = null
+        }
     }
 
     private fun setMatrix() {
@@ -156,6 +154,7 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
     }
 
     private external fun nativeCreateFbo(glContext: Long, width: Int, height: Int)
+    private external fun nativeEGLCreateSurface(glContext: Long, surface: Any, index: Int = 0): Boolean
 
 
     companion object {

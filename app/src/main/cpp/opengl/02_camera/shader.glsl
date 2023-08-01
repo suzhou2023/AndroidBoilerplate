@@ -10,11 +10,15 @@ void main()
 }
 
 
-#extension GL_OES_EGL_image_external : require
+#version 300 es
 precision mediump float;
-uniform samplerExternalOES u_Texture;
-varying vec2 v_TexCoord;
+in vec2 fTexCoord;
+out vec4 fColor;
+uniform sampler2D layer;
 void main()
 {
-    gl_FragColor = texture2D(u_Texture, v_TexCoord);
+    //fColor = texture(layer, fTexCoord);
+    vec4 rgb = texture(layer, fTexCoord);
+    float gray = rgb.r * 0.2125 + rgb.g * 0.7154 + rgb.b * 0.0721;
+    fColor = vec4(gray, gray, gray, 1.0);
 }

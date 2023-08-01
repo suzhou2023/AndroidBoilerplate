@@ -32,13 +32,9 @@ class Mp4Muxer {
         try {
             // 至少要有一个track
             if (videoFormat == null && audioFormat == null) return
-            val file = FileUtil.createRecordFile(path)
-            if (file == null) {
-                Log.e(TAG, "Create record file failed.")
-                return
-            }
+            val file = FileUtil.createRecordFile(path) ?: return
+
             mMediaMuxer = MediaMuxer(file.absolutePath, OutputFormat.MUXER_OUTPUT_MPEG_4)
-            Log.i(TAG, "Create muxer success.")
             if (videoFormat != null) {
                 mVideoTrackIndex = mMediaMuxer?.addTrack(videoFormat) ?: return
             }
@@ -47,9 +43,9 @@ class Mp4Muxer {
             }
             mMediaMuxer?.start()
             mStarted.set(true)
-            Log.i(TAG, "Muxer start success.${mStarted.get()}")
+            Log.i(TAG, "Muxer started.")
         } catch (e: Exception) {
-            Log.e(TAG, "Muxer start failed", e)
+            Log.e(TAG, "Muxer start failed.", e)
             e.printStackTrace()
             mMediaMuxer?.release()
         }
@@ -64,7 +60,7 @@ class Mp4Muxer {
             mVideoPts = 0L
             mAudioPts = 0L
             mStarted.set(false)
-            Log.i(TAG, "Muxer stop success.")
+            Log.i(TAG, "Muxer stopped.")
         } catch (e: Exception) {
             Log.e(TAG, "Muxer stop failed", e)
             e.printStackTrace()
@@ -80,10 +76,9 @@ class Mp4Muxer {
             if (mVideoPts == 0L) {
                 mVideoPts = bufferInfo.presentationTimeUs
             }
-//            Log.d(TAG, "presentationTimeUs1 = ${bufferInfo.presentationTimeUs}")
             bufferInfo.presentationTimeUs = bufferInfo.presentationTimeUs - mVideoPts
             Log.d(TAG, "size = ${bufferInfo.size}")
-            Log.d(TAG, "presentationTimeMs = ${bufferInfo.presentationTimeUs / 1000}")
+            Log.d(TAG, "presentationTimeUs = ${bufferInfo.presentationTimeUs}")
             mMediaMuxer?.writeSampleData(mVideoTrackIndex, buffer, bufferInfo)
         }
         if (!isVideo && mAudioTrackIndex >= 0) {

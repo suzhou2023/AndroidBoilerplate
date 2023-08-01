@@ -52,16 +52,16 @@ static const char V_SHADER2[] =
 static const char F_SHADER_2D[] =
         "#version 300 es\n"
         "precision mediump float;\n"
-
         "in vec2 fTexCoord;\n"
         "out vec4 fColor;\n"
-
         "uniform sampler2D layer;\n"
-
         "void main()\n"
         "{\n"
         "    fColor = texture(layer, fTexCoord);\n"
-        "}\n";
+        "    //vec4 rgb = texture(layer, fTexCoord);\n"
+        "    //float gray = rgb.r * 0.2125 + rgb.g * 0.7154 + rgb.b * 0.0721;\n"
+        "    //fColor = vec4(gray, gray, gray, 1.0);\n"
+        "}";
 
 
 #endif //ANDROIDBOILERPLATE_SHADER_H

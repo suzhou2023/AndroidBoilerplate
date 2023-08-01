@@ -16,7 +16,7 @@
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeCreateGLContext(
-        JNIEnv *env, jobject thiz, jobject surface, jlong other_glcontext) {
+        JNIEnv *env, jobject thiz, jlong other_glcontext) {
     EGLContext shareContext = EGL_NO_CONTEXT;
     if (other_glcontext > 0) {
         auto *otherGLContext = reinterpret_cast<GLContext *>(other_glcontext);
@@ -26,14 +26,23 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeCreateGLConte
     }
 
     auto *glContext = new GLContext();
-    int ret = eglCreateContext(env, surface, glContext, shareContext);
-    if (ret < 0) {
+    EGLBoolean ret = eglCreateContext(glContext, shareContext);
+    if (ret <= 0) {
         delete glContext;
         return reinterpret_cast<jlong>(nullptr);
     }
 
-    LOGD("Create EGL context success.");
     return reinterpret_cast<jlong>(glContext);
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_bbt2000_boilerplate_demos_gles__102_1camera_SurfaceViewGL_nativeEGLCreateSurface(
+        JNIEnv *env, jobject thiz, jlong gl_context, jobject surface, jint index) {
+    if (gl_context <= 0) return EGL_FALSE;
+    auto *glContext = reinterpret_cast<GLContext *>(gl_context);
+
+    return eglCreateWindowSurface(env, glContext, surface, index);
 }
 
 extern "C"
@@ -83,8 +92,8 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeConfigGL(
     glEnableVertexAttribArray(1);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     genIndexBuffer(&ebo, indices, sizeof(indices));
-    glContext->vbo = vbo;
-    glContext->ebo = ebo;
+    glContext->vbo[0] = vbo;
+    glContext->ebo[0] = ebo;
     LOGD("Config gl success.");
 }
 
@@ -125,7 +134,7 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_SurfaceViewGL_nativeCreateF
 
     GLuint fbo, texture;
     genTex2D(&texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 800, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glFramebufferTexture2D(
@@ -140,7 +149,8 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_SurfaceViewGL_nativeCreateF
         return;
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glContext->fbo = fbo;
+
+    glContext->fbo[0] = fbo;
     glContext->fboTexture = texture;
     LOGD("Create FBO success.");
 }
@@ -173,13 +183,14 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDrawFrame(
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
-    if (glContext->fbo > 0) {
+    if (glContext->fbo[0] > 0) {
         glUseProgram(glContext->program[0]);
-        glBindFramebuffer(GL_FRAMEBUFFER, glContext->fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, glContext->fbo[0]);
         glActiveTexture(GL_TEXTURE0);
         glDraw(6);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+
     glUseProgram(glContext->program[1]);
     // 根据着色器变量赋值，激活对应图层。如果前面没赋值的话，这里可以随便激活一个图层，
     // 也可能是openGL默认帮我们激活了一个图层，我们这里激活的图层是无效的。有待确认。
@@ -188,9 +199,20 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDrawFrame(
     // 对于2D纹理，上面激活图层以后，还需要绑定一下2D纹理目标，图层才能和纹理对象关联，
     // 着色器的采样程序才能正常运行。
     glBindTexture(GL_TEXTURE_2D, glContext->fboTexture);
-    glDraw(6);
+    // 画预览surface
+    if (glContext->eglSurface[0] != nullptr) {
+        eglMakeCurrent(glContext, glContext->eglSurface[0]);
+        glDraw(6);
+        eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[0]);
+    }
+    // 画录制surface
+    if (glContext->eglSurface[1] != nullptr) {
+        eglMakeCurrent(glContext, glContext->eglSurface[1]);
+        glDraw(6);
+        eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[1]);
+    }
+
     glBindTexture(GL_TEXTURE_2D, 0);
-    eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface);
 }
 
 
@@ -202,6 +224,7 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDestroyGLCont
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
     delete glContext;
 }
+
 
 
 
