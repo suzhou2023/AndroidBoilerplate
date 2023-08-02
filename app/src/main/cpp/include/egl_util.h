@@ -131,6 +131,7 @@ static EGLBoolean eglMakeCurrent(GLContext *glContext, EGLSurface eglSurface) {
         return EGL_FALSE;
     }
 
+//    LOGI("EGL make current success: %p", eglSurface);
     return EGL_TRUE;
 }
 

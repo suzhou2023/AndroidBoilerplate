@@ -32,28 +32,26 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeCreateGLConte
         return reinterpret_cast<jlong>(nullptr);
     }
 
+    LOGD("Create gl context success.");
     return reinterpret_cast<jlong>(glContext);
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__102_1camera_SurfaceViewGL_nativeEGLCreateSurface(
+Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeEGLCreateSurface(
         JNIEnv *env, jobject thiz, jlong gl_context, jobject surface, jint index) {
     if (gl_context <= 0) return EGL_FALSE;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
-    return eglCreateWindowSurface(env, glContext, surface, index);
+    EGLBoolean ret = eglCreateWindowSurface(env, glContext, surface, index);
+    if (ret == EGL_TRUE) {
+        eglMakeCurrent(glContext, glContext->eglSurface[index]);
+        return EGL_TRUE;
+    }
+
+    return EGL_FALSE;
 }
 
-extern "C"
-JNIEXPORT EGLBoolean JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeEglMakeCurrent(
-        JNIEnv *env, jobject thiz, jlong gl_context) {
-    if (gl_context <= 0) return EGL_FALSE;
-    auto *glContext = reinterpret_cast<GLContext *>(gl_context);
-
-    return eglMakeCurrent(glContext);
-}
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -119,22 +117,22 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeCreateOESText
     glUseProgram(glContext->program[1]);
     // 2D纹理图层赋值。
     glUniform1i(glGetUniformLocation(glContext->program[1], "layer"), 1);
-    LOGD("Create OES texture success.");
 
+    LOGD("Create OES texture success.");
     glContext->oesTexture = texture;
     return texture;
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__102_1camera_SurfaceViewGL_nativeCreateFbo(
+Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeCreateFbo(
         JNIEnv *env, jobject thiz, jlong gl_context, jint width, jint height) {
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
     GLuint fbo, texture;
     genTex2D(&texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glFramebufferTexture2D(
@@ -183,36 +181,53 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDrawFrame(
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
-    if (glContext->fbo[0] > 0) {
-        glUseProgram(glContext->program[0]);
-        glBindFramebuffer(GL_FRAMEBUFFER, glContext->fbo[0]);
-        glActiveTexture(GL_TEXTURE0);
-        glDraw(6);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
+//    if (glContext->fbo[0] > 0) {
+//        glUseProgram(glContext->program[0]);
+//        glBindFramebuffer(GL_FRAMEBUFFER, glContext->fbo[0]);
+//        glActiveTexture(GL_TEXTURE0);
+//        glDraw(6);
+//        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//    }
 
-    glUseProgram(glContext->program[1]);
+//    glUseProgram(glContext->program[1]);
     // 根据着色器变量赋值，激活对应图层。如果前面没赋值的话，这里可以随便激活一个图层，
     // 也可能是openGL默认帮我们激活了一个图层，我们这里激活的图层是无效的。有待确认。
     // 使用的时候尽量对应上吧，因为图层多了，还是需要一一对应的，没必要采用系统默认行为。
-    glActiveTexture(GL_TEXTURE1);
+//    glActiveTexture(GL_TEXTURE1);
     // 对于2D纹理，上面激活图层以后，还需要绑定一下2D纹理目标，图层才能和纹理对象关联，
     // 着色器的采样程序才能正常运行。
-    glBindTexture(GL_TEXTURE_2D, glContext->fboTexture);
+//    glBindTexture(GL_TEXTURE_2D, glContext->fboTexture);
     // 画预览surface
+//    if (glContext->eglSurface[0] != nullptr) {
+//        eglMakeCurrent(glContext, glContext->eglSurface[0]);
+//        glDraw(6);
+//        eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[0]);
+//    }
+    // 画录制surface
+//    if (glContext->eglSurface[1] != nullptr) {
+//        eglMakeCurrent(glContext, glContext->eglSurface[1]);
+//        glDraw(6);
+//        eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[1]);
+//    }
+
+//    glBindTexture(GL_TEXTURE_2D, 0);
+
+
+
+    // 不需要fbo，直接从oes纹理画到预览surface和codec input surface
+    glUseProgram(glContext->program[0]);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, glContext->oesTexture);
     if (glContext->eglSurface[0] != nullptr) {
         eglMakeCurrent(glContext, glContext->eglSurface[0]);
         glDraw(6);
         eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[0]);
     }
-    // 画录制surface
     if (glContext->eglSurface[1] != nullptr) {
         eglMakeCurrent(glContext, glContext->eglSurface[1]);
         glDraw(6);
         eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[1]);
     }
-
-    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 
@@ -224,9 +239,6 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDestroyGLCont
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
     delete glContext;
 }
-
-
-
 
 
 

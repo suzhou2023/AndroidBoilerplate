@@ -11,11 +11,12 @@ import android.util.Size
 import android.view.Surface
 import android.view.SurfaceHolder
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeConfigGL
+import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateFbo
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateGLContext
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateOESTexture
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeDestroyGLContext
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeDrawFrame
-import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeEglMakeCurrent
+import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeEGLCreateSurface
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeSetMatrix
 import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
 
@@ -83,7 +84,6 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
             if (mGLContext <= 0) return@post
             val success = nativeEGLCreateSurface(mGLContext, holder.surface, 0)
             if (!success) return@post
-            if (!nativeEglMakeCurrent(mGLContext)) return@post
             nativeConfigGL(mGLContext)
             val oesTexture = nativeCreateOESTexture(mGLContext)
             if (oesTexture < 0) return@post
@@ -152,10 +152,6 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
             }
         }
     }
-
-    private external fun nativeCreateFbo(glContext: Long, width: Int, height: Int)
-    private external fun nativeEGLCreateSurface(glContext: Long, surface: Any, index: Int = 0): Boolean
-
 
     companion object {
         const val TAG = "SurfaceViewGL"

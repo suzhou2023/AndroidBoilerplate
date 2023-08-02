@@ -55,7 +55,7 @@ class DemoActivity : AppCompatActivity() {
     private lateinit var mSurfaceViewGL: SurfaceViewGL
     private var mPreviewWindowSize: Size? = null
     private var mPreviewSize: Size? = null
-    private var mPreviewSurface: Surface? = null
+    private var mSurfaceOES: Surface? = null
     private var mH264Encoder: H264Encoder? = null
 
 
@@ -79,7 +79,7 @@ class DemoActivity : AppCompatActivity() {
                             }
 
                             override fun onTextureAvailable(texture: SurfaceTexture) {
-                                mPreviewSurface = Surface(texture)
+                                mSurfaceOES = Surface(texture)
                                 createCaptureSession()
                             }
                         })
@@ -221,10 +221,10 @@ class DemoActivity : AppCompatActivity() {
     }
 
     private fun createCaptureSession() {
-        if (mCameraDevice == null || mPreviewSurface == null) return
+        if (mCameraDevice == null || mSurfaceOES == null) return
         try {
             mCameraDevice?.createCaptureSession(
-                listOf(mPreviewSurface), sessionStateCallback, mCameraHandler
+                listOf(mSurfaceOES), sessionStateCallback, mCameraHandler
             )
         } catch (t: Throwable) {
             Log.e(TAG, "Failed to create session.", t)
@@ -238,7 +238,7 @@ class DemoActivity : AppCompatActivity() {
                 val previewRequestBuilder = mCameraDevice!!.createCaptureRequest(
                     CameraDevice.TEMPLATE_PREVIEW
                 )
-                previewRequestBuilder.addTarget(mPreviewSurface!!)
+                previewRequestBuilder.addTarget(mSurfaceOES!!)
                 previewRequestBuilder.set(
                     CaptureRequest.CONTROL_AF_MODE,
                     CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO
@@ -258,8 +258,8 @@ class DemoActivity : AppCompatActivity() {
 
     private fun release() {
         try {
-            mPreviewSurface?.release()
-            mPreviewSurface = null
+            mSurfaceOES?.release()
+            mSurfaceOES = null
             mH264Encoder?.release()
             mH264Encoder = null
             mCameraDevice?.close()
@@ -271,7 +271,7 @@ class DemoActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "DemoActivity"
-        private const val CameraFacing = CameraCharacteristics.LENS_FACING_BACK
+        private const val CameraFacing = CameraCharacteristics.LENS_FACING_FRONT
     }
 }
 

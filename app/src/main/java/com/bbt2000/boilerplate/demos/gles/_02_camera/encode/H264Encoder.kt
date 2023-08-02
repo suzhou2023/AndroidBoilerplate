@@ -32,15 +32,14 @@ class H264Encoder(width: Int, height: Int) {
         ) {
             try {
                 val buffer = codec.getOutputBuffer(index) ?: return
-                if (!mMp4Muxer.isStarted()) {
-                    codec.releaseOutputBuffer(index, false)
-                    return
+                if (mMp4Muxer.started()) {
+                    mMp4Muxer.writeSampleData(buffer, info, true)
                 }
-                mMp4Muxer.writeSampleData(buffer, info, true)
-                codec.releaseOutputBuffer(index, false)
             } catch (e: Exception) {
                 Log.e(TAG, "Consume output buffer error: ${e.message}")
                 e.printStackTrace()
+            } finally {
+                codec.releaseOutputBuffer(index, false)
             }
         }
 
@@ -67,8 +66,9 @@ class H264Encoder(width: Int, height: Int) {
             mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE)
             mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, getEncodeBitrate(mWidth, mHeight))
             mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL)
-            // todo: 这个会导致配置失败
+            // todo: 这个设置需要怎么匹配
 //            mediaFormat.setInteger(MediaFormat.KEY_PROFILE, MediaCodecInfo.CodecProfileLevel.AVCProfileHigh)
+//            mediaFormat.setInteger(MediaFormat.KEY_LEVEL, MediaCodecInfo.CodecProfileLevel.AVCProfileHigh)
             mediaFormat.setInteger(
                 MediaFormat.KEY_COLOR_FORMAT,
                 MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface

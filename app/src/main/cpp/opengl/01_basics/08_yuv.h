@@ -100,6 +100,7 @@ void loadYuv(JNIEnv *env, jobject thiz, jobject surface, jobject asset_manager) 
     // 通过Java层传入的AssetManager对象得到AAssetManager对象指针
     AAssetManager *aAssetManager = AAssetManager_fromJava(env, asset_manager);
     // 得到AAsset对象指针
+    // todo: 资源文件移到了assets目录外面，要运行本示例的话移回去
     AAsset *aAsset = AAssetManager_open(aAssetManager, "video1_640_272.yuv",
                                         AASSET_MODE_STREAMING);
     // 文件总长度
