@@ -3,15 +3,21 @@ package com.bbt2000.boilerplate.demos.gles._02_camera
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
+import android.media.Image
+import android.media.ImageReader
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.Looper
 import android.util.Log
 import android.util.Size
 import android.view.LayoutInflater
@@ -35,7 +41,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.bbt2000.boilerplate.R
 import com.bbt2000.boilerplate.demos.gles._02_camera.encode.EncodeState
 import com.bbt2000.boilerplate.demos.gles._02_camera.encode.H264Encoder
+import com.bbt2000.boilerplate.util.FileUtil
 import com.permissionx.guolindev.PermissionX
+import java.io.FileOutputStream
 
 
 /**
@@ -49,6 +57,7 @@ class DemoActivity : AppCompatActivity() {
     private val mCameraManager: CameraManager by lazy {
         applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
     }
+    private var mCameraCaptureSession: CameraCaptureSession? = null
     private val mCameraThread = HandlerThread("CameraThread").apply { start() }
     private val mCameraHandler = Handler(mCameraThread.looper)
 
@@ -56,6 +65,8 @@ class DemoActivity : AppCompatActivity() {
     private var mPreviewWindowSize: Size? = null
     private var mPreviewSize: Size? = null
     private var mSurfaceOES: Surface? = null
+
+    private var mImageReader: ImageReader? = null
     private var mH264Encoder: H264Encoder? = null
 
 
@@ -140,6 +151,11 @@ class DemoActivity : AppCompatActivity() {
                 if (mPreviewSize != null) {
                     mSurfaceViewGL.setPreviewSize(mPreviewSize!!)
                 }
+
+                // todo: test
+                if (mH264Encoder == null) {
+                    mH264Encoder = H264Encoder(640, 480)
+                }
                 break
             }
         }
@@ -177,21 +193,29 @@ class DemoActivity : AppCompatActivity() {
     }
 
     private fun startOrStopRecord() {
-        if (mH264Encoder == null) {
-            mPreviewWindowSize ?: return
-//            mH264Encoder = H264Encoder(mPreviewWindowSize!!.height, mPreviewWindowSize!!.width)
-            mH264Encoder = H264Encoder(1080, 1920)
-            val surface = mH264Encoder?.getSurface()
-            if (surface != null) {
-                mSurfaceViewGL.createEncodeSurface(surface)
-            }
-            mH264Encoder?.start()
+//        if (mH264Encoder == null) {
+//            mPreviewWindowSize ?: return
+////            mH264Encoder = H264Encoder(mPreviewWindowSize!!.height, mPreviewWindowSize!!.width)
+//            mH264Encoder = H264Encoder(1080, 1920)
+//            val surface = mH264Encoder?.getSurface()
+//            if (surface != null) {
+//                mSurfaceViewGL.createEncodeSurface(surface)
+//            }
+//            mH264Encoder?.start()
+//        } else {
+//            if (mH264Encoder?.getEncodeState() == EncodeState.STARTED) {
+//                mH264Encoder?.stop()
+//            } else {
+//                mH264Encoder?.start()
+//            }
+//        }
+
+        // todo: test
+        mH264Encoder ?: return
+        if (mH264Encoder?.getEncodeState() == EncodeState.STARTED) {
+            stopRecord()
         } else {
-            if (mH264Encoder?.getEncodeState() == EncodeState.STARTED) {
-                mH264Encoder?.stop()
-            } else {
-                mH264Encoder?.start()
-            }
+            startRecord()
         }
     }
 
@@ -221,39 +245,120 @@ class DemoActivity : AppCompatActivity() {
     }
 
     private fun createCaptureSession() {
+        // todo: test
+//        if (mPreviewSize != null) {
+//            mImageReader = ImageReader.newInstance(mPreviewSize!!.width, mPreviewSize!!.height, ImageFormat.JPEG, 2)
+//            Log.d(TAG, "===============setOnImageAvailableListener")
+//            mImageReader?.setOnImageAvailableListener({
+//
+//                val image = it?.acquireLatestImage()
+//                val byteBuffer = image?.planes?.get(0)?.buffer
+//                byteBuffer ?: return@setOnImageAvailableListener
+//
+//                val byteArray = ByteArray(byteBuffer.remaining())
+//                val data = byteBuffer.get(byteArray)
+//
+//                val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+////                val bitmap = Bitmap.createBitmap(mPreviewSize!!.width, mPreviewSize!!.height, Bitmap.Config.ARGB_8888)
+////                bitmap.copyPixelsFromBuffer(byteBuffer)
+//
+//                val fos = FileOutputStream("${FileUtil.getExternalPicDir()}/${System.currentTimeMillis()}.jpg")
+//                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+//                fos.flush()
+//                fos.close()
+//
+//                image.close()
+//            }, mCameraHandler)
+//        }
+
+        // todo: test
+        var encodeSurface: Surface? = null
+//        if (mH264Encoder == null) {
+//            mH264Encoder = H264Encoder(1080, 1920)
+//            encodeSurface = mH264Encoder?.getSurface()
+//        }
+
+        mH264Encoder?.getSurface() ?: return
         if (mCameraDevice == null || mSurfaceOES == null) return
         try {
             mCameraDevice?.createCaptureSession(
-                listOf(mSurfaceOES), sessionStateCallback, mCameraHandler
+                listOf(mSurfaceOES, mH264Encoder?.getSurface()), sessionStateCallback, mCameraHandler
             )
+            Log.d(TAG, "=========================")
         } catch (t: Throwable) {
             Log.e(TAG, "Failed to create session.", t)
         }
     }
 
+
     private val sessionStateCallback = object : CameraCaptureSession.StateCallback() {
         override fun onConfigured(cameraCaptureSession: CameraCaptureSession) {
             Log.d(TAG, "Capture session configured.")
-            try {
-                val previewRequestBuilder = mCameraDevice!!.createCaptureRequest(
-                    CameraDevice.TEMPLATE_PREVIEW
-                )
-                previewRequestBuilder.addTarget(mSurfaceOES!!)
-                previewRequestBuilder.set(
-                    CaptureRequest.CONTROL_AF_MODE,
-                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO
-                )
-                cameraCaptureSession.setRepeatingRequest(
-                    previewRequestBuilder.build(), null, mCameraHandler
-                )
-            } catch (t: Throwable) {
-                Log.e(TAG, "Failed to open camera preview.", t)
-            }
+            mCameraCaptureSession = cameraCaptureSession
+            startPreview()
         }
 
         override fun onConfigureFailed(cameraCaptureSession: CameraCaptureSession) {
             Log.e(TAG, "Failed to configure session.")
         }
+    }
+
+    private fun startPreview() {
+        try {
+            mCameraDevice ?: return
+            val previewRequestBuilder = mCameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+            previewRequestBuilder.addTarget(mSurfaceOES!!)
+            previewRequestBuilder.set(
+                CaptureRequest.CONTROL_AF_MODE,
+                CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO
+            )
+            mCameraCaptureSession?.setRepeatingRequest(
+                previewRequestBuilder.build(), null, mCameraHandler
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to open camera preview.", e)
+            e.printStackTrace()
+        }
+    }
+
+    private fun takePicture() {
+        mCameraDevice ?: return
+        val captureRequestBuilder = mCameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
+        captureRequestBuilder.addTarget(mImageReader!!.surface)
+        captureRequestBuilder.set(
+            CaptureRequest.CONTROL_AF_MODE,
+            CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
+        )
+        mCameraCaptureSession?.capture(captureRequestBuilder.build(), null, mCameraHandler)
+    }
+
+    private fun startRecord() {
+        try {
+            mH264Encoder ?: return
+            mCameraDevice ?: return
+            mSurfaceOES ?: return
+
+            mH264Encoder?.start()
+
+            val previewRequestBuilder = mCameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_RECORD)
+            previewRequestBuilder.set(
+                CaptureRequest.CONTROL_AF_MODE,
+                CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO
+            )
+            previewRequestBuilder.addTarget(mSurfaceOES!!)
+            previewRequestBuilder.addTarget(mH264Encoder!!.getSurface()!!)
+            mCameraCaptureSession?.setRepeatingRequest(
+                previewRequestBuilder.build(), null, mCameraHandler
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to start record.", e)
+            e.printStackTrace()
+        }
+    }
+
+    private fun stopRecord() {
+        mH264Encoder?.stop()
+        startPreview()
     }
 
     private fun release() {
