@@ -9,8 +9,13 @@
 
 #include <EGL/egl.h>
 #include <GLES3/gl3.h>
+#include <cstdlib>
 #include "log_util.h"
 
+// java层像素格式
+static const GLenum RGBA_8888 = 1;
+static const GLenum RGB_888 = 3;
+static const GLenum RGB_565 = 4;
 
 class GLContext {
 public:
@@ -83,12 +88,21 @@ public:
                 LOGI("EGL terminate success: %p", eglDisplay);
             }
         }
+        if (frame_data != nullptr) {
+            free(frame_data);
+            LOGI("Free frame data space success.");
+            frame_data = nullptr;
+        }
     };
 
     EGLDisplay eglDisplay{nullptr};
     EGLConfig eglConfig{nullptr};
     EGLContext eglContext{nullptr};
     EGLSurface eglSurface[5]{nullptr};
+    GLenum format{0};
+    GLsizei width{0}; // 图像宽度
+    GLsizei height{0}; // 图像高度
+    void *frame_data{nullptr}; // 图像帧的存储空间
     GLuint program[5]{};
     GLuint vbo[5]{0};
     GLuint ebo[5]{0};

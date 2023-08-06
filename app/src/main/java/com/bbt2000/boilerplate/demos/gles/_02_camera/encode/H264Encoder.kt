@@ -71,7 +71,7 @@ class H264Encoder(width: Int, height: Int) {
 //            mediaFormat.setInteger(MediaFormat.KEY_LEVEL, MediaCodecInfo.CodecProfileLevel.AVCProfileHigh)
             mediaFormat.setInteger(
                 MediaFormat.KEY_COLOR_FORMAT,
-                MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
+                MediaCodecInfo.CodecCapabilities.COLOR_FormatRGBAFlexible
             )
             mMediaCodec?.setCallback(mCodecCallback)
             mMediaCodec?.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
