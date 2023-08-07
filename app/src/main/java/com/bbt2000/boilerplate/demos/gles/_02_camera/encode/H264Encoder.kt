@@ -22,6 +22,23 @@ class H264Encoder(width: Int, height: Int) {
     private var mInputSurface: Surface? = null
     private var mConfigured: Boolean = false
     private var mEncodeState: EncodeState = EncodeState.INIT
+    private var mStateCallback: ((state: EncodeState) -> Unit)? = null
+    private var mResumeFromPause: Boolean = false // 是否从暂停恢复
+
+    init {
+        try {
+            mMediaCodec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
+        } catch (e: Exception) {
+            Log.e(TAG, "Mediacodec create failed.", e)
+            e.printStackTrace()
+        }
+    }
+
+    fun getEncodeState(): EncodeState = mEncodeState
+
+    fun setEncodeStateCallback(callback: (state: EncodeState) -> Unit) {
+        mStateCallback = callback
+    }
 
     private val mCodecCallback = object : MediaCodec.Callback() {
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {}
@@ -32,14 +49,14 @@ class H264Encoder(width: Int, height: Int) {
         ) {
             try {
                 val buffer = codec.getOutputBuffer(index) ?: return
-                if (mMp4Muxer.started()) {
-                    mMp4Muxer.writeSampleData(buffer, info, true)
+                if (mEncodeState == EncodeState.STARTED && mMp4Muxer.started()) {
+                    mMp4Muxer.writeSampleData(buffer, info, true, mResumeFromPause)
+                    if (mResumeFromPause) mResumeFromPause = false
                 }
+                codec.releaseOutputBuffer(index, false)
             } catch (e: Exception) {
                 Log.e(TAG, "Consume output buffer error: ${e.message}")
                 e.printStackTrace()
-            } finally {
-                codec.releaseOutputBuffer(index, false)
             }
         }
 
@@ -58,9 +75,8 @@ class H264Encoder(width: Int, height: Int) {
         }
     }
 
-    init {
+    private fun configure() {
         try {
-            mMediaCodec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
             val mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, mWidth, mHeight)
             // todo: try different frame rate
             mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE)
@@ -71,11 +87,10 @@ class H264Encoder(width: Int, height: Int) {
 //            mediaFormat.setInteger(MediaFormat.KEY_LEVEL, MediaCodecInfo.CodecProfileLevel.AVCProfileHigh)
             mediaFormat.setInteger(
                 MediaFormat.KEY_COLOR_FORMAT,
-                MediaCodecInfo.CodecCapabilities.COLOR_FormatRGBAFlexible
+                MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
             )
             mMediaCodec?.setCallback(mCodecCallback)
             mMediaCodec?.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-            mInputSurface = mMediaCodec?.createInputSurface()
             mConfigured = true
             Log.i(TAG, "Mediacodec configure success.")
         } catch (e: Exception) {
@@ -84,18 +99,16 @@ class H264Encoder(width: Int, height: Int) {
         }
     }
 
-    fun getSurface() = mInputSurface
-
-    fun getEncodeState(): EncodeState {
-        return mEncodeState
-    }
-
-    fun start() {
+    fun start(callback: (surface: Surface) -> Unit) {
         mEncodeHandler.post {
             try {
+                configure()
                 if (!mConfigured) return@post
+                mInputSurface = mMediaCodec?.createInputSurface()
+                callback(mInputSurface!!)
                 mMediaCodec?.start()
                 mEncodeState = EncodeState.STARTED
+                mStateCallback?.invoke(mEncodeState)
                 Log.i(TAG, "Mediacodec started.")
             } catch (e: Exception) {
                 Log.e(TAG, "Start mediacodec failed.", e)
@@ -108,7 +121,8 @@ class H264Encoder(width: Int, height: Int) {
         mEncodeHandler.post {
             if (!mConfigured) return@post
             mEncodeState = EncodeState.PAUSED
-            Log.i(TAG, "Mediacodec paused.")
+            mStateCallback?.invoke(mEncodeState)
+            Log.i(TAG, "Encoder paused.")
         }
     }
 
@@ -116,7 +130,9 @@ class H264Encoder(width: Int, height: Int) {
         mEncodeHandler.post {
             if (!mConfigured) return@post
             mEncodeState = EncodeState.STARTED
-            Log.i(TAG, "Mediacodec resumed.")
+            mResumeFromPause = true
+            mStateCallback?.invoke(mEncodeState)
+            Log.i(TAG, "Encoder resumed.")
         }
     }
 
@@ -126,8 +142,11 @@ class H264Encoder(width: Int, height: Int) {
                 if (!mConfigured) return@post
                 mMediaCodec?.signalEndOfInputStream()
                 mMediaCodec?.stop()
+                mInputSurface?.release()
+                mInputSurface = null
                 mMp4Muxer.stop()
                 mEncodeState = EncodeState.INIT
+                mStateCallback?.invoke(mEncodeState)
                 Log.i(TAG, "Mediacodec stopped.")
             } catch (e: Exception) {
                 Log.e(TAG, "Stop mediacodec failed.", e)
@@ -139,8 +158,6 @@ class H264Encoder(width: Int, height: Int) {
     fun release() {
         mMediaCodec?.release()
         mMediaCodec = null
-        mInputSurface?.release()
-        mInputSurface = null
         mEncodeThread.quitSafely()
     }
 

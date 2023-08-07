@@ -3,21 +3,15 @@ package com.bbt2000.boilerplate.demos.gles._02_camera
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
-import android.media.Image
-import android.media.ImageReader
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
-import android.os.Looper
 import android.util.Log
 import android.util.Size
 import android.view.LayoutInflater
@@ -26,13 +20,16 @@ import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,9 +38,15 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.bbt2000.boilerplate.R
 import com.bbt2000.boilerplate.demos.gles._02_camera.encode.EncodeState
 import com.bbt2000.boilerplate.demos.gles._02_camera.encode.H264Encoder
-import com.bbt2000.boilerplate.util.FileUtil
 import com.permissionx.guolindev.PermissionX
-import java.io.FileOutputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 /**
@@ -58,16 +61,17 @@ class DemoActivity : AppCompatActivity() {
         applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
     }
     private var mCameraCaptureSession: CameraCaptureSession? = null
-    private val mCameraThread = HandlerThread("CameraThread").apply { start() }
-    private val mCameraHandler = Handler(mCameraThread.looper)
+    private val mCameraThread by lazy { HandlerThread("CameraThread").apply { start() } }
+    private val mCameraHandler by lazy { Handler(mCameraThread.looper) }
 
     private lateinit var mSurfaceViewGL: SurfaceViewGL
     private var mPreviewWindowSize: Size? = null
     private var mPreviewSize: Size? = null
     private var mSurfaceOES: Surface? = null
 
-    private var mImageReader: ImageReader? = null
     private var mH264Encoder: H264Encoder? = null
+    private val mEncodeState by lazy { mutableStateOf(EncodeState.INIT) }
+    private val mTimeCountMs by lazy { mutableStateOf(0L) }
 
 
     @SuppressLint("InflateParams")
@@ -97,21 +101,43 @@ class DemoActivity : AppCompatActivity() {
                         rootView
                     },
                 )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .background(Color.White),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    Box(modifier = Modifier.weight(1.0f)) {
+
+                    }
+                    Button(
+                        onClick = { requireStoragePermission() }
+                    ) {
+                        val text = if (mEncodeState.value == EncodeState.INIT) "Record" else "Stop"
+                        Text(text = text)
+                    }
+                    Box(modifier = Modifier.weight(1.0f)) {
+                        Button(
+                            modifier = Modifier.align(Alignment.Center),
+                            onClick = { pauseOrResumeRecord() }
+                        ) {
+                            val text = if (mEncodeState.value == EncodeState.PAUSED) "Resume" else "Pause"
+                            Text(text = text)
+                        }
+                    }
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(150.dp)
+                        .height(50.dp)
                         .background(Color.White)
                 ) {
-                    Button(
-                        modifier = Modifier
-                            .align(Alignment.Center),
-                        onClick = {
-                            requireStoragePermission()
-                        }
-                    ) {
-                        Text(text = "Record")
-                    }
+                    Text(
+                        modifier = Modifier.align(Alignment.TopCenter),
+                        text = "${mTimeCountMs.value / 1000}s"
+                    )
                 }
             }
         }
@@ -151,11 +177,6 @@ class DemoActivity : AppCompatActivity() {
                 if (mPreviewSize != null) {
                     mSurfaceViewGL.setPreviewSize(mPreviewSize!!)
                 }
-
-                // todo: test
-                if (mH264Encoder == null) {
-                    mH264Encoder = H264Encoder(640, 480)
-                }
                 break
             }
         }
@@ -193,29 +214,48 @@ class DemoActivity : AppCompatActivity() {
     }
 
     private fun startOrStopRecord() {
-//        if (mH264Encoder == null) {
-//            mPreviewWindowSize ?: return
-////            mH264Encoder = H264Encoder(mPreviewWindowSize!!.height, mPreviewWindowSize!!.width)
-//            mH264Encoder = H264Encoder(1080, 1920)
-//            val surface = mH264Encoder?.getSurface()
-//            if (surface != null) {
-//                mSurfaceViewGL.createEncodeSurface(surface)
-//            }
-//            mH264Encoder?.start()
-//        } else {
-//            if (mH264Encoder?.getEncodeState() == EncodeState.STARTED) {
-//                mH264Encoder?.stop()
-//            } else {
-//                mH264Encoder?.start()
-//            }
-//        }
+        if (mH264Encoder == null) {
+            mPreviewWindowSize ?: return
+            val width = mPreviewWindowSize!!.width - mPreviewWindowSize!!.width % 16
+            val height = mPreviewWindowSize!!.height - mPreviewWindowSize!!.height % 16
+            mH264Encoder = H264Encoder(width, height)
+            mH264Encoder?.setEncodeStateCallback {
+                when (it) {
+                    EncodeState.INIT -> {
+                        mEncodeState.value = EncodeState.INIT
+                        stopRecordTimeCount(true)
+                    }
 
-        // todo: test
+                    EncodeState.STARTED -> {
+                        mEncodeState.value = EncodeState.STARTED
+                        startRecordTimeCount()
+                    }
+
+                    EncodeState.PAUSED -> {
+                        mEncodeState.value = EncodeState.PAUSED
+                        stopRecordTimeCount()
+                    }
+                }
+            }
+            mH264Encoder?.start { mSurfaceViewGL.createEncodeSurface(it) }
+        } else {
+            if (mH264Encoder?.getEncodeState() == EncodeState.INIT) {
+                mH264Encoder?.start { mSurfaceViewGL.createEncodeSurface(it) }
+            } else {
+                mH264Encoder?.stop()
+            }
+        }
+    }
+
+    private fun pauseOrResumeRecord() {
         mH264Encoder ?: return
         if (mH264Encoder?.getEncodeState() == EncodeState.STARTED) {
-            stopRecord()
-        } else {
-            startRecord()
+            mH264Encoder?.pause()
+            return
+        }
+        if (mH264Encoder?.getEncodeState() == EncodeState.PAUSED) {
+            mH264Encoder?.resume()
+            return
         }
     }
 
@@ -245,46 +285,11 @@ class DemoActivity : AppCompatActivity() {
     }
 
     private fun createCaptureSession() {
-        // todo: test
-//        if (mPreviewSize != null) {
-//            mImageReader = ImageReader.newInstance(mPreviewSize!!.width, mPreviewSize!!.height, ImageFormat.JPEG, 2)
-//            Log.d(TAG, "===============setOnImageAvailableListener")
-//            mImageReader?.setOnImageAvailableListener({
-//
-//                val image = it?.acquireLatestImage()
-//                val byteBuffer = image?.planes?.get(0)?.buffer
-//                byteBuffer ?: return@setOnImageAvailableListener
-//
-//                val byteArray = ByteArray(byteBuffer.remaining())
-//                val data = byteBuffer.get(byteArray)
-//
-//                val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-////                val bitmap = Bitmap.createBitmap(mPreviewSize!!.width, mPreviewSize!!.height, Bitmap.Config.ARGB_8888)
-////                bitmap.copyPixelsFromBuffer(byteBuffer)
-//
-//                val fos = FileOutputStream("${FileUtil.getExternalPicDir()}/${System.currentTimeMillis()}.jpg")
-//                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
-//                fos.flush()
-//                fos.close()
-//
-//                image.close()
-//            }, mCameraHandler)
-//        }
-
-        // todo: test
-        var encodeSurface: Surface? = null
-//        if (mH264Encoder == null) {
-//            mH264Encoder = H264Encoder(1080, 1920)
-//            encodeSurface = mH264Encoder?.getSurface()
-//        }
-
-        mH264Encoder?.getSurface() ?: return
         if (mCameraDevice == null || mSurfaceOES == null) return
         try {
             mCameraDevice?.createCaptureSession(
-                listOf(mSurfaceOES, mH264Encoder?.getSurface()), sessionStateCallback, mCameraHandler
+                listOf(mSurfaceOES), sessionStateCallback, mCameraHandler
             )
-            Log.d(TAG, "=========================")
         } catch (t: Throwable) {
             Log.e(TAG, "Failed to create session.", t)
         }
@@ -321,46 +326,6 @@ class DemoActivity : AppCompatActivity() {
         }
     }
 
-    private fun takePicture() {
-        mCameraDevice ?: return
-        val captureRequestBuilder = mCameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
-        captureRequestBuilder.addTarget(mImageReader!!.surface)
-        captureRequestBuilder.set(
-            CaptureRequest.CONTROL_AF_MODE,
-            CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
-        )
-        mCameraCaptureSession?.capture(captureRequestBuilder.build(), null, mCameraHandler)
-    }
-
-    private fun startRecord() {
-        try {
-            mH264Encoder ?: return
-            mCameraDevice ?: return
-            mSurfaceOES ?: return
-
-            mH264Encoder?.start()
-
-            val previewRequestBuilder = mCameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_RECORD)
-            previewRequestBuilder.set(
-                CaptureRequest.CONTROL_AF_MODE,
-                CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO
-            )
-            previewRequestBuilder.addTarget(mSurfaceOES!!)
-            previewRequestBuilder.addTarget(mH264Encoder!!.getSurface()!!)
-            mCameraCaptureSession?.setRepeatingRequest(
-                previewRequestBuilder.build(), null, mCameraHandler
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to start record.", e)
-            e.printStackTrace()
-        }
-    }
-
-    private fun stopRecord() {
-        mH264Encoder?.stop()
-        startPreview()
-    }
-
     private fun release() {
         try {
             mSurfaceOES?.release()
@@ -374,9 +339,31 @@ class DemoActivity : AppCompatActivity() {
         }
     }
 
+    private var mTimeJob: Job? = null
+    private fun startRecordTimeCount() {
+        mTimeJob = GlobalScope.launch(Dispatchers.Main) {
+            withContext(Dispatchers.Default) {
+                while (isActive) {
+                    delay(50)
+                    mTimeCountMs.value += 50
+                }
+            }
+        }
+    }
+
+    private fun stopRecordTimeCount(reset: Boolean = false) {
+        GlobalScope.launch(Dispatchers.Main) {
+            withContext(Dispatchers.Default) {
+                mTimeJob?.cancelAndJoin()
+                mTimeJob = null
+                if (reset) mTimeCountMs.value = 0L
+            }
+        }
+    }
+
     companion object {
         private const val TAG = "DemoActivity"
-        private const val CameraFacing = CameraCharacteristics.LENS_FACING_FRONT
+        private const val CameraFacing = CameraCharacteristics.LENS_FACING_BACK
     }
 }
 

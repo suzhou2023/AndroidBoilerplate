@@ -206,6 +206,7 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDrawFrame(
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
+    /*****FBO test*****/
 //    if (glContext->fbo[0] > 0) {
 //        glUseProgram(glContext->program[0]);
 //        glBindFramebuffer(GL_FRAMEBUFFER, glContext->fbo[0]);
@@ -234,9 +235,25 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDrawFrame(
 //        glDraw(6);
 //        eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[1]);
 //    }
-
 //    glBindTexture(GL_TEXTURE_2D, 0);
+    /*****FBO test*****/
 
+
+    /*****ByteBuffer test*****/
+//    static int mark = 0;
+//    if (mark == 0) {
+//        mark += 1;
+//        int width = glContext->width;
+//        int height = glContext->height;
+//        glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, glContext->frame_data);
+//        unsigned char *p = static_cast<unsigned char *>(glContext->frame_data);
+//        LOGD("%d-%d-%d-%d", *p, *(p + 1), *(p + 2), *(p + 3));
+//        jclass clazz = env->GetObjectClass(callback);
+//        jmethodID method = env->GetMethodID(clazz, "onFrame", "(Ljava/nio/ByteBuffer;)V");
+//        jobject buffer = env->NewDirectByteBuffer(glContext->frame_data, width * height * 4);
+//        env->CallVoidMethod(callback, method, buffer);
+//    }
+    /*****ByteBuffer test*****/
 
 
     // 不需要fbo，直接从oes纹理画到预览surface和codec input surface
@@ -268,37 +285,3 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDestroyGLCont
 
 
 
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDrawFrame2(
-        JNIEnv *env, jobject thiz, jlong gl_context, jobject callback) {
-    if (gl_context <= 0) return;
-    auto *glContext = reinterpret_cast<GLContext *>(gl_context);
-
-    glUseProgram(glContext->program[0]);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, glContext->oesTexture);
-    if (glContext->eglSurface[0] != nullptr) {
-        eglMakeCurrent(glContext, glContext->eglSurface[0]);
-        glDraw(6);
-        /*****todo:test*****/
-        static int mark = 0;
-        if (mark == 0) {
-            mark += 1;
-            int width = glContext->width;
-            int height = glContext->height;
-            glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, glContext->frame_data);
-            unsigned char *p = static_cast<unsigned char *>(glContext->frame_data);
-            LOGD("%d-%d-%d-%d", *p, *(p + 1), *(p + 2), *(p + 3));
-//            p += 800 * 100 * 4;
-//            LOGD("%d-%d-%d-%d", *p, *(p + 1), *(p + 2), *(p + 3));
-            jclass clazz = env->GetObjectClass(callback);
-            jmethodID method = env->GetMethodID(clazz, "onFrame", "(Ljava/nio/ByteBuffer;)V");
-            jobject buffer = env->NewDirectByteBuffer(glContext->frame_data, width * height * 4);
-            env->CallVoidMethod(callback, method, buffer);
-        }
-        /*****todo:test*****/
-        eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[0]);
-    }
-}

@@ -10,6 +10,7 @@
 
 
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <GLES3/gl3.h>
 #include <android/native_window_jni.h>
 #include <cstdlib>
@@ -44,7 +45,9 @@ static EGLBoolean eglCreateContext(GLContext *glContext, EGLContext shareContext
             EGL_RED_SIZE, 8,
             EGL_GREEN_SIZE, 8,
             EGL_BLUE_SIZE, 8,
+            EGL_ALPHA_SIZE, 8,
             EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_RECORDABLE_ANDROID, 1,
             EGL_NONE
     };
 
@@ -93,8 +96,16 @@ static EGLBoolean eglCreateWindowSurface(JNIEnv *env, GLContext *glContext, jobj
         return EGL_FALSE;
     }
 
-    ANativeWindow *nativeWindow = ANativeWindow_fromSurface(env, surface);
+    // 销毁之前的EGLSurface
+    if (glContext->eglSurface[index] != nullptr) {
+        EGLBoolean ret = eglDestroySurface(glContext->eglDisplay, glContext->eglSurface[index]);
+        if (ret == EGL_TRUE) {
+            LOGI("EGL destroy surface success: %p", glContext->eglSurface[index]);
+        }
+        glContext->eglSurface[index] = nullptr;
+    }
 
+    ANativeWindow *nativeWindow = ANativeWindow_fromSurface(env, surface);
     glContext->eglSurface[index] = eglCreateWindowSurface(
             glContext->eglDisplay,
             glContext->eglConfig,

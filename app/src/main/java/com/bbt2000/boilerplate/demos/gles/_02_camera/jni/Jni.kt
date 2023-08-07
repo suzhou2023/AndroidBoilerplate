@@ -1,7 +1,5 @@
 package com.bbt2000.boilerplate.demos.gles._02_camera.jni
 
-import com.bbt2000.boilerplate.demos.gles._02_camera.SurfaceViewGL
-
 /**
  *  author : sz
  *  date : 2023/7/31
@@ -20,6 +18,5 @@ object Jni {
     external fun nativeCreateFbo(glContext: Long, width: Int, height: Int)
     external fun nativeSetMatrix(glContext: Long, matrix: FloatArray)
     external fun nativeDrawFrame(glContext: Long)
-    external fun nativeDrawFrame2(glContext: Long, callback: SurfaceViewGL.IFrameCallback)
     external fun nativeDestroyGLContext(glContext: Long = 0)
 }

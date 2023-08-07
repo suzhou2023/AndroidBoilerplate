@@ -20,6 +20,9 @@ class Mp4Muxer {
     // 注意添加成功的track index可以为0
     private var mVideoTrackIndex: Int = -1
     private var mAudioTrackIndex: Int = -1
+    private var mVideoPTS: Long = 0L // 视频时间戳，相对于第一帧的时间戳
+    private var mVideoPTSBegin: Long = 0L // 视频第一帧的绝对时间戳
+    private var mAudioPTS: Long = 0L
     private var mStarted: Boolean = false
 
     fun started() = mStarted
@@ -53,6 +56,8 @@ class Mp4Muxer {
             mMediaMuxer?.release()
             mVideoTrackIndex = -1
             mAudioTrackIndex = -1
+            mVideoPTS = 0L
+            mAudioPTS = 0L
             mStarted = false
             Log.i(TAG, "Muxer stopped.")
         } catch (e: Exception) {
@@ -61,14 +66,30 @@ class Mp4Muxer {
         }
     }
 
-    fun writeSampleData(buffer: ByteBuffer, bufferInfo: MediaCodec.BufferInfo, isVideo: Boolean) {
+    fun writeSampleData(
+        buffer: ByteBuffer,
+        bufferInfo: MediaCodec.BufferInfo,
+        isVideo: Boolean,
+        resumeFromPause: Boolean = false
+    ) {
         if (!mStarted) return
-        Log.d(TAG, "size = ${bufferInfo.size}")
-        Log.d(TAG, "presentationTimeUs = ${bufferInfo.presentationTimeUs}")
-        Log.d(TAG, "flags = ${bufferInfo.flags}")
-        Log.d(TAG, "--------------------------")
-        buffer.order()
+//        Log.d(TAG, "size = ${bufferInfo.size}")
+//        Log.d(TAG, "presentationTimeUs = ${bufferInfo.presentationTimeUs}")
+//        Log.d(TAG, "flags = ${bufferInfo.flags}")
         if (isVideo && mVideoTrackIndex >= 0) {
+            // 记录第一帧的绝对时间戳
+            if (mVideoPTSBegin == 0L) {
+                mVideoPTSBegin = bufferInfo.presentationTimeUs
+            }
+            // 如果是从暂停恢复，需要调整第一帧的绝对时间戳
+            if (resumeFromPause) {
+                Log.d(TAG, "==================================")
+                mVideoPTSBegin += bufferInfo.presentationTimeUs - mVideoPTSBegin - mVideoPTS - 33_000
+            }
+            // 相对于第一帧的时间戳
+            mVideoPTS = bufferInfo.presentationTimeUs - mVideoPTSBegin
+            bufferInfo.presentationTimeUs = mVideoPTS
+            Log.d(TAG, "mVideoPTS = $mVideoPTS")
             mMediaMuxer?.writeSampleData(mVideoTrackIndex, buffer, bufferInfo)
         }
         if (!isVideo && mAudioTrackIndex >= 0) {

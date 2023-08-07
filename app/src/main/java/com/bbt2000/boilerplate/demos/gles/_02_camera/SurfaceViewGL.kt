@@ -1,7 +1,6 @@
 package com.bbt2000.boilerplate.demos.gles._02_camera
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.opengl.Matrix
 import android.os.Handler
@@ -17,15 +16,10 @@ import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateGLConte
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateOESTexture
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeDestroyGLContext
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeDrawFrame
-import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeDrawFrame2
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeEGLCreateSurface
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeSetMatrix
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeSurfaceChanged
 import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
-import com.bbt2000.boilerplate.util.FileUtil
-import java.io.FileOutputStream
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 
 /**
@@ -84,10 +78,6 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
         }
     }
 
-    interface IFrameCallback {
-        fun onFrame(byteBuffer: ByteBuffer)
-    }
-
     override fun surfaceCreated(holder: SurfaceHolder) {
         Log.d(TAG, "Surface created.")
         mHandler.post {
@@ -101,31 +91,7 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
             mSurfaceTexture = SurfaceTexture(oesTexture)
             mSurfaceTexture?.setOnFrameAvailableListener {
                 mSurfaceTexture?.updateTexImage()
-//                nativeDrawFrame(mGLContext)
-                nativeDrawFrame2(mGLContext, object : IFrameCallback {
-                    override fun onFrame(byteBuffer: ByteBuffer) {
-                        Log.d(TAG, "onFrameCallback: ${byteBuffer.remaining()}")
-                        // todo: test
-                        val width = mWindowSize!!.width
-                        val height = mWindowSize!!.height
-                        val pixelCount = width * height
-                        val intArray = IntArray(pixelCount)
-                        byteBuffer
-                            .order(ByteOrder.BIG_ENDIAN)
-                            .asIntBuffer().get(intArray, 0, width * height)
-                        Log.d(TAG, "=============intArray[0]=${intArray[0].toUInt().toString(16)}")
-                        for (i in 0 until pixelCount) {
-                            intArray[i] = (intArray[i] shr 8) or 0xff000000.toInt()
-                        }
-                        Log.d(TAG, "=============intArray[0]=${intArray[0].toUInt().toString(16)}")
-                        val bitmap = Bitmap.createBitmap(intArray, width, height, Bitmap.Config.ARGB_8888)
-                        val fos = FileOutputStream("${FileUtil.getExternalPicDir()}/${System.currentTimeMillis()}.jpg")
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
-                        fos.flush()
-                        fos.close()
-                        Log.d(TAG, "============= success")
-                    }
-                })
+                nativeDrawFrame(mGLContext)
             }
             if (mPreviewSize != null) {
                 mSurfaceTexture!!.setDefaultBufferSize(mPreviewSize!!.width, mPreviewSize!!.height)
@@ -191,9 +157,5 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
 
     companion object {
         const val TAG = "SurfaceViewGL"
-
-        init {
-            System.loadLibrary("gl_render")
-        }
     }
 }
