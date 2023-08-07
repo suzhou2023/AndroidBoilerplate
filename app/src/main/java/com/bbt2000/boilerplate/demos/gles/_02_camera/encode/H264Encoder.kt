@@ -78,17 +78,10 @@ class H264Encoder(width: Int, height: Int) {
     private fun configure() {
         try {
             val mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, mWidth, mHeight)
-            // todo: try different frame rate
-            mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE)
-            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, getEncodeBitrate(mWidth, mHeight))
-            mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL)
-            // todo: 这个设置需要怎么匹配
-//            mediaFormat.setInteger(MediaFormat.KEY_PROFILE, MediaCodecInfo.CodecProfileLevel.AVCProfileHigh)
-//            mediaFormat.setInteger(MediaFormat.KEY_LEVEL, MediaCodecInfo.CodecProfileLevel.AVCProfileHigh)
-            mediaFormat.setInteger(
-                MediaFormat.KEY_COLOR_FORMAT,
-                MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface
-            )
+            mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
+            mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30)
+            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, 8_000_000)
+            mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
             mMediaCodec?.setCallback(mCodecCallback)
             mMediaCodec?.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             mConfigured = true
@@ -161,22 +154,8 @@ class H264Encoder(width: Int, height: Int) {
         mEncodeThread.quitSafely()
     }
 
-    private fun getEncodeBitrate(width: Int, height: Int): Int {
-        var bitRate = width * height * 20 * 3 * 0.07F
-        if (width >= 1920 || height >= 1920) {
-            bitRate *= 0.75F
-        } else if (width >= 1280 || height >= 1280) {
-            bitRate *= 1.2F
-        } else if (width >= 640 || height >= 640) {
-            bitRate *= 1.4F
-        }
-        return bitRate.toInt()
-    }
-
     companion object {
         private const val TAG = "H264Encoder"
-        private const val FRAME_RATE = 30
-        private const val I_FRAME_INTERVAL = 1
     }
 }
 

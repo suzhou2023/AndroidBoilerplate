@@ -99,7 +99,7 @@ static void texImage2D(JNIEnv *env, jobject bitmap) {
  * @param vertexNum
  */
 static void glDraw(GLuint vertexNum) {
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glDrawElements(GL_TRIANGLES, vertexNum, GL_UNSIGNED_INT, (void *) 0);
 }

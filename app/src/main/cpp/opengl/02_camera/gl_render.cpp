@@ -259,7 +259,6 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDrawFrame(
     // 不需要fbo，直接从oes纹理画到预览surface和codec input surface
     glUseProgram(glContext->program[0]);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, glContext->oesTexture);
     if (glContext->eglSurface[0] != nullptr) {
         eglMakeCurrent(glContext, glContext->eglSurface[0]);
         glDraw(6);

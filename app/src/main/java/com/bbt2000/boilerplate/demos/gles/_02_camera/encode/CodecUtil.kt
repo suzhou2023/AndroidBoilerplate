@@ -1,7 +1,6 @@
 package com.bbt2000.boilerplate.demos.gles._02_camera.encode
 
 import android.media.MediaCodecList
-import android.media.MediaFormat
 import android.util.Log
 
 
@@ -12,20 +11,20 @@ import android.util.Log
  */
 object CodecUtil {
     const val TAG = "CodecUtil"
-    fun getCodecInfos() {
+    fun getCodecInfo(mimeType: String) {
         val codecInfo = MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos
-            .find { it.isEncoder && it.supportedTypes.contains(MediaFormat.MIMETYPE_VIDEO_AVC) }
+            .find { it.isEncoder && it.supportedTypes.contains(mimeType) }
         codecInfo ?: return
-        val capabilities = codecInfo.getCapabilitiesForType(MediaFormat.MIMETYPE_VIDEO_AVC)
+        val capabilities = codecInfo.getCapabilitiesForType(mimeType)
         Log.d(TAG, "mimeType=${capabilities.mimeType}")
+        Log.d(TAG, "colorFormats=${capabilities.colorFormats.contentToString()}")
+        Log.d(TAG, "defaultFormat=${capabilities.defaultFormat}")
         for (format in capabilities.colorFormats) {
             Log.d(TAG, "colorFormats=${format.toString(10)}")
         }
-        Log.d(TAG, "colorFormats=${capabilities.colorFormats.contentToString()}")
-        Log.d(TAG, "defaultFormat=${capabilities.defaultFormat}")
-        Log.d(TAG, "profileLevels=${capabilities.profileLevels}")
-        val encoderCapabilities = capabilities.encoderCapabilities
-        capabilities.videoCapabilities
-        capabilities.colorFormats
+        for (profileLevel in capabilities.profileLevels) {
+            Log.d(TAG, "profile=${profileLevel.profile}")
+            Log.d(TAG, "level=${profileLevel.level}")
+        }
     }
 }

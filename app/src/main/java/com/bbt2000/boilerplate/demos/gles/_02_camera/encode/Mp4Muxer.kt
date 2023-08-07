@@ -73,9 +73,6 @@ class Mp4Muxer {
         resumeFromPause: Boolean = false
     ) {
         if (!mStarted) return
-//        Log.d(TAG, "size = ${bufferInfo.size}")
-//        Log.d(TAG, "presentationTimeUs = ${bufferInfo.presentationTimeUs}")
-//        Log.d(TAG, "flags = ${bufferInfo.flags}")
         if (isVideo && mVideoTrackIndex >= 0) {
             // 记录第一帧的绝对时间戳
             if (mVideoPTSBegin == 0L) {
@@ -83,13 +80,11 @@ class Mp4Muxer {
             }
             // 如果是从暂停恢复，需要调整第一帧的绝对时间戳
             if (resumeFromPause) {
-                Log.d(TAG, "==================================")
                 mVideoPTSBegin += bufferInfo.presentationTimeUs - mVideoPTSBegin - mVideoPTS - 33_000
             }
             // 相对于第一帧的时间戳
             mVideoPTS = bufferInfo.presentationTimeUs - mVideoPTSBegin
             bufferInfo.presentationTimeUs = mVideoPTS
-            Log.d(TAG, "mVideoPTS = $mVideoPTS")
             mMediaMuxer?.writeSampleData(mVideoTrackIndex, buffer, bufferInfo)
         }
         if (!isVideo && mAudioTrackIndex >= 0) {
