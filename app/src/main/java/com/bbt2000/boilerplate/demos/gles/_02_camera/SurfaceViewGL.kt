@@ -10,7 +10,6 @@ import android.util.Log
 import android.util.Size
 import android.view.Surface
 import android.view.SurfaceHolder
-import com.bbt2000.boilerplate.demos.gles._02_camera.encode.H264Encoder
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeConfigGL
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateFbo
 import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateGLContext

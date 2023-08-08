@@ -36,8 +36,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.bbt2000.boilerplate.R
+import com.bbt2000.boilerplate.demos.gles._02_camera.encode.EncodeManager
 import com.bbt2000.boilerplate.demos.gles._02_camera.encode.EncodeState
-import com.bbt2000.boilerplate.demos.gles._02_camera.encode.H264Encoder
+import com.bbt2000.boilerplate.demos.gles._02_camera.encode.VideoEncoder
 import com.permissionx.guolindev.PermissionX
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -69,8 +70,8 @@ class DemoActivity : AppCompatActivity() {
     private var mPreviewSize: Size? = null
     private var mSurfaceOES: Surface? = null
 
-    private var mH264Encoder: H264Encoder? = null
-    private val mEncodeState by lazy { mutableStateOf(EncodeState.INIT) }
+    private var mEncodeManager: EncodeManager? = null
+    private val mEncodeState by lazy { mutableStateOf(EncodeState.STOPPED) }
     private val mTimeCountMs by lazy { mutableStateOf(0L) }
 
 
@@ -113,9 +114,9 @@ class DemoActivity : AppCompatActivity() {
 
                     }
                     Button(
-                        onClick = { requireStoragePermission() }
+                        onClick = { requirePermissions() }
                     ) {
-                        val text = if (mEncodeState.value == EncodeState.INIT) "Record" else "Stop"
+                        val text = if (mEncodeState.value == EncodeState.STOPPED) "Record" else "Stop"
                         Text(text = text)
                     }
                     Box(modifier = Modifier.weight(1.0f)) {
@@ -197,14 +198,15 @@ class DemoActivity : AppCompatActivity() {
         }
     }
 
-    private fun requireStoragePermission() {
-        val isGranted = PermissionX.isGranted(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        if (isGranted) {
+    private fun requirePermissions() {
+        val isAudioGranted = PermissionX.isGranted(this, Manifest.permission.RECORD_AUDIO)
+        val isStorageGranted = PermissionX.isGranted(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (isAudioGranted && isStorageGranted) {
             startOrStopRecord()
         } else {
             PermissionX
                 .init(this)
-                .permissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .permissions(Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .request { allGranted, _, _ ->
                     if (allGranted) {
                         startOrStopRecord()
@@ -214,15 +216,15 @@ class DemoActivity : AppCompatActivity() {
     }
 
     private fun startOrStopRecord() {
-        if (mH264Encoder == null) {
+        if (mEncodeManager == null) {
             mPreviewWindowSize ?: return
             val width = mPreviewWindowSize!!.width - mPreviewWindowSize!!.width % 16
             val height = mPreviewWindowSize!!.height - mPreviewWindowSize!!.height % 16
-            mH264Encoder = H264Encoder(width, height)
-            mH264Encoder?.setEncodeStateCallback {
+            mEncodeManager = EncodeManager(videoEnabled = false, audioEnabled = true, width, height)
+            mEncodeManager?.setStateCallback {
                 when (it) {
-                    EncodeState.INIT -> {
-                        mEncodeState.value = EncodeState.INIT
+                    EncodeState.STOPPED -> {
+                        mEncodeState.value = EncodeState.STOPPED
                         stopRecordTimeCount(true)
                     }
 
@@ -237,24 +239,24 @@ class DemoActivity : AppCompatActivity() {
                     }
                 }
             }
-            mH264Encoder?.start { mSurfaceViewGL.createEncodeSurface(it) }
+            mEncodeManager?.start { mSurfaceViewGL.createEncodeSurface(it) }
         } else {
-            if (mH264Encoder?.getEncodeState() == EncodeState.INIT) {
-                mH264Encoder?.start { mSurfaceViewGL.createEncodeSurface(it) }
+            if (mEncodeManager?.getEncodeState() == EncodeState.STOPPED) {
+                mEncodeManager?.start { mSurfaceViewGL.createEncodeSurface(it) }
             } else {
-                mH264Encoder?.stop()
+                mEncodeManager?.stop()
             }
         }
     }
 
     private fun pauseOrResumeRecord() {
-        mH264Encoder ?: return
-        if (mH264Encoder?.getEncodeState() == EncodeState.STARTED) {
-            mH264Encoder?.pause()
+        mEncodeManager ?: return
+        if (mEncodeManager?.getEncodeState() == EncodeState.STARTED) {
+            mEncodeManager?.pause()
             return
         }
-        if (mH264Encoder?.getEncodeState() == EncodeState.PAUSED) {
-            mH264Encoder?.resume()
+        if (mEncodeManager?.getEncodeState() == EncodeState.PAUSED) {
+            mEncodeManager?.resume()
             return
         }
     }
@@ -330,8 +332,8 @@ class DemoActivity : AppCompatActivity() {
         try {
             mSurfaceOES?.release()
             mSurfaceOES = null
-            mH264Encoder?.release()
-            mH264Encoder = null
+            mEncodeManager?.release()
+            mEncodeManager = null
             mCameraDevice?.close()
             mCameraDevice = null
         } catch (t: Throwable) {

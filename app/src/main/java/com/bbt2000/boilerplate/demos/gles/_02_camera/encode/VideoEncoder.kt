@@ -5,43 +5,48 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.os.Build
 import android.os.Handler
-import android.os.HandlerThread
 import android.util.Log
 import android.view.Surface
 
-enum class EncodeState {
-    INIT, STARTED, PAUSED
-}
 
-class H264Encoder(width: Int, height: Int) {
+/**
+ *  author : sz
+ *  date : 2023/8/8
+ *  description :
+ */
+class VideoEncoder(width: Int, height: Int, encodeHandler: Handler) {
     private val mWidth: Int = width
     private val mHeight: Int = height
+    private var mEncodeHandler: Handler = encodeHandler
 
-    private var mMediaCodec: MediaCodec? = null
-    private val mMp4Muxer: Mp4Muxer by lazy { Mp4Muxer() }
+    private var mVideoCodec: MediaCodec? = null
+    private var mMp4Muxer: Mp4Muxer? = null
 
-    private val mEncodeThread: HandlerThread by lazy { HandlerThread("encode").apply { start() } }
-    private val mEncodeHandler: Handler by lazy { Handler(mEncodeThread.looper) }
+
     private var mInputSurface: Surface? = null
 
     private var mConfigured: Boolean = false
-    private var mEncodeState: EncodeState = EncodeState.INIT
+    private var mEncodeState: EncodeState = EncodeState.STOPPED
     private var mStateCallback: ((state: EncodeState) -> Unit)? = null
     private var mPausing: Boolean = false // 暂停录制中（为了暂停恢复不出现花屏和跳屏，需要等待关键帧）
     private var mResuming: Boolean = false // 恢复录制中（恢复的时候需要从第一个关键帧开始录制）
 
     init {
         try {
-            mMediaCodec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
+            mVideoCodec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
         } catch (e: Exception) {
-            Log.e(TAG, "Mediacodec create failed.", e)
+            Log.e(TAG, "VideoCodec create failed.", e)
             e.printStackTrace()
         }
     }
 
+    fun setMuxer(mp4Muxer: Mp4Muxer) {
+        mMp4Muxer = mp4Muxer
+    }
+
     fun getEncodeState(): EncodeState = mEncodeState
 
-    fun setEncodeStateCallback(callback: (state: EncodeState) -> Unit) {
+    fun setStateCallback(callback: (state: EncodeState) -> Unit) {
         mStateCallback = callback
     }
 
@@ -64,7 +69,7 @@ class H264Encoder(width: Int, height: Int) {
                     Log.i(TAG, "Encoder resumed.")
                 }
                 if (mEncodeState == EncodeState.STARTED) {
-                    mMp4Muxer.writeSampleData(buffer, info, true, resumedFromPause)
+                    mMp4Muxer?.writeSampleData(buffer, info, true, resumedFromPause)
                     // 暂停录制时，等待一个关键帧以后再暂停
                     if (mPausing && (info.flags and MediaCodec.BUFFER_FLAG_KEY_FRAME != 0)) {
                         mEncodeState = EncodeState.PAUSED
@@ -75,28 +80,26 @@ class H264Encoder(width: Int, height: Int) {
                 }
                 codec.releaseOutputBuffer(index, false)
             } catch (e: Exception) {
-                Log.e(TAG, "Consume output buffer error: ${e.message}")
+                Log.e(TAG, "Release output buffer error.", e)
                 e.printStackTrace()
             }
         }
 
         override fun onError(codec: MediaCodec, e: MediaCodec.CodecException) {
-            Log.e(TAG, "Codec error: ${e.message}")
+            Log.e(TAG, "Codec error.", e)
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
             Log.i(TAG, "onOutputFormatChanged: $format")
             // 在这个回调以外的地方启动muxer后面stop muxer的时候会抛异常
             // 应该是格式设置不正确导致的
-            mMp4Muxer.start(
-                videoFormat = codec.outputFormat,
-                audioFormat = null
-            )
+            mMp4Muxer?.addTrackAndStart(videoFormat = codec.outputFormat)
         }
     }
 
     private fun configure() {
         try {
+            if (mConfigured) return
             val mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, mWidth, mHeight)
             mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
             mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30)
@@ -104,33 +107,37 @@ class H264Encoder(width: Int, height: Int) {
             mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
             // 6.0以后显示设置回调执行线程
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mMediaCodec?.setCallback(mCodecCallback, mEncodeHandler)
+                mVideoCodec?.setCallback(mCodecCallback, mEncodeHandler)
             } else {
-                mMediaCodec?.setCallback(mCodecCallback)
+                mVideoCodec?.setCallback(mCodecCallback)
             }
-            mMediaCodec?.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+            mVideoCodec?.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             mConfigured = true
-            Log.i(TAG, "Mediacodec configure success.")
+            Log.i(TAG, "VideoCodec configure success.")
         } catch (e: Exception) {
-            Log.e(TAG, "Mediacodec configure failed.", e)
+            Log.e(TAG, "VideoCodec configure failed.", e)
             e.printStackTrace()
         }
     }
 
-    fun start(callback: (surface: Surface) -> Unit) {
+    fun start(callback: ((surface: Surface) -> Unit)?): Boolean {
         try {
             configure()
-            if (!mConfigured) return
-            mInputSurface = mMediaCodec?.createInputSurface()
-            callback(mInputSurface!!)
-            mMediaCodec?.start()
+            if (!mConfigured) return false
+            // 视频编码surface,需在start之前创建
+            mInputSurface = mVideoCodec?.createInputSurface()
+            callback?.invoke(mInputSurface!!)
+            // 启动视频编码codec
+            mVideoCodec?.start()
             mEncodeState = EncodeState.STARTED
             mStateCallback?.invoke(mEncodeState)
-            Log.i(TAG, "Mediacodec started.")
+            Log.i(TAG, "VideoCodec started.")
+            return true
         } catch (e: Exception) {
-            Log.e(TAG, "Start mediacodec failed.", e)
+            Log.e(TAG, "VideoCodec start failed.", e)
             e.printStackTrace()
         }
+        return false
     }
 
     fun pause() {
@@ -148,28 +155,28 @@ class H264Encoder(width: Int, height: Int) {
     fun stop() {
         try {
             if (!mConfigured) return
-            mMediaCodec?.signalEndOfInputStream()
-            mMediaCodec?.stop()
+            mConfigured = false
+            mVideoCodec?.signalEndOfInputStream()
+            mVideoCodec?.stop()
             mInputSurface?.release()
             mInputSurface = null
-            mMp4Muxer.stop()
-            mEncodeState = EncodeState.INIT
+            mMp4Muxer?.stop()
+            mEncodeState = EncodeState.STOPPED
             mStateCallback?.invoke(mEncodeState)
-            Log.i(TAG, "Mediacodec stopped.")
+            Log.i(TAG, "VideoCodec stopped.")
         } catch (e: Exception) {
-            Log.e(TAG, "Stop mediacodec failed.", e)
+            Log.e(TAG, "VideoCodec stop failed.", e)
             e.printStackTrace()
         }
     }
 
     fun release() {
-        mMediaCodec?.release()
-        mMediaCodec = null
-        mEncodeThread.quitSafely()
+        mVideoCodec?.release()
+        mVideoCodec = null
     }
 
     companion object {
-        private const val TAG = "H264Encoder"
+        private const val TAG = "VideoEncoder"
     }
 }
 
