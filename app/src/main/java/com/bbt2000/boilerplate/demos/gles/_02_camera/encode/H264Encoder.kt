@@ -3,6 +3,7 @@ package com.bbt2000.boilerplate.demos.gles._02_camera.encode
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
+import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
@@ -13,17 +14,21 @@ enum class EncodeState {
 }
 
 class H264Encoder(width: Int, height: Int) {
-    private var mMediaCodec: MediaCodec? = null
-    private val mMp4Muxer: Mp4Muxer by lazy { Mp4Muxer() }
     private val mWidth: Int = width
     private val mHeight: Int = height
+
+    private var mMediaCodec: MediaCodec? = null
+    private val mMp4Muxer: Mp4Muxer by lazy { Mp4Muxer() }
+
     private val mEncodeThread: HandlerThread by lazy { HandlerThread("encode").apply { start() } }
-    private var mEncodeHandler: Handler = Handler(mEncodeThread.looper)
+    private val mEncodeHandler: Handler by lazy { Handler(mEncodeThread.looper) }
     private var mInputSurface: Surface? = null
+
     private var mConfigured: Boolean = false
     private var mEncodeState: EncodeState = EncodeState.INIT
     private var mStateCallback: ((state: EncodeState) -> Unit)? = null
-    private var mResumeFromPause: Boolean = false // 是否从暂停恢复
+    private var mPausing: Boolean = false // 暂停录制中（为了暂停恢复不出现花屏和跳屏，需要等待关键帧）
+    private var mResuming: Boolean = false // 恢复录制中（恢复的时候需要从第一个关键帧开始录制）
 
     init {
         try {
@@ -49,9 +54,24 @@ class H264Encoder(width: Int, height: Int) {
         ) {
             try {
                 val buffer = codec.getOutputBuffer(index) ?: return
-                if (mEncodeState == EncodeState.STARTED && mMp4Muxer.started()) {
-                    mMp4Muxer.writeSampleData(buffer, info, true, mResumeFromPause)
-                    if (mResumeFromPause) mResumeFromPause = false
+                var resumedFromPause = false
+                // 恢复录制过程中，等待第一个关键帧
+                if (mResuming && (info.flags and MediaCodec.BUFFER_FLAG_KEY_FRAME != 0)) {
+                    mEncodeState = EncodeState.STARTED
+                    mStateCallback?.invoke(mEncodeState)
+                    mResuming = false
+                    resumedFromPause = true
+                    Log.i(TAG, "Encoder resumed.")
+                }
+                if (mEncodeState == EncodeState.STARTED) {
+                    mMp4Muxer.writeSampleData(buffer, info, true, resumedFromPause)
+                    // 暂停录制时，等待一个关键帧以后再暂停
+                    if (mPausing && (info.flags and MediaCodec.BUFFER_FLAG_KEY_FRAME != 0)) {
+                        mEncodeState = EncodeState.PAUSED
+                        mStateCallback?.invoke(mEncodeState)
+                        mPausing = false
+                        Log.i(TAG, "Encoder paused.")
+                    }
                 }
                 codec.releaseOutputBuffer(index, false)
             } catch (e: Exception) {
@@ -82,7 +102,12 @@ class H264Encoder(width: Int, height: Int) {
             mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30)
             mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, 8_000_000)
             mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
-            mMediaCodec?.setCallback(mCodecCallback)
+            // 6.0以后显示设置回调执行线程
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                mMediaCodec?.setCallback(mCodecCallback, mEncodeHandler)
+            } else {
+                mMediaCodec?.setCallback(mCodecCallback)
+            }
             mMediaCodec?.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             mConfigured = true
             Log.i(TAG, "Mediacodec configure success.")
@@ -93,58 +118,47 @@ class H264Encoder(width: Int, height: Int) {
     }
 
     fun start(callback: (surface: Surface) -> Unit) {
-        mEncodeHandler.post {
-            try {
-                configure()
-                if (!mConfigured) return@post
-                mInputSurface = mMediaCodec?.createInputSurface()
-                callback(mInputSurface!!)
-                mMediaCodec?.start()
-                mEncodeState = EncodeState.STARTED
-                mStateCallback?.invoke(mEncodeState)
-                Log.i(TAG, "Mediacodec started.")
-            } catch (e: Exception) {
-                Log.e(TAG, "Start mediacodec failed.", e)
-                e.printStackTrace()
-            }
+        try {
+            configure()
+            if (!mConfigured) return
+            mInputSurface = mMediaCodec?.createInputSurface()
+            callback(mInputSurface!!)
+            mMediaCodec?.start()
+            mEncodeState = EncodeState.STARTED
+            mStateCallback?.invoke(mEncodeState)
+            Log.i(TAG, "Mediacodec started.")
+        } catch (e: Exception) {
+            Log.e(TAG, "Start mediacodec failed.", e)
+            e.printStackTrace()
         }
     }
 
     fun pause() {
-        mEncodeHandler.post {
-            if (!mConfigured) return@post
-            mEncodeState = EncodeState.PAUSED
-            mStateCallback?.invoke(mEncodeState)
-            Log.i(TAG, "Encoder paused.")
-        }
+        if (!mConfigured) return
+        mPausing = true
+        Log.i(TAG, "Encoder pausing.")
     }
 
     fun resume() {
-        mEncodeHandler.post {
-            if (!mConfigured) return@post
-            mEncodeState = EncodeState.STARTED
-            mResumeFromPause = true
-            mStateCallback?.invoke(mEncodeState)
-            Log.i(TAG, "Encoder resumed.")
-        }
+        if (!mConfigured) return
+        mResuming = true
+        Log.i(TAG, "Encoder resuming.")
     }
 
     fun stop() {
-        mEncodeHandler.post {
-            try {
-                if (!mConfigured) return@post
-                mMediaCodec?.signalEndOfInputStream()
-                mMediaCodec?.stop()
-                mInputSurface?.release()
-                mInputSurface = null
-                mMp4Muxer.stop()
-                mEncodeState = EncodeState.INIT
-                mStateCallback?.invoke(mEncodeState)
-                Log.i(TAG, "Mediacodec stopped.")
-            } catch (e: Exception) {
-                Log.e(TAG, "Stop mediacodec failed.", e)
-                e.printStackTrace()
-            }
+        try {
+            if (!mConfigured) return
+            mMediaCodec?.signalEndOfInputStream()
+            mMediaCodec?.stop()
+            mInputSurface?.release()
+            mInputSurface = null
+            mMp4Muxer.stop()
+            mEncodeState = EncodeState.INIT
+            mStateCallback?.invoke(mEncodeState)
+            Log.i(TAG, "Mediacodec stopped.")
+        } catch (e: Exception) {
+            Log.e(TAG, "Stop mediacodec failed.", e)
+            e.printStackTrace()
         }
     }
 

@@ -363,7 +363,7 @@ class DemoActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "DemoActivity"
-        private const val CameraFacing = CameraCharacteristics.LENS_FACING_BACK
+        private const val CameraFacing = CameraCharacteristics.LENS_FACING_FRONT
     }
 }
 

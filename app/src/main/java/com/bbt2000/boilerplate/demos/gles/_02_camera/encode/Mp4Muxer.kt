@@ -70,7 +70,7 @@ class Mp4Muxer {
         buffer: ByteBuffer,
         bufferInfo: MediaCodec.BufferInfo,
         isVideo: Boolean,
-        resumeFromPause: Boolean = false
+        resumedFromPause: Boolean = false
     ) {
         if (!mStarted) return
         if (isVideo && mVideoTrackIndex >= 0) {
@@ -79,7 +79,7 @@ class Mp4Muxer {
                 mVideoPTSBegin = bufferInfo.presentationTimeUs
             }
             // 如果是从暂停恢复，需要调整第一帧的绝对时间戳
-            if (resumeFromPause) {
+            if (resumedFromPause) {
                 mVideoPTSBegin += bufferInfo.presentationTimeUs - mVideoPTSBegin - mVideoPTS - 33_000
             }
             // 相对于第一帧的时间戳
