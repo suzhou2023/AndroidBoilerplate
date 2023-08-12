@@ -50,7 +50,7 @@ class AudioEncoder(encodeHandler: Handler) {
                 val rawData = queue?.poll()
                 if (rawData != null) {
                     if ((rawData.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-
+                        // todo
                     }
                     buffer?.put(rawData.byteArray)
                     buffer?.position(0)
