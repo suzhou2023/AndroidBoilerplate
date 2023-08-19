@@ -15,7 +15,6 @@ class DemoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-//        setContentView(GLSurfaceViewTest(this))
         setContentView(SurfaceViewTest(this))
     }
 }

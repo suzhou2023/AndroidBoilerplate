@@ -8,7 +8,6 @@
 #include <GLES3/gl3.h>
 #include <android/asset_manager_jni.h>
 #include <thread>
-#include "egl_util.h"
 #include "shader/shader_yuv.h"
 
 
@@ -18,9 +17,9 @@ static const unsigned short height = 272;
 extern "C"
 void loadYuv(JNIEnv *env, jobject thiz, jobject surface, jobject asset_manager) {
 
-    EGLConfigInfo eglConfigInfo;
-    if (configEGL(env, surface, &eglConfigInfo) < 0) return;
-    GLuint program = createProgram(V_SHADER_YUV, F_SHADER_YUV);
+    // todo:
+
+    GLuint program = shaderUtil.createProgram(V_SHADER_YUV, F_SHADER_YUV);
     glUseProgram(program);
     // 顶点坐标和纹理坐标
     float vertices[] = {
@@ -149,7 +148,8 @@ void loadYuv(JNIEnv *env, jobject thiz, jobject surface, jobject asset_manager) 
         glClear(GL_COLOR_BUFFER_BIT);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void *) 0);
-        eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
+        // todo:
+
         glBindVertexArray(0);
         /*****绘制*****/
         // 线程休眠

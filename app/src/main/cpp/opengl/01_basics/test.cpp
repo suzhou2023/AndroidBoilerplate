@@ -7,9 +7,7 @@
 #include <jni.h>
 #include <android/native_window_jni.h>
 #include <cstring>
-#include "log_util.h"
 #include "01_native_window.h"
-#include "02_egl.h"
 #include "03_vbo.h"
 #include "04_ebo.h"
 #include "05_vao.h"
@@ -31,12 +29,14 @@ Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeApiTe
     vao_vbo_ebo(env, thiz, surface);
 }
 
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeLoadYuv(
         JNIEnv *env, jobject thiz, jobject surface, jobject asset_manager) {
     loadYuv(env, thiz, surface, asset_manager);
 }
+
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -45,4 +45,21 @@ Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeTextu
 //    texture(env, thiz, surface, bitmap);
     fbo(env, surface, bitmap);
 }
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativePrintGLSL(
+        JNIEnv *env, jobject thiz, jobject asset_manager) {
+
+    AAssetManager *assetManager = AAssetManager_fromJava(env, asset_manager);
+    AAsset *aAsset = AAssetManager_open(assetManager, "shader/v_shader_simple.glsl", AASSET_MODE_BUFFER);
+    off_t len = AAsset_getLength(aAsset);
+    unsigned char buf[len + 1];
+    buf[len] = '\0';
+    AAsset_read(aAsset, buf, len);
+    LOGD("buf = \n%s", buf);
+}
+
+
 

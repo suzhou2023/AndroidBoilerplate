@@ -7,16 +7,15 @@
 #include <jni.h>
 #include <GLES3/gl3.h>
 #include <atomic>
-#include "egl_util.h"
-#include "log_util.h"
+#include "EglUtil.h"
+#include "LogUtil.h"
 
 
 // VAO
 extern "C"
 void vao(JNIEnv *env, jobject thiz, jobject surface) {
-    // 配置EGL
-    EGLConfigInfo eglConfigInfo;
-    if (configEGL(env, surface, &eglConfigInfo) < 0) return;
+    //todo: 配置EGL
+
 
     const char *V_SHADER =
             "#version 300 es\n"
@@ -40,7 +39,7 @@ void vao(JNIEnv *env, jobject thiz, jobject surface) {
             "}";
 
     // program
-    GLuint program = createProgram(V_SHADER, F_SHADER);
+    GLuint program = shaderUtil.createProgram(V_SHADER, F_SHADER);
     glUseProgram(program);
 
     //第一个三角形顶点属性数组
@@ -104,8 +103,8 @@ void vao(JNIEnv *env, jobject thiz, jobject surface) {
     //原来绑定解绑VBO的代码可以去掉了，因为VBO的状态已经缓存在VAO了
     glBindVertexArray(VAOs[0]);
     glDrawArrays(GL_TRIANGLES, 0, 3);
-    //窗口显示，交换双缓冲区
-    eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
+    //todo:窗口显示，交换双缓冲区
+
     //解绑VAO[0]
     glBindVertexArray(0);
     glDeleteProgram(program);

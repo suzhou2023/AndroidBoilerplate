@@ -4,14 +4,9 @@ import android.content.Context
 import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.util.AttributeSet
+import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import androidx.core.graphics.drawable.toBitmap
-import com.bbt2000.boilerplate.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 /**
@@ -35,8 +30,11 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
 //            }
 //        }
 
-        val bitmap = resources.getDrawable(R.drawable.wall).toBitmap()
-        nativeTexture(holder.surface, bitmap)
+//        val bitmap = context.resources.getDrawable(R.drawable.wall).toBitmap()
+//        nativeTexture(holder.surface, bitmap)
+
+
+        nativePrintGLSL(context.assets)
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
@@ -47,9 +45,10 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
 
     }
 
-    private external fun nativeApiTest(surface: Any)
-    private external fun nativeTexture(surface: Any, bitmap1: Bitmap)
-    private external fun nativeLoadYuv(surface: Any, assetManager: AssetManager)
+    private external fun nativeApiTest(surface: Surface)
+    private external fun nativeTexture(surface: Surface, bitmap: Bitmap)
+    private external fun nativeLoadYuv(surface: Surface, assetManager: AssetManager)
+    private external fun nativePrintGLSL(assetManager: AssetManager)
 
 
     companion object {

@@ -7,16 +7,14 @@
 #include <jni.h>
 #include <GLES3/gl3.h>
 #include <atomic>
-#include "egl_util.h"
-#include "log_util.h"
+#include "EglUtil.h"
+#include "LogUtil.h"
 
 
 // 顶点索引缓冲对象
 extern "C"
 void ebo(JNIEnv *env, jobject thiz, jobject surface) {
-    // 配置EGL
-    EGLConfigInfo eglConfigInfo;
-    if (configEGL(env, surface, &eglConfigInfo) < 0) return;
+    // todo:配置EGL
 
     const char *V_SHADER =
             "#version 300 es\n"
@@ -40,7 +38,7 @@ void ebo(JNIEnv *env, jobject thiz, jobject surface) {
             "}";
 
     // program
-    GLuint program = createProgram(V_SHADER, F_SHADER);
+    GLuint program = shaderUtil.createProgram(V_SHADER, F_SHADER);
     glUseProgram(program);
 
     float vertices[] = {
@@ -79,8 +77,8 @@ void ebo(JNIEnv *env, jobject thiz, jobject surface) {
     glClear(GL_COLOR_BUFFER_BIT);
     //通过顶点索引绘制图元，注意这里已经绑定了EBO，所以最后一个参数传入的内存是数据再EBO中内存的起始地址偏移量
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void *) 0);
-    //窗口显示，交换双缓冲区
-    eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
+    //todo:窗口显示，交换双缓冲区
+
     //解绑EBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glDeleteBuffers(1, &EBO);
