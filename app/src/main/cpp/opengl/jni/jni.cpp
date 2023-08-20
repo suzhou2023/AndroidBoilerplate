@@ -39,7 +39,7 @@ Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeCreateGLContext(
     // 保存assetManager
     glContext->assetManager = AAssetManager_fromJava(env, asset_manager);
 
-    LOGD("Create gl context success.");
+    LOGD("nativeCreateGLContext success.");
     return reinterpret_cast<jlong>(glContext);
 }
 
@@ -47,6 +47,7 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeEGLCreateSurface(
         JNIEnv *env, jobject thiz, jlong gl_context, jobject surface, jint index) {
+
     if (gl_context <= 0) return EGL_FALSE;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
@@ -62,22 +63,33 @@ Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeEGLCreateSurface(
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeCreateProgram(
-        JNIEnv *env, jobject thiz, jlong gl_context) {
+        JNIEnv *env, jobject thiz, jlong gl_context, jstring vName, jstring fName) {
 
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
-    // 注意需要释放字符数组
-    char *buf_v = assetUtil.readFile(glContext->assetManager, "shader/v_shader_simple.glsl");
-    char *buf_f = assetUtil.readFile(glContext->assetManager, "shader/f_shader_oes.glsl");
-    GLuint program = shaderUtil.createProgram(buf_v, buf_f);
+    // jstring转c字符串
+    const char *v_name = env->GetStringUTFChars(vName, nullptr);
+    const char *f_name = env->GetStringUTFChars(fName, nullptr);
+
+    GLubyte *buf_v = assetUtil.readFile(glContext->assetManager, v_name);
+    GLubyte *buf_f = assetUtil.readFile(glContext->assetManager, f_name);
+
+    // 释放字符串
+    env->ReleaseStringUTFChars(vName, v_name);
+    env->ReleaseStringUTFChars(fName, f_name);
+
+    GLuint program = shaderUtil.createProgram(reinterpret_cast<const char *>(buf_v), reinterpret_cast<const char *>(buf_f));
+
+    // 释放字符数组
     delete buf_v;
     delete buf_f;
 
     if (program <= 0) return;
     glContext->program[0] = program;
+    glUseProgram(program);
 
-    LOGD("nativeCreateProgram end");
+    LOGD("nativeCreateProgram success.");
 }
 
 /**
@@ -115,7 +127,7 @@ Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeLoadVertices(
     glContext->vbo[0] = vbo;
     glContext->ebo[0] = ebo;
 
-    LOGD("nativeLoadVertices end");
+    LOGD("nativeLoadVertices success.");
 }
 
 extern "C"
@@ -155,7 +167,7 @@ Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeCreateOESTexture(
     // 2D纹理图层赋值。
     glUniform1i(glGetUniformLocation(glContext->program[1], "layer"), 1);
 
-    LOGD("Create OES texture success.");
+    LOGD("nativeCreateOESTexture success.");
     glContext->oesTexture = texture;
     return texture;
 }
@@ -187,7 +199,7 @@ Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeCreateFbo(
 
     glContext->fbo[0] = fbo;
     glContext->fboTexture = texture;
-    LOGD("Create FBO success.");
+    LOGD("nativeCreateFbo success.");
 }
 
 
@@ -208,6 +220,8 @@ Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeSetMatrix(
     glUseProgram(glContext->program[0]);
     GLint matrixLocation = glGetUniformLocation(glContext->program[0], "matrix");
     glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, array);
+
+    LOGD("nativeSetMatrix success.");
 }
 
 

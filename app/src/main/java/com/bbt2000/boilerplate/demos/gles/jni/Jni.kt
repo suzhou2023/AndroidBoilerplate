@@ -9,10 +9,6 @@ import android.content.res.AssetManager
  */
 object Jni {
 
-    init {
-        System.loadLibrary("gl_render")
-    }
-
     /**
      * 创建GL context
      *
@@ -37,14 +33,14 @@ object Jni {
      *
      * @param glContext
      */
-    external fun nativeCreateProgram(glContext: Long = 0)
+    external fun nativeCreateProgram(glContext: Long, vName: String, fName: String)
 
     /**
      * 加载顶点属性数组
      *
      * @param glContext
      */
-    external fun nativeLoadVertices(glContext: Long = 0)
+    external fun nativeLoadVertices(glContext: Long)
 
     /**
      * 通知native窗口变化
@@ -54,7 +50,7 @@ object Jni {
      * @param width
      * @param height
      */
-    external fun nativeSurfaceChanged(glContext: Long = 0, format: Int, width: Int, height: Int)
+    external fun nativeSurfaceChanged(glContext: Long, format: Int, width: Int, height: Int)
 
     /**
      * 创建OES纹理
@@ -93,6 +89,6 @@ object Jni {
      *
      * @param glContext
      */
-    external fun nativeDestroyGLContext(glContext: Long = 0)
+    external fun nativeDestroyGLContext(glContext: Long)
 
 }

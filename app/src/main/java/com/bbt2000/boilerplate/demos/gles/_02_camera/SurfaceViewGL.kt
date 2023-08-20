@@ -31,7 +31,7 @@ import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
 class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
     AutoFitSurfaceView(context, attrs), SurfaceHolder.Callback {
 
-    private var mGLContext: Long = 0;
+    private var mGLContext: Long = 0
     private val mHandlerThread: HandlerThread by lazy { HandlerThread("gl_render").apply { start() } }
     private val mHandler: Handler = Handler(mHandlerThread.looper)
     private var mSurfaceTexture: SurfaceTexture? = null
@@ -86,7 +86,7 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
             if (mGLContext <= 0) return@post
             val success = nativeEGLCreateSurface(mGLContext, holder.surface, 0)
             if (!success) return@post
-            nativeCreateProgram(mGLContext)
+            nativeCreateProgram(mGLContext, "shader/v_simple_m.glsl", "shader/f_oes.glsl")
             nativeLoadVertices(mGLContext)
             val oesTexture = nativeCreateOESTexture(mGLContext)
             if (oesTexture < 0) return@post

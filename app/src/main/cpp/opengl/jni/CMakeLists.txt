@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22.1)
 
-set(PROJECT_NAME gl_render)
+set(PROJECT_NAME gl_jni)
 project(${PROJECT_NAME} VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -12,7 +12,7 @@ add_library(
 
         SHARED
 
-        ../jni/jni.cpp
+        jni.cpp
 )
 
 find_library( # Sets the name of the path variable.
