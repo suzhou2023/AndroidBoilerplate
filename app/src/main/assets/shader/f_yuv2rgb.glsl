@@ -16,8 +16,8 @@ void main() {
     vec3 rgb;
     // 分别取yuv各个分量的采样纹理
     yuv.x = texture(yTexture, texCoord2).r;
-    yuv.y = texture(uTexture, texCoord2).g - 0.5;
-    yuv.z = texture(vTexture, texCoord2).b - 0.5;
+    yuv.y = texture(uTexture, texCoord2).r - 0.5;
+    yuv.z = texture(vTexture, texCoord2).r - 0.5;
     // yuv转rgb
     rgb = mat3(
     1.0, 1.0, 1.0,
