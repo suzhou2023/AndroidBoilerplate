@@ -6,18 +6,14 @@ project(${PROJECT_NAME} VERSION 1.0)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../include")
-
-file(GLOB_RECURSE UTIL_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../../util/*.cpp")
-file(GLOB_RECURSE SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 add_library(
         ${PROJECT_NAME}
 
         SHARED
 
-        ${UTIL_FILES}
-        ${SOURCE_FILES}
+        ../jni/jni.cpp
+        test.cpp
 )
 
 find_library( # Sets the name of the path variable.

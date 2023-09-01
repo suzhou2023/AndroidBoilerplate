@@ -7,16 +7,20 @@
 #include <jni.h>
 #include <GLES3/gl3.h>
 #include <GLES2/gl2ext.h>
-#include "shader.h"
+#include <android/native_window_jni.h>
+#include <cstring>
+#include "LogUtil.h"
+#include "AssetUtil.h"
 #include "GLContext.h"
-#include "egl_util.h"
-#include "gl_util.h"
+#include "EglUtil.h"
+#include "GlUtil.h"
 
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeCreateGLContext(
-        JNIEnv *env, jobject thiz, jlong other_glcontext) {
+Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeCreateGLContext(
+        JNIEnv *env, jobject thiz, jlong other_glcontext, jobject asset_manager) {
+
     EGLContext shareContext = EGL_NO_CONTEXT;
     if (other_glcontext > 0) {
         auto *otherGLContext = reinterpret_cast<GLContext *>(other_glcontext);
@@ -26,47 +30,77 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeCreateGLConte
     }
 
     auto *glContext = new GLContext();
-    EGLBoolean ret = eglCreateContext(glContext, shareContext);
+    EGLBoolean ret = eglUtil.createContext(glContext, shareContext);
     if (ret <= 0) {
         delete glContext;
         return reinterpret_cast<jlong>(nullptr);
     }
 
-    LOGD("Create gl context success.");
+    // 保存assetManager
+    glContext->assetManager = AAssetManager_fromJava(env, asset_manager);
+
+    LOGD("nativeCreateGLContext success.");
     return reinterpret_cast<jlong>(glContext);
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeEGLCreateSurface(
+Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeEGLCreateSurface(
         JNIEnv *env, jobject thiz, jlong gl_context, jobject surface, jint index) {
+
     if (gl_context <= 0) return EGL_FALSE;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
-    EGLBoolean ret = eglCreateWindowSurface(env, glContext, surface, index);
+    EGLBoolean ret = eglUtil.eglCreateSurface(env, glContext, surface, index);
     if (ret == EGL_TRUE) {
-        eglMakeCurrent(glContext, glContext->eglSurface[index]);
+        eglUtil.makeCurrent(glContext, glContext->eglSurface[index]);
         return EGL_TRUE;
     }
 
     return EGL_FALSE;
 }
 
-
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeConfigGL(
-        JNIEnv *env, jobject thiz, jlong gl_context) {
+Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeCreateProgram(
+        JNIEnv *env, jobject thiz, jlong gl_context, jstring vName, jstring fName) {
+
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
-    // 创建两个着色器程序
-    GLuint program = createProgram(V_SHADER, F_SHADER_OES);
+    // jstring转c字符串
+    const char *v_name = env->GetStringUTFChars(vName, nullptr);
+    const char *f_name = env->GetStringUTFChars(fName, nullptr);
+
+    GLubyte *buf_v = assetUtil.readFile(glContext->assetManager, v_name);
+    GLubyte *buf_f = assetUtil.readFile(glContext->assetManager, f_name);
+
+    // 释放字符串
+    env->ReleaseStringUTFChars(vName, v_name);
+    env->ReleaseStringUTFChars(fName, f_name);
+
+    GLuint program = shaderUtil.createProgram(reinterpret_cast<const char *>(buf_v), reinterpret_cast<const char *>(buf_f));
+
+    // 释放字符数组
+    delete buf_v;
+    delete buf_f;
+
     if (program <= 0) return;
     glContext->program[0] = program;
-    GLuint program2 = createProgram(V_SHADER2, F_SHADER_2D);
-    if (program2 <= 0) return;
-    glContext->program[1] = program2;
+    glUseProgram(program);
+
+    LOGD("nativeCreateProgram success.");
+}
+
+/**
+ * 加载顶点属性数组
+ */
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeLoadVertices(
+        JNIEnv *env, jobject thiz, jlong gl_context) {
+    if (gl_context <= 0) return;
+    auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
     // 顶点坐标和纹理坐标
     float vertices[] = {
@@ -83,21 +117,22 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeConfigGL(
     };
     // vbo, ebo
     GLuint vbo, ebo;
-    genBuffer(&vbo, vertices, sizeof(vertices));
+    glUtil.genBuffer(&vbo, vertices, sizeof(vertices));
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * 4));
     glEnableVertexAttribArray(1);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    genIndexBuffer(&ebo, indices, sizeof(indices));
+    glUtil.genIndexBuffer(&ebo, indices, sizeof(indices));
     glContext->vbo[0] = vbo;
     glContext->ebo[0] = ebo;
-    LOGD("Config gl success.");
+
+    LOGD("nativeLoadVertices success.");
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeSurfaceChanged(
+Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeSurfaceChanged(
         JNIEnv *env, jobject thiz, jlong gl_context, jint format, jint width, jint height) {
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
@@ -106,23 +141,12 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeSurfaceChange
     glContext->width = width;
     glContext->height = height;
 
-    GLuint byteNum;
-    if (format == RGB_565) {
-        byteNum = 2;
-    } else if (format == RGB_888) {
-        byteNum = 3;
-    } else if (format == RGBA_8888) {
-        byteNum = 4;
-    } else {
-        return;
-    }
-
     glContext->frame_data = static_cast<GLubyte *>(malloc(width * height * 4));
 }
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeCreateOESTexture(
+Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeCreateOESTexture(
         JNIEnv *env, jobject thiz, jlong gl_context) {
 
     if (gl_context <= 0) return -1;
@@ -143,20 +167,20 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeCreateOESText
     // 2D纹理图层赋值。
     glUniform1i(glGetUniformLocation(glContext->program[1], "layer"), 1);
 
-    LOGD("Create OES texture success.");
+    LOGD("nativeCreateOESTexture success.");
     glContext->oesTexture = texture;
     return texture;
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeCreateFbo(
+Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeCreateFbo(
         JNIEnv *env, jobject thiz, jlong gl_context, jint width, jint height) {
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
     GLuint fbo, texture;
-    genTex2D(&texture);
+    glUtil.genTex2D(&texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -175,13 +199,13 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeCreateFbo(
 
     glContext->fbo[0] = fbo;
     glContext->fboTexture = texture;
-    LOGD("Create FBO success.");
+    LOGD("nativeCreateFbo success.");
 }
 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeSetMatrix(
+Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeSetMatrix(
         JNIEnv *env, jobject thiz, jlong gl_context, jfloatArray matrix) {
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
@@ -196,12 +220,14 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeSetMatrix(
     glUseProgram(glContext->program[0]);
     GLint matrixLocation = glGetUniformLocation(glContext->program[0], "matrix");
     glUniformMatrix4fv(matrixLocation, 1, GL_FALSE, array);
+
+    LOGD("nativeSetMatrix success.");
 }
 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDrawFrame(
+Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeDrawFrame(
         JNIEnv *env, jobject thiz, jlong gl_context) {
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
@@ -260,13 +286,13 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDrawFrame(
     glUseProgram(glContext->program[0]);
     glActiveTexture(GL_TEXTURE0);
     if (glContext->eglSurface[0] != nullptr) {
-        eglMakeCurrent(glContext, glContext->eglSurface[0]);
-        glDraw(6);
+        eglUtil.makeCurrent(glContext, glContext->eglSurface[0]);
+        glUtil.drawElements(6);
         eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[0]);
     }
     if (glContext->eglSurface[1] != nullptr) {
-        eglMakeCurrent(glContext, glContext->eglSurface[1]);
-        glDraw(6);
+        eglUtil.makeCurrent(glContext, glContext->eglSurface[1]);
+        glUtil.drawElements(6);
         eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[1]);
     }
 }
@@ -274,12 +300,22 @@ Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDrawFrame(
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__102_1camera_jni_Jni_nativeDestroyGLContext(
+Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeDestroyGLContext(
         JNIEnv *env, jobject thiz, jlong gl_context) {
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
     delete glContext;
 }
+
+
+
+
+
+
+
+
+
+
 
 
 

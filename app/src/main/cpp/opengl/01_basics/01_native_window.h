@@ -7,7 +7,7 @@
 #include <jni.h>
 #include <android/native_window_jni.h>
 #include <cstring>
-#include "log_util.h"
+#include "LogUtil.h"
 
 /**
  * opengles绘图都要通过EGL层才能显示在屏幕上

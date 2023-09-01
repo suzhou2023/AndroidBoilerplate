@@ -7,15 +7,13 @@
 #ifndef ANDROIDBOILERPLATE_GLCONTEXT_H
 #define ANDROIDBOILERPLATE_GLCONTEXT_H
 
+
 #include <EGL/egl.h>
 #include <GLES3/gl3.h>
 #include <cstdlib>
-#include "log_util.h"
+#include <android/asset_manager.h>
+#include "LogUtil.h"
 
-// java层像素格式
-static const GLenum RGBA_8888 = 1;
-static const GLenum RGB_888 = 3;
-static const GLenum RGB_565 = 4;
 
 class GLContext {
 public:
@@ -99,10 +97,15 @@ public:
     EGLConfig eglConfig{nullptr};
     EGLContext eglContext{nullptr};
     EGLSurface eglSurface[5]{nullptr};
+    // native层资源管理器
+    AAssetManager *assetManager{nullptr};
     GLenum format{0};
-    GLsizei width{0}; // 图像宽度
-    GLsizei height{0}; // 图像高度
-    void *frame_data{nullptr}; // 图像帧的存储空间
+    // 图像宽度
+    GLsizei width{0};
+    // 图像高度
+    GLsizei height{0};
+    // 图像帧的存储空间
+    void *frame_data{nullptr};
     GLuint program[5]{};
     GLuint vbo[5]{0};
     GLuint ebo[5]{0};

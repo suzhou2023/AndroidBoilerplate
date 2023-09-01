@@ -10,15 +10,16 @@ import android.util.Log
 import android.util.Size
 import android.view.Surface
 import android.view.SurfaceHolder
-import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeConfigGL
-import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateFbo
-import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateGLContext
-import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeCreateOESTexture
-import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeDestroyGLContext
-import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeDrawFrame
-import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeEGLCreateSurface
-import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeSetMatrix
-import com.bbt2000.boilerplate.demos.gles._02_camera.jni.Jni.nativeSurfaceChanged
+import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeCreateFbo
+import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeCreateGLContext
+import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeCreateOESTexture
+import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeCreateProgram
+import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeDestroyGLContext
+import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeDrawFrame
+import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeEGLCreateSurface
+import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeLoadVertices
+import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeSetMatrix
+import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeSurfaceChanged
 import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
 
 
@@ -30,7 +31,7 @@ import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
 class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
     AutoFitSurfaceView(context, attrs), SurfaceHolder.Callback {
 
-    private var mGLContext: Long = 0;
+    private var mGLContext: Long = 0
     private val mHandlerThread: HandlerThread by lazy { HandlerThread("gl_render").apply { start() } }
     private val mHandler: Handler = Handler(mHandlerThread.looper)
     private var mSurfaceTexture: SurfaceTexture? = null
@@ -81,11 +82,12 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
     override fun surfaceCreated(holder: SurfaceHolder) {
         Log.d(TAG, "Surface created.")
         mHandler.post {
-            mGLContext = nativeCreateGLContext()
+            mGLContext = nativeCreateGLContext(assetManager = context.assets)
             if (mGLContext <= 0) return@post
             val success = nativeEGLCreateSurface(mGLContext, holder.surface, 0)
             if (!success) return@post
-            nativeConfigGL(mGLContext)
+            nativeCreateProgram(mGLContext, "shader/v_simple_m.glsl", "shader/f_oes.glsl")
+            nativeLoadVertices(mGLContext)
             val oesTexture = nativeCreateOESTexture(mGLContext)
             if (oesTexture < 0) return@post
             mSurfaceTexture = SurfaceTexture(oesTexture)

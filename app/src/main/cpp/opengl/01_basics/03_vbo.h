@@ -6,16 +6,13 @@
 
 #include <jni.h>
 #include <GLES3/gl3.h>
-#include <atomic>
-#include "egl_util.h"
-#include "log_util.h"
+#include "EglUtil.h"
+#include "GlUtil.h"
+#include "LogUtil.h"
 
 // 顶点缓冲对象
 extern "C"
-void vbo(JNIEnv *env, jobject thiz, jobject surface) {
-    // 配置EGL
-    EGLConfigInfo eglConfigInfo;
-    if (configEGL(env, surface, &eglConfigInfo) < 0) return;
+void vbo(JNIEnv *env, jobject thiz, GLContext *glContext) {
 
     const char *V_SHADER =
             "#version 300 es\n"
@@ -39,7 +36,7 @@ void vbo(JNIEnv *env, jobject thiz, jobject surface) {
             "}";
 
     // program
-    GLuint program = createProgram(V_SHADER, F_SHADER);
+    GLuint program = shaderUtil.createProgram(V_SHADER, F_SHADER);
     glUseProgram(program);
 
     static float triangleVerWithColor[] = {
@@ -67,8 +64,8 @@ void vbo(JNIEnv *env, jobject thiz, jobject surface) {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLES, 0, 4);
-    //窗口显示，交换双缓冲区
-    eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
+    eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[0]);
+
     //解绑EBO
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glDeleteBuffers(1, VBOs);

@@ -7,19 +7,16 @@
 #include <jni.h>
 #include <GLES3/gl3.h>
 #include <atomic>
-#include "egl_util.h"
-#include "log_util.h"
 #include "shader/shader.h"
 
 
 // 结合使用
 extern "C"
 void vao_vbo_ebo(JNIEnv *env, jobject thiz, jobject surface) {
-    // 配置EGL
-    EGLConfigInfo eglConfigInfo;
-    if (configEGL(env, surface, &eglConfigInfo) < 0) return;
+    //todo: 配置EGL
+
     // program
-    GLuint program = createProgram(V_SHADER_BASIC, F_SHADER_BASIC);
+    GLuint program = shaderUtil.createProgram(V_SHADER_BASIC, F_SHADER_BASIC);
     glUseProgram(program);
 
     float vertices[] = {
@@ -67,7 +64,8 @@ void vao_vbo_ebo(JNIEnv *env, jobject thiz, jobject surface) {
     //绘制三角形
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void *) 0);
-    eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
+    // todo:
+
     //todo: 这里还需要解绑EBO吗？
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);

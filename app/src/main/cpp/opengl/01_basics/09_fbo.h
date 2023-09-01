@@ -4,14 +4,14 @@
  *  description : 
  */
 
-#include "gl_util.h"
+
 
 
 void fbo(JNIEnv *env, jobject surface, jobject bitmap) {
-    EGLConfigInfo eglConfigInfo;
-    if (configEGL(env, surface, &eglConfigInfo) < 0) return;
-    GLuint program = createProgram(V_SHADER_TEX, F_SHADER_TEX);
-    GLuint program2 = createProgram(V_SHADER_TEX, F_SHADER_TEX2);
+    // todo:
+
+    GLuint program = shaderUtil.createProgram(V_SHADER_TEX, F_SHADER_TEX);
+    GLuint program2 = shaderUtil.createProgram(V_SHADER_TEX, F_SHADER_TEX2);
 
     // 顶点坐标和纹理坐标
     float vertices[] = {
@@ -27,21 +27,21 @@ void fbo(JNIEnv *env, jobject surface, jobject bitmap) {
     };
 
     GLuint vbo, ebo;
-    genBuffer(&vbo, vertices, sizeof(vertices));
+    glUtil.genBuffer(&vbo, vertices, sizeof(vertices));
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4 * 5, 0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * 5, (void *) (3 * 4));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
-    genIndexBuffer(&ebo, indices, sizeof(indices));
+    glUtil.genIndexBuffer(&ebo, indices, sizeof(indices));
 
     GLuint tex;
-    genTex2D(&tex);
-    texImage2D(env, bitmap);
+    glUtil.genTex2D(&tex);
+    glUtil.texImage2D(env, bitmap);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     /*****fbo配置*****/
     GLuint fbo, tex2;
-    genTex2D(&tex2);
+    glUtil.genTex2D(&tex2);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1000, 1000,
                  0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -66,14 +66,15 @@ void fbo(JNIEnv *env, jobject surface, jobject bitmap) {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, tex);
-    glDraw(6);
+    glUtil.drawElements(6);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
     glUseProgram(program);// 正常
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, tex2);
-    glDraw(6);
-    eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
+    glUtil.drawElements(6);
+    // todo:
+
     /*****绘制阶段*****/
 }

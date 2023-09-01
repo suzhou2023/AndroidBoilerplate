@@ -7,8 +7,6 @@
 #include <jni.h>
 #include <GLES3/gl3.h>
 #include <android/bitmap.h>
-#include "egl_util.h"
-#include "gl_util.h"
 #include "shader/shader_tex.h"
 
 
@@ -23,11 +21,10 @@ void texture(JNIEnv *env, jobject thiz, jobject surface, jobject bitmap) {
     void *bmpPixels;
     AndroidBitmap_lockPixels(env, bitmap, &bmpPixels);
 
-    // EGL配置
-    EGLConfigInfo eglConfigInfo;
-    if (configEGL(env, surface, &eglConfigInfo) < 0) return;
+    // todo: EGL配置
+
     // 创建并使用着色器程序
-    GLuint program = createProgram(V_SHADER_TEX, F_SHADER_TEX);
+    GLuint program = shaderUtil.createProgram(V_SHADER_TEX, F_SHADER_TEX);
     glUseProgram(program);
     // 顶点坐标和纹理坐标
     float vertices[] = {
@@ -47,7 +44,7 @@ void texture(JNIEnv *env, jobject thiz, jobject surface, jobject bitmap) {
 
     GLuint VBO, EBO;
     // 创建顶点缓冲并填充数据
-    genBuffer(&VBO, vertices, sizeof(vertices));
+    glUtil.genBuffer(&VBO, vertices, sizeof(vertices));
     // 指定顶点坐标的存放位置和格式
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
                           5 * sizeof(float), (void *) 0);
@@ -59,11 +56,11 @@ void texture(JNIEnv *env, jobject thiz, jobject surface, jobject bitmap) {
     // 启用纹理坐标数组
     glEnableVertexAttribArray(1);
     // 创建顶点索引缓冲并填充数据
-    genIndexBuffer(&EBO, indices, sizeof(indices));
+    glUtil.genIndexBuffer(&EBO, indices, sizeof(indices));
 
     GLuint texture;
     // 创建2d纹理对象，绑定和配置
-    genTex2D(&texture);
+    glUtil.genTex2D(&texture);
     // 指定纹理图片
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmpInfo.width, bmpInfo.height,
                  0, GL_RGBA, GL_UNSIGNED_BYTE, bmpPixels);
@@ -74,8 +71,9 @@ void texture(JNIEnv *env, jobject thiz, jobject surface, jobject bitmap) {
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, texture);
     // 绘制
-    glDraw(3);
-    eglSwapBuffers(eglConfigInfo.display, eglConfigInfo.eglSurface);
+    glUtil.drawElements(3);
+    // todo
+
     // 释放着色器程序对象
     glDeleteProgram(program);
 }

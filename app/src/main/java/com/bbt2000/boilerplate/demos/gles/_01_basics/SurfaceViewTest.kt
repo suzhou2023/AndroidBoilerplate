@@ -1,17 +1,14 @@
 package com.bbt2000.boilerplate.demos.gles._01_basics
 
 import android.content.Context
-import android.content.res.AssetManager
 import android.graphics.Bitmap
+import android.os.Handler
+import android.os.HandlerThread
 import android.util.AttributeSet
+import android.view.Surface
 import android.view.SurfaceHolder
-import android.view.SurfaceView
-import androidx.core.graphics.drawable.toBitmap
-import com.bbt2000.boilerplate.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.bbt2000.boilerplate.demos.gles.jni.Jni
+import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
 
 
 /**
@@ -20,36 +17,59 @@ import kotlinx.coroutines.withContext
  *  description :
  */
 class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
-    SurfaceView(context, attrs), SurfaceHolder.Callback {
+    AutoFitSurfaceView(context, attrs), SurfaceHolder.Callback {
+
+    private var glContext: Long = 0
+    private val handlerThread: HandlerThread by lazy { HandlerThread("gl-render").apply { start() } }
+    private val handler: Handler = Handler(handlerThread.looper)
+
 
     init {
         holder.addCallback(this)
+//        setAspectRatio(4, 3)
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
-//        nativeApiTest(holder.surface)
-
-//        CoroutineScope(Dispatchers.Default).launch {
-//            withContext(Dispatchers.IO) {
-//                nativeLoadYuv(holder.surface, context.assets)
-//            }
-//        }
-
-        val bitmap = resources.getDrawable(R.drawable.wall).toBitmap()
-        nativeTexture(holder.surface, bitmap)
+        handler.post {
+            glContext = Jni.nativeCreateGLContext(assetManager = context.assets)
+            if (glContext <= 0) return@post
+            Jni.nativeEGLCreateSurface(glContext, holder.surface, 0)
+            Jni.nativeLoadVertices(glContext)
+        }
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+        handler.post {
+//            nativeApiTest(glContext)
 
+//            CoroutineScope(Dispatchers.Default).launch {
+//                withContext(Dispatchers.IO) {
+//                    nativeLoadYuv(holder.surface, context.assets)
+//                }
+//            }
+
+//            val bitmap = context.resources.getDrawable(R.drawable.wall).toBitmap()
+//            nativeTexture(holder.surface, bitmap)
+
+//            Jni.nativeCreateProgram(glContext, "shader/v_simple_m.glsl", "shader/f_yuv2rgb.glsl")
+//            nativeLoadYuv2(glContext)
+
+            Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_yuv2rgb.glsl")
+            nativeLoadYuv(glContext)
+        }
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
-
+        handler.post {
+            Jni.nativeDestroyGLContext(glContext)
+        }
     }
 
-    private external fun nativeApiTest(surface: Any)
-    private external fun nativeTexture(surface: Any, bitmap1: Bitmap)
-    private external fun nativeLoadYuv(surface: Any, assetManager: AssetManager)
+
+    private external fun nativeApiTest(glContext: Long)
+    private external fun nativeTexture(surface: Surface, bitmap: Bitmap)
+    private external fun nativeLoadYuv(glContext: Long)
+    private external fun nativeLoadYuv2(glContext: Long)
 
 
     companion object {
