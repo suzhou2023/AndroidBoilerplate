@@ -10,8 +10,8 @@
 void fbo(JNIEnv *env, jobject surface, jobject bitmap) {
     // todo:
 
-    GLuint program = shaderUtil.createProgram(V_SHADER_TEX, F_SHADER_TEX);
-    GLuint program2 = shaderUtil.createProgram(V_SHADER_TEX, F_SHADER_TEX2);
+//    GLuint program = shaderUtil.createProgram(V_SHADER_TEX, F_SHADER_TEX);
+//    GLuint program2 = shaderUtil.createProgram(V_SHADER_TEX, F_SHADER_TEX2);
 
     // 顶点坐标和纹理坐标
     float vertices[] = {
@@ -62,7 +62,8 @@ void fbo(JNIEnv *env, jobject surface, jobject bitmap) {
     /*****fbo配置*****/
 
     /*****绘制阶段*****/
-    glUseProgram(program2);// 灰度滤镜
+    //todo
+//    glUseProgram(program2);// 灰度滤镜
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, tex);
@@ -70,7 +71,8 @@ void fbo(JNIEnv *env, jobject surface, jobject bitmap) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
-    glUseProgram(program);// 正常
+    // todo
+//    glUseProgram(program);// 正常
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, tex2);
     glUtil.drawElements(6);

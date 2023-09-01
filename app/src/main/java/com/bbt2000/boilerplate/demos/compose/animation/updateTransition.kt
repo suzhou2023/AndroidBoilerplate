@@ -67,7 +67,7 @@ fun SwitchBlock() {
             }
     ) {
         Image(
-            painter = painterResource(id = R.drawable.profile_picture),
+            painter = painterResource(id = R.drawable.profile_432x431),
             contentDescription = "node_background",
             contentScale = ContentScale.FillBounds
         )

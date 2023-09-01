@@ -5,10 +5,12 @@ import android.graphics.Bitmap
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.AttributeSet
-import android.view.Surface
 import android.view.SurfaceHolder
+import androidx.core.graphics.drawable.toBitmap
+import com.bbt2000.boilerplate.R
 import com.bbt2000.boilerplate.demos.gles.jni.Jni
 import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
+import com.orhanobut.logger.Logger
 
 
 /**
@@ -38,24 +40,35 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
         }
     }
 
+    // opengl api练习
+    fun apiTest() {
+        nativeApiTest(glContext)
+    }
+
+    // 渲染图片
+    fun texture() {
+        Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_tex.glsl")
+        val bitmap = context.resources.getDrawable(R.drawable.profile_432x431)
+            .toBitmap(config = Bitmap.Config.ARGB_8888)
+        Logger.d("byteCount=${bitmap.byteCount / 432 / 431}")
+        nativeTexture(glContext, bitmap)
+    }
+
+    // 渲染yuv图片
+    fun loadYuv() {
+        Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_yuv2rgb.glsl")
+        nativeLoadYuv(glContext)
+    }
+
+    // 渲染yuv视频
+    fun loadYuvVideo() {
+        Jni.nativeCreateProgram(glContext, "shader/v_simple_m.glsl", "shader/f_yuv2rgb.glsl")
+        nativeLoadYuv2(glContext)
+    }
+
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         handler.post {
-//            nativeApiTest(glContext)
-
-//            CoroutineScope(Dispatchers.Default).launch {
-//                withContext(Dispatchers.IO) {
-//                    nativeLoadYuv(holder.surface, context.assets)
-//                }
-//            }
-
-//            val bitmap = context.resources.getDrawable(R.drawable.wall).toBitmap()
-//            nativeTexture(holder.surface, bitmap)
-
-//            Jni.nativeCreateProgram(glContext, "shader/v_simple_m.glsl", "shader/f_yuv2rgb.glsl")
-//            nativeLoadYuv2(glContext)
-
-            Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_yuv2rgb.glsl")
-            nativeLoadYuv(glContext)
+            texture()
         }
     }
 
@@ -67,7 +80,7 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
 
 
     private external fun nativeApiTest(glContext: Long)
-    private external fun nativeTexture(surface: Surface, bitmap: Bitmap)
+    private external fun nativeTexture(glContext: Long, bitmap: Bitmap)
     private external fun nativeLoadYuv(glContext: Long)
     private external fun nativeLoadYuv2(glContext: Long)
 
@@ -80,3 +93,5 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
         }
     }
 }
+
+

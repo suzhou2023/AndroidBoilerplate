@@ -5,9 +5,15 @@
  */
 
 #include <jni.h>
+#include "01_native_window.h"
 #include "03_vbo.h"
+#include "04_ebo.h"
+#include "05_vao.h"
+#include "06_vao_vbo_ebo.h"
+#include "07_texture.h"
 #include "08_yuv.h"
 #include "08_yuv2.h"
+#include "09_fbo.h"
 
 
 extern "C"
@@ -30,7 +36,8 @@ Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeTextu
 
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
-    // todo
+
+    texture(env, glContext, bitmap);
 }
 
 
