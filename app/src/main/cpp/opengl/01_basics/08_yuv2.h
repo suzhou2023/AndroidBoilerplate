@@ -11,11 +11,10 @@
 #include "shader/shader_yuv.h"
 
 
-static int width = 640;
-static int height = 272;
-
 extern "C"
 void loadYuv2(JNIEnv *env, jobject thiz, GLContext *glContext) {
+    const int width = 640;
+    const int height = 272;
 
     GLuint textures[3];
 
