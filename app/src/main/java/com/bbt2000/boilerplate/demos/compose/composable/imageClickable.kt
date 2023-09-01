@@ -18,6 +18,6 @@ fun Modifier.imageClickable(
     onClick: () -> Unit,
 ): Modifier = composed {
     val isPressed by interactionSource.collectIsPressedAsState()
-    val sizePercent by animateFloatAsState(targetValue = if (isPressed) 0.8f else 1f)
+    val sizePercent by animateFloatAsState(targetValue = if (isPressed) 0.8f else 1f, label = "")
     scale(sizePercent).clickable(indication = null, interactionSource = interactionSource, onClick = onClick)
 }
