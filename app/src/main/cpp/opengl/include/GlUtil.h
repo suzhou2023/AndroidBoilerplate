@@ -67,13 +67,19 @@ public:
      * @param env
      * @param bitmap
      */
-    void texImage2D(JNIEnv *env, jobject bitmap) {
+    void texImage2D(JNIEnv *env, jobject bitmap, uint32_t *width, uint32_t *height) {
         // 获取bitmap的信息和数据的指针
         AndroidBitmapInfo bitmapInfo;
         if (AndroidBitmap_getInfo(env, bitmap, &bitmapInfo) < 0) {
             LOGE("Get bitmap info failed.");
             return;
         }
+        // 返回尺寸信息
+
+        *width = bitmapInfo.width / 3;
+        *height = bitmapInfo.height / 3;
+        LOGE("=========================bitmapInfo.width = %d", bitmapInfo.width);
+
         void *bitmapPixels;
         AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels);
         // todo: 加载图片到纹理（通过这个函数把图片数据加载到显卡了？）

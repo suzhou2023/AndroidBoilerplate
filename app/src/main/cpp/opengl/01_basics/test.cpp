@@ -8,6 +8,7 @@
 #include "03_vbo.h"
 #include "08_yuv.h"
 #include "08_yuv2.h"
+#include "10_rgb2yuvy.h"
 
 
 extern "C"
@@ -56,6 +57,40 @@ Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeLoadY
 
     loadYuv2(env, thiz, glContext);
 }
+
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeRgb2yuvy(
+        JNIEnv *env, jobject thiz, jlong gl_context, jobject bitmap, jobject callback) {
+
+    LOGD("=================nativeRgb2yuvy");
+
+    if (gl_context <= 0) return;
+    auto *glContext = reinterpret_cast<GLContext *>(gl_context);
+
+    rgb2yuvy(env, thiz, glContext, bitmap, callback);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

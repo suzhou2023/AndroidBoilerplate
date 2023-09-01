@@ -7,8 +7,12 @@ import android.os.HandlerThread
 import android.util.AttributeSet
 import android.view.Surface
 import android.view.SurfaceHolder
+import androidx.core.graphics.drawable.toBitmap
+import com.bbt2000.boilerplate.R
 import com.bbt2000.boilerplate.demos.gles.jni.Jni
 import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
+import com.orhanobut.logger.Logger
+import java.nio.ByteBuffer
 
 
 /**
@@ -54,8 +58,17 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
 //            Jni.nativeCreateProgram(glContext, "shader/v_simple_m.glsl", "shader/f_yuv2rgb.glsl")
 //            nativeLoadYuv2(glContext)
 
-            Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_yuv2rgb.glsl")
-            nativeLoadYuv(glContext)
+//            Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_yuv2rgb.glsl")
+//            nativeLoadYuv(glContext)
+
+
+            Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2yuvy.glsl")
+            val bitmap = context.resources.getDrawable(R.drawable.profile_picture).toBitmap()
+            nativeRgb2yuvy(glContext, bitmap, object : IFrameCallback {
+                override fun callback(byteBuffer: ByteBuffer, width: Int, height: Int) {
+                    Logger.d("remaining=${byteBuffer.remaining()}, width=$width, height=$height")
+                }
+            })
         }
     }
 
@@ -66,10 +79,19 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
     }
 
 
+    /**
+     * native图像帧数据回调
+     */
+    interface IFrameCallback {
+        fun callback(byteBuffer: ByteBuffer, width: Int, height: Int)
+    }
+
+
     private external fun nativeApiTest(glContext: Long)
     private external fun nativeTexture(surface: Surface, bitmap: Bitmap)
     private external fun nativeLoadYuv(glContext: Long)
     private external fun nativeLoadYuv2(glContext: Long)
+    private external fun nativeRgb2yuvy(glContext: Long, bitmap: Bitmap, callback: IFrameCallback)
 
 
     companion object {
@@ -80,3 +102,19 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

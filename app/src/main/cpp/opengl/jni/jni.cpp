@@ -79,7 +79,8 @@ Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeCreateProgram(
     env->ReleaseStringUTFChars(vName, v_name);
     env->ReleaseStringUTFChars(fName, f_name);
 
-    GLuint program = shaderUtil.createProgram(reinterpret_cast<const char *>(buf_v), reinterpret_cast<const char *>(buf_f));
+    GLuint program = shaderUtil.createProgram(reinterpret_cast<const char *>(buf_v),
+                                              reinterpret_cast<const char *>(buf_f));
 
     // 释放字符数组
     delete buf_v;
@@ -181,7 +182,7 @@ Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeCreateFbo(
 
     GLuint fbo, texture;
     glUtil.genTex2D(&texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glFramebufferTexture2D(
