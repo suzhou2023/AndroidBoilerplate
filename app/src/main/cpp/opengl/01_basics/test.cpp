@@ -14,7 +14,8 @@
 #include "08_yuv.h"
 #include "08_yuv2.h"
 #include "09_fbo.h"
-#include "10_rgb2yuv.h"
+#include "10_rgb2vyuy.h"
+#include "10_rgb2nv12.h"
 
 
 extern "C"
@@ -66,20 +67,28 @@ Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeLoadY
 }
 
 
-
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeRgb2yuv(
+Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeRgb2nv12(
         JNIEnv *env, jobject thiz, jlong gl_context, jobject bitmap, jobject callback) {
 
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
-    rgb2yuv(env, thiz, glContext, bitmap, callback);
+    rgb2nv12(env, thiz, glContext, bitmap, callback);
 }
 
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeRgb2vyuy(
+        JNIEnv *env, jobject thiz, jlong gl_context, jobject bitmap, jobject callback) {
 
+    if (gl_context <= 0) return;
+    auto *glContext = reinterpret_cast<GLContext *>(gl_context);
+
+    rgb2vyuy(env, thiz, glContext, bitmap, callback);
+}
 
 
 

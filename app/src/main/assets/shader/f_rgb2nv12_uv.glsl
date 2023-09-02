@@ -20,12 +20,12 @@ void main() {
 
     // 两组UV
     vec3 yuv0, yuv1;
-    // BT709 limited range
+    // BT709 full range
     // 2次采样，两组UV
-    yuv0.g = -0.117 * rgb0.r - 0.394 * rgb0.g + 0.511 * rgb0.b + 0.5;
-    yuv0.b = 0.511 * rgb0.r - 0.464 * rgb0.g - 0.047 * rgb0.b + 0.5;
-    yuv1.g = -0.117 * rgb1.r - 0.394 * rgb1.g + 0.511 * rgb1.b + 0.5;
-    yuv1.b = 0.511 * rgb1.r - 0.464 * rgb1.g - 0.047 * rgb1.b + 0.5;
+    yuv0.g = -0.101 * rgb0.r - 0.339 * rgb0.g + 0.439 * rgb0.b + 0.5;
+    yuv0.b = 0.439 * rgb0.r - 0.339 * rgb0.g - 0.040 * rgb0.b + 0.5;
+    yuv1.g = -0.101 * rgb1.r - 0.339 * rgb1.g + 0.439 * rgb1.b + 0.5;
+    yuv1.b = 0.439 * rgb1.r - 0.339 * rgb1.g - 0.040 * rgb1.b + 0.5;
 
     // UVUV排列
     color = vec4(yuv0.g, yuv0.b, yuv1.g, yuv1.b);

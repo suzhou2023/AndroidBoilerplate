@@ -12,10 +12,6 @@ import com.bbt2000.boilerplate.demos.gles.jni.Jni
 import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
 import com.bbt2000.boilerplate.util.FileUtil
 import com.orhanobut.logger.Logger
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.nio.ByteBuffer
 
@@ -47,9 +43,65 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
         }
     }
 
-    // opengl api练习
-    fun apiTest() {
-        nativeApiTest(glContext)
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+        handler.post {
+            rgb2vyuy()
+        }
+    }
+
+    override fun surfaceDestroyed(holder: SurfaceHolder) {
+        handler.post {
+            Jni.nativeDestroyGLContext(glContext)
+        }
+    }
+
+
+    private external fun nativeApiTest(glContext: Long)
+    private external fun nativeTexture(glContext: Long, bitmap: Bitmap)
+    private external fun nativeLoadYuv(glContext: Long)
+    private external fun nativeLoadYuv2(glContext: Long)
+    private external fun nativeRgb2nv12(glContext: Long, bitmap: Bitmap, callback: IFrameCallback)
+    private external fun nativeRgb2vyuy(glContext: Long, bitmap: Bitmap, callback: IFrameCallback)
+
+    // rgb转vyuy
+    fun rgb2vyuy() {
+        Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2vyuy.glsl")
+        val bitmap = context.resources.getDrawable(R.drawable.wy_300x200).toBitmap()
+
+        val begin = System.currentTimeMillis()
+        nativeRgb2vyuy(glContext, bitmap, object : IFrameCallback {
+            override fun callback(byteBuffer: ByteBuffer, width: Int, height: Int) {
+                val byteArray = ByteArray(byteBuffer.remaining())
+                byteBuffer.get(byteArray, 0, byteArray.size)
+
+                val file = File("${FileUtil.getExternalPicDir()}/wy_300x200_VYUY")
+                file.writeBytes(byteArray)
+
+                val end = System.currentTimeMillis()
+                Logger.d("Total time: ${end - begin}ms")
+            }
+        })
+    }
+
+    // rgb转nv12
+    fun rgb2nv12() {
+        Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2nv12_y.glsl", 0)
+        Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2nv12_uv.glsl", 1)
+        val bitmap = context.resources.getDrawable(R.drawable.profile_432x432).toBitmap()
+
+        val begin = System.currentTimeMillis()
+        nativeRgb2nv12(glContext, bitmap, object : IFrameCallback {
+            override fun callback(byteBuffer: ByteBuffer, width: Int, height: Int) {
+                val byteArray = ByteArray(byteBuffer.remaining())
+                byteBuffer.get(byteArray, 0, byteArray.size)
+
+                val file = File("${FileUtil.getExternalPicDir()}/profile_432x432_NV12")
+                file.writeBytes(byteArray)
+
+                val end = System.currentTimeMillis()
+                Logger.d("Total time: ${end - begin}ms")
+            }
+        })
     }
 
     // 渲染图片
@@ -74,45 +126,10 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
         nativeLoadYuv2(glContext)
     }
 
-    // rgb转yuv
-    fun rgb2yuv() {
-        Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2yuv_y.glsl", 0)
-        Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2yuv_uv.glsl", 1)
-        val bitmap = context.resources.getDrawable(R.drawable.profile_432x432).toBitmap()
-
-        val begin = System.currentTimeMillis()
-        nativeRgb2yuv(glContext, bitmap, object : IFrameCallback {
-            override fun callback(byteBuffer: ByteBuffer, width: Int, height: Int) {
-                val byteArray = ByteArray(byteBuffer.remaining())
-                byteBuffer.get(byteArray, 0, byteArray.size)
-
-                val file = File("${FileUtil.getExternalPicDir()}/profile_432x432.NV12")
-                file.writeBytes(byteArray)
-
-                val end = System.currentTimeMillis()
-                Logger.d("Total time: ${end - begin}ms")
-            }
-        })
+    // opengl api练习
+    fun apiTest() {
+        nativeApiTest(glContext)
     }
-
-    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        handler.post {
-            rgb2yuv()
-        }
-    }
-
-    override fun surfaceDestroyed(holder: SurfaceHolder) {
-        handler.post {
-            Jni.nativeDestroyGLContext(glContext)
-        }
-    }
-
-
-    private external fun nativeApiTest(glContext: Long)
-    private external fun nativeTexture(glContext: Long, bitmap: Bitmap)
-    private external fun nativeLoadYuv(glContext: Long)
-    private external fun nativeLoadYuv2(glContext: Long)
-    private external fun nativeRgb2yuv(glContext: Long, bitmap: Bitmap, callback: IFrameCallback)
 
 
     // native图像帧数据回调
