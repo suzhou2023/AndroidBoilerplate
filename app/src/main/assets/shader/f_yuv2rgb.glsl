@@ -2,12 +2,12 @@
 precision mediump float;
 // 输入的纹理坐标
 in vec2 texCoord2;
-// 输入的yuv三个纹理
-uniform sampler2D yTexture;//采样器
-uniform sampler2D uTexture;//采样器
-uniform sampler2D vTexture;//采样器
-
 out vec4 color;
+
+// 用来采样的三个纹理
+uniform sampler2D yTexture;
+uniform sampler2D uTexture;
+uniform sampler2D vTexture;
 
 void main() {
     // 采样到的yuv向量数据

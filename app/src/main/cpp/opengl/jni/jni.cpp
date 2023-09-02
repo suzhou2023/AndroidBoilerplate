@@ -16,6 +16,7 @@
 #include "GlUtil.h"
 
 
+// todo: jni代码和GLContext相关的逻辑分离
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeCreateGLContext(
@@ -63,7 +64,7 @@ Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeEGLCreateSurface(
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeCreateProgram(
-        JNIEnv *env, jobject thiz, jlong gl_context, jstring vName, jstring fName) {
+        JNIEnv *env, jobject thiz, jlong gl_context, jstring vName, jstring fName, jint index) {
 
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
@@ -87,7 +88,7 @@ Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeCreateProgram(
     delete buf_f;
 
     if (program <= 0) return;
-    glContext->program[0] = program;
+    glContext->program[index] = program;
     glUseProgram(program);
 
     LOGD("nativeCreateProgram success.");
@@ -307,6 +308,7 @@ Java_com_bbt2000_boilerplate_demos_gles_jni_Jni_nativeDestroyGLContext(
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
     delete glContext;
 }
+
 
 
 

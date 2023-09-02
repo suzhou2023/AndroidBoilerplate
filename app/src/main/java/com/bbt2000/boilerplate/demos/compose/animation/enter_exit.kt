@@ -54,7 +54,7 @@ fun EnterExitDemo() {
                 )
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.profile_432x431),
+                    painter = painterResource(id = R.drawable.profile_432x432),
                     contentDescription = null,
                     modifier = Modifier
                         .size(120.dp)

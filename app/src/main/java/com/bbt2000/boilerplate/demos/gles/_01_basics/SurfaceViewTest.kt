@@ -10,7 +10,13 @@ import androidx.core.graphics.drawable.toBitmap
 import com.bbt2000.boilerplate.R
 import com.bbt2000.boilerplate.demos.gles.jni.Jni
 import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
+import com.bbt2000.boilerplate.util.FileUtil
 import com.orhanobut.logger.Logger
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import java.nio.ByteBuffer
 
 
@@ -48,10 +54,11 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
 
     // 渲染图片
     fun texture() {
-        Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_tex.glsl")
-        val bitmap = context.resources.getDrawable(R.drawable.profile_432x431)
+        Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_tex_flip.glsl")
+        // 注意：android系统有可能会对图片进行缩放
+        val bitmap = context.resources.getDrawable(R.drawable.profile_432x432)
             .toBitmap(config = Bitmap.Config.ARGB_8888)
-        Logger.d("byteCount=${bitmap.byteCount / 432 / 431}")
+
         nativeTexture(glContext, bitmap)
     }
 
@@ -67,20 +74,30 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
         nativeLoadYuv2(glContext)
     }
 
-    // rgb转yuvy
-    fun rgb2yuvy() {
-        Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2yuvy.glsl")
-        val bitmap = context.resources.getDrawable(R.drawable.profile_432x431).toBitmap()
-        nativeRgb2yuvy(glContext, bitmap, object : IFrameCallback {
+    // rgb转yuv
+    fun rgb2yuv() {
+        Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2yuv_y.glsl", 0)
+        Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2yuv_uv.glsl", 1)
+        val bitmap = context.resources.getDrawable(R.drawable.profile_432x432).toBitmap()
+
+        val begin = System.currentTimeMillis()
+        nativeRgb2yuv(glContext, bitmap, object : IFrameCallback {
             override fun callback(byteBuffer: ByteBuffer, width: Int, height: Int) {
-                Logger.d("remaining=${byteBuffer.remaining()}, width=$width, height=$height")
+                val byteArray = ByteArray(byteBuffer.remaining())
+                byteBuffer.get(byteArray, 0, byteArray.size)
+
+                val file = File("${FileUtil.getExternalPicDir()}/profile_432x432.NV12")
+                file.writeBytes(byteArray)
+
+                val end = System.currentTimeMillis()
+                Logger.d("Total time: ${end - begin}ms")
             }
         })
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         handler.post {
-            rgb2yuvy()
+            rgb2yuv()
         }
     }
 
@@ -90,12 +107,12 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
         }
     }
 
-    
+
     private external fun nativeApiTest(glContext: Long)
     private external fun nativeTexture(glContext: Long, bitmap: Bitmap)
     private external fun nativeLoadYuv(glContext: Long)
     private external fun nativeLoadYuv2(glContext: Long)
-    private external fun nativeRgb2yuvy(glContext: Long, bitmap: Bitmap, callback: IFrameCallback)
+    private external fun nativeRgb2yuv(glContext: Long, bitmap: Bitmap, callback: IFrameCallback)
 
 
     // native图像帧数据回调

@@ -75,10 +75,8 @@ public:
             return;
         }
         // 返回尺寸信息
-
-        *width = bitmapInfo.width / 3;
-        *height = bitmapInfo.height / 3;
-        LOGE("=========================bitmapInfo.width = %d", bitmapInfo.width);
+        *width = bitmapInfo.width;
+        *height = bitmapInfo.height;
 
         void *bitmapPixels;
         AndroidBitmap_lockPixels(env, bitmap, &bitmapPixels);

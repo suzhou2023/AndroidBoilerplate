@@ -36,7 +36,8 @@ void fbo(JNIEnv *env, jobject surface, jobject bitmap) {
 
     GLuint tex;
     glUtil.genTex2D(&tex);
-    glUtil.texImage2D(env, bitmap);
+    // todo
+//    glUtil.texImage2D(env, bitmap);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     /*****fbo配置*****/

@@ -33,7 +33,7 @@ object Jni {
      *
      * @param glContext
      */
-    external fun nativeCreateProgram(glContext: Long, vName: String, fName: String)
+    external fun nativeCreateProgram(glContext: Long, vName: String, fName: String, index: Int = 0)
 
     /**
      * 加载顶点属性数组
