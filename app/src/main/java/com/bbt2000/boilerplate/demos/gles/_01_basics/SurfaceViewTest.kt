@@ -45,7 +45,7 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         handler.post {
-            rgb2vyuy()
+            rgb2nv12()
         }
     }
 
@@ -60,28 +60,9 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
     private external fun nativeTexture(glContext: Long, bitmap: Bitmap)
     private external fun nativeLoadYuv(glContext: Long)
     private external fun nativeLoadYuv2(glContext: Long)
-    private external fun nativeRgb2nv12(glContext: Long, bitmap: Bitmap, callback: IFrameCallback)
     private external fun nativeRgb2vyuy(glContext: Long, bitmap: Bitmap, callback: IFrameCallback)
+    private external fun nativeRgb2nv12(glContext: Long, bitmap: Bitmap, callback: IFrameCallback)
 
-    // rgb转vyuy
-    fun rgb2vyuy() {
-        Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2vyuy.glsl")
-        val bitmap = context.resources.getDrawable(R.drawable.wy_300x200).toBitmap()
-
-        val begin = System.currentTimeMillis()
-        nativeRgb2vyuy(glContext, bitmap, object : IFrameCallback {
-            override fun callback(byteBuffer: ByteBuffer, width: Int, height: Int) {
-                val byteArray = ByteArray(byteBuffer.remaining())
-                byteBuffer.get(byteArray, 0, byteArray.size)
-
-                val file = File("${FileUtil.getExternalPicDir()}/wy_300x200_VYUY")
-                file.writeBytes(byteArray)
-
-                val end = System.currentTimeMillis()
-                Logger.d("Total time: ${end - begin}ms")
-            }
-        })
-    }
 
     // rgb转nv12
     fun rgb2nv12() {
@@ -96,6 +77,26 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
                 byteBuffer.get(byteArray, 0, byteArray.size)
 
                 val file = File("${FileUtil.getExternalPicDir()}/profile_432x432_NV12")
+                file.writeBytes(byteArray)
+
+                val end = System.currentTimeMillis()
+                Logger.d("Total time: ${end - begin}ms")
+            }
+        })
+    }
+
+    // rgb转vyuy
+    fun rgb2vyuy() {
+        Jni.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2vyuy.glsl")
+        val bitmap = context.resources.getDrawable(R.drawable.wy_300x200).toBitmap()
+
+        val begin = System.currentTimeMillis()
+        nativeRgb2vyuy(glContext, bitmap, object : IFrameCallback {
+            override fun callback(byteBuffer: ByteBuffer, width: Int, height: Int) {
+                val byteArray = ByteArray(byteBuffer.remaining())
+                byteBuffer.get(byteArray, 0, byteArray.size)
+
+                val file = File("${FileUtil.getExternalPicDir()}/wy_300x200_VYUY")
                 file.writeBytes(byteArray)
 
                 val end = System.currentTimeMillis()
