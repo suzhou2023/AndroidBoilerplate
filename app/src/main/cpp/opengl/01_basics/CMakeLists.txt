@@ -12,6 +12,7 @@ add_library(
 
         SHARED
 
+        ../common/GLContext.cpp
         ../jni/jni.cpp
         test.cpp
 )

@@ -18,6 +18,24 @@
 class GLContext {
 public:
 
+    static jlong create(JNIEnv *env, jlong other_glcontext, jobject asset_manager);
+
+    static jboolean createEglSurface(JNIEnv *env, jlong gl_context, jobject surface, jint index);
+
+    static void createProgram(JNIEnv *env, jobject thiz, jlong gl_context, jstring vName, jstring fName, jint index);
+
+    static void loadVertices(jlong gl_context);
+
+    static void surfaceChanged(jlong gl_context, jint format, jint width, jint height);
+
+    static jint createOesTexture(jlong gl_context);
+
+    static void createFbo(jlong gl_context, jint width, jint height);
+
+    static void setMatrix(JNIEnv *env, jlong gl_context, jfloatArray matrix);
+
+    static void destroy(jlong gl_context);
+
     GLContext() {};
 
     ~GLContext() {
@@ -104,7 +122,7 @@ public:
     GLsizei width{0};
     // 图像高度
     GLsizei height{0};
-    // 图像帧的存储空间
+    // todo: 图像帧的存储空间
     void *frame_data{nullptr};
     GLuint program[5]{};
     GLuint vbo[5]{0};

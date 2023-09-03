@@ -5,8 +5,8 @@
  */
 
 
-#ifndef ANDROIDBOILERPLATE_10_RGB2NV12_H
-#define ANDROIDBOILERPLATE_10_RGB2YUV_H
+#ifndef ANDROIDBOILERPLATE_10_RGB2VYUY_H
+#define ANDROIDBOILERPLATE_10_RGB2VYUY_H
 
 #include <jni.h>
 #include "fboUtil.h"
@@ -61,7 +61,7 @@ void rgb2vyuy(JNIEnv *env, jobject thiz, GLContext *glContext, jobject bitmap, j
 }
 
 
-#endif //ANDROIDBOILERPLATE_10_RGB2NV12_H
+#endif //ANDROIDBOILERPLATE_10_RGB2VYUY_H
 
 
 

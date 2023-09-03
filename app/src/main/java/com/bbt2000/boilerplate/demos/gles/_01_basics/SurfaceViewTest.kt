@@ -45,7 +45,7 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         handler.post {
-            rgb2nv12()
+            loadYuv()
         }
     }
 
