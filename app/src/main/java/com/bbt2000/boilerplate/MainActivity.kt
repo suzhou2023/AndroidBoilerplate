@@ -34,10 +34,17 @@ class MainActivity : ComponentActivity() {
                         val pathAxis = Path().apply {
                             moveTo(-size.width / 2, 0f)
                             relativeLineTo(size.width, 0f)
+                            relativeMoveTo(-6.dp.toPx(), 4.dp.toPx())
+                            relativeLineTo(6.dp.toPx(), -4.dp.toPx())
+                            relativeLineTo(-6.dp.toPx(), -4.dp.toPx())
                             moveTo(0f, size.height / 2)
                             relativeLineTo(0f, -size.height)
+                            moveTo(0f, size.height / 2)
+                            relativeLineTo(-4.dp.toPx(), -6.dp.toPx())
+                            relativeLineTo(4.dp.toPx(), 6.dp.toPx())
+                            relativeLineTo(4.dp.toPx(), -6.dp.toPx())
                         }
-                        drawPath(path = pathAxis, color = Color.Blue, style = Stroke())
+                        drawPath(path = pathAxis, color = Color.Blue, style = Stroke(2f))
 
                         // 网格线
                         val pathGrid = Path().apply {
@@ -58,10 +65,30 @@ class MainActivity : ComponentActivity() {
                                 relativeLineTo(0f, size.height)
                             }
                         }
-                        drawPath(path = pathGrid, color = Color.LightGray, style = Stroke())
+                        drawPath(path = pathGrid, color = Color.LightGray, style = Stroke(2f))
                     }
                 }
             }
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
