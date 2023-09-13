@@ -159,6 +159,10 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
     }
 
     companion object {
-        const val TAG = "SurfaceViewGL"
+        private val TAG = SurfaceViewGL::class.simpleName
+
+        init {
+            System.loadLibrary("gl_render")
+        }
     }
 }

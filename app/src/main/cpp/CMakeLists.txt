@@ -10,3 +10,4 @@ include_directories("opengl/include")
 
 
 add_subdirectory(opengl/01_basics)
+add_subdirectory(opengl/02_camera)
