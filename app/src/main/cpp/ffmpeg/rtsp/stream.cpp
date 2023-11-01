@@ -39,7 +39,12 @@ void openStream(const char *url) {
     int ret = avformat_open_input(&format_ctx, url, nullptr, &av_dict);
     LOGD("avformat_open_input, ret = %d", ret);
     if (ret < 0) {
-        LOGE("avformat_open_input error: %d - %X", ret, ret);
+        LOGE("avformat_open_input error: %d", ret);
+    }
+
+    ret = avformat_find_stream_info(format_ctx, nullptr);
+    if (ret < 0) {
+        LOGE("avformat_find_stream_info error: %d", ret);
     }
 
     av_dict_free(&av_dict);
