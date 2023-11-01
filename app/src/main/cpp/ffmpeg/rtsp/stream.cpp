@@ -12,6 +12,7 @@ extern "C" {
 #include "LogUtil.h"
 #include "stream.h"
 #include "android_log.h"
+#include "libavcodec/avcodec.h"
 
 
 void openStream(const char *url) {
@@ -45,6 +46,20 @@ void openStream(const char *url) {
     ret = avformat_find_stream_info(format_ctx, nullptr);
     if (ret < 0) {
         LOGE("avformat_find_stream_info error: %d", ret);
+    }
+
+    AVCodecContext *codec_ctx = nullptr;
+    AVStream *video_stream = nullptr;
+    for (int index = 0; index < format_ctx->nb_streams; index++) {
+        auto codec_type = format_ctx->streams[index]->codecpar->codec_type;
+        if (codec_type == AVMEDIA_TYPE_VIDEO) {
+            video_stream = format_ctx->streams[index];
+            break;
+        }
+    }
+
+    if (video_stream == nullptr) {
+        LOGE("No video stream found.");
     }
 
     av_dict_free(&av_dict);
