@@ -8,7 +8,7 @@
 #include <GLES3/gl3.h>
 #include "EglUtil.h"
 #include "GlUtil.h"
-#include "LogUtil.h"
+#include "android_log.h"
 
 // 顶点缓冲对象
 extern "C"

@@ -7,7 +7,7 @@
 #include <jni.h>
 #include <GLES3/gl3.h>
 #include <cstring>
-#include "LogUtil.h"
+#include "android_log.h"
 #include "AssetUtil.h"
 
 

@@ -8,7 +8,7 @@
 #include <GLES3/gl3.h>
 #include <atomic>
 #include "EglUtil.h"
-#include "LogUtil.h"
+#include "android_log.h"
 
 
 // VAO

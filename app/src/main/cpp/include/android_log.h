@@ -2,8 +2,8 @@
 // Created by sz on 2023/7/13.
 //
 
-#ifndef ANDROIDBOILERPLATE_LOGUTIL_H
-#define ANDROIDBOILERPLATE_LOGUTIL_H
+#ifndef ANDROIDBOILERPLATE_ANDROID_LOG_H
+#define ANDROIDBOILERPLATE_ANDROID_LOG_H
 
 #include <android/log.h>
 
@@ -26,4 +26,4 @@
                     __android_log_print(ANDROID_LOG_ERROR,LOG_TAG, "==============================================================")
 
 
-#endif //ANDROIDBOILERPLATE_LOGUTIL_H
+#endif //ANDROIDBOILERPLATE_ANDROID_LOG_H

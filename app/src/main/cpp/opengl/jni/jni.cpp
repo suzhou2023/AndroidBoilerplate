@@ -9,7 +9,7 @@
 #include <GLES2/gl2ext.h>
 #include <android/native_window_jni.h>
 #include <cstring>
-#include "LogUtil.h"
+#include "android_log.h"
 #include "AssetUtil.h"
 #include "GLContext.h"
 #include "EglUtil.h"

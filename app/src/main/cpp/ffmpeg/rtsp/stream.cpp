@@ -7,25 +7,32 @@
 extern "C" {
 #include "libavdevice/avdevice.h"
 #include "libavformat/avformat.h"
+#include "libavcodec/avcodec.h"
 }
 
-#include "LogUtil.h"
 #include "stream.h"
-#include "android_log.h"
-#include "libavcodec/avcodec.h"
+#include "log_callback.h"
 
 
 void openStream(const char *url) {
+
+    // 必要的变量定义
+    AVFormatContext *format_ctx = nullptr;
+    AVStream *video_stream = nullptr;
+    AVCodecContext *codec_ctx = nullptr;
+    const AVCodec *codec = nullptr;
+    AVPacket *packet = nullptr;
+    AVFrame *frame = nullptr;
+
     // android日志输出
     av_log_set_callback(log_callback_null);
-
     // todo:是否需要
     avdevice_register_all();
-
     // todo:是否需要
     avformat_network_init();
 
-    AVFormatContext *format_ctx = avformat_alloc_context();
+    // 申请一个AVFormatContext
+    format_ctx = avformat_alloc_context();
 
     AVDictionary *av_dict = nullptr;
     // 设置缓存大小 1024000 byte
@@ -37,19 +44,21 @@ void openStream(const char *url) {
     // 设置打开方式 tcp/udp
     av_dict_set(&av_dict, "rtsp_transport", "udp", 0);
 
+    // 打开流
     int ret = avformat_open_input(&format_ctx, url, nullptr, &av_dict);
-    LOGD("avformat_open_input, ret = %d", ret);
     if (ret < 0) {
-        LOGE("avformat_open_input error: %d", ret);
+        LOGE("avformat_open_input error: %s", av_err2str(ret));
+        goto FREE;
     }
 
+    // 读取流信息
     ret = avformat_find_stream_info(format_ctx, nullptr);
     if (ret < 0) {
-        LOGE("avformat_find_stream_info error: %d", ret);
+        LOGE("avformat_find_stream_info error: %s", av_err2str(ret));
+        goto FREE;
     }
 
-    AVCodecContext *codec_ctx = nullptr;
-    AVStream *video_stream = nullptr;
+    // 找出视频流
     for (int index = 0; index < format_ctx->nb_streams; index++) {
         auto codec_type = format_ctx->streams[index]->codecpar->codec_type;
         if (codec_type == AVMEDIA_TYPE_VIDEO) {
@@ -60,11 +69,96 @@ void openStream(const char *url) {
 
     if (video_stream == nullptr) {
         LOGE("No video stream found.");
+        goto FREE;
     }
 
-    av_dict_free(&av_dict);
-    avformat_free_context(format_ctx);
+    codec = avcodec_find_decoder(video_stream->codecpar->codec_id);
+    if (codec == nullptr) {
+        LOGE("No decoder found.");
+        goto FREE;
+    }
+
+    // 申请一个AVCodecContext
+    codec_ctx = avcodec_alloc_context3(codec);
+    if (codec_ctx == nullptr) {
+        LOGE("Allocate AVCodecContext failed.");
+        goto FREE;
+    }
+
+    // 利用codec参数填充AVCodecContext相关字段
+    ret = avcodec_parameters_to_context(codec_ctx, video_stream->codecpar);
+    if (ret < 0) {
+        LOGE("avcodec_parameters_to_context error: %s", av_err2str(ret));
+        goto FREE;
+    }
+
+    // 利用codec初始化AVCodecContext
+    ret = avcodec_open2(codec_ctx, codec, nullptr);
+    if (ret < 0) {
+        LOGE("avcodec_open2 error: %s", av_err2str(ret));
+        goto FREE;
+    }
+
+    packet = av_packet_alloc();
+    frame = av_frame_alloc();
+    // 循环读取视频帧
+    while (true) {
+        // 返回一帧视频编码数据(对于音频不止一帧)
+        ret = av_read_frame(format_ctx, packet);
+        if (ret < 0) {
+            LOGE("av_read_frame error: %s", av_err2str(ret));
+            continue;
+        }
+
+        // 如果是视频流，处理其解码、拿帧等
+        if (packet->stream_index == video_stream->index) {
+            // 为codec提供原始的packet数据
+            ret = avcodec_send_packet(codec_ctx, packet);
+            if (ret < 0) {
+                LOGE("avcodec_send_packet error: %s", av_err2str(ret));
+            }
+
+            // 解引用buffer，reset其它字段
+            av_packet_unref(packet);
+
+            // 返回解码后的数据
+            ret = avcodec_receive_frame(codec_ctx, frame);
+            if (ret < 0) {
+                LOGE("avcodec_receive_frame error: %s", av_err2str(ret));
+            }
+            LOGD("size = %dx%d", frame->width, frame->height);
+
+            // 解引用buffer，reset其它字段
+            av_frame_unref(frame);
+        }
+    }
+
+    FREE:
+    if (frame != nullptr) {
+        av_frame_free(&frame);
+    }
+    if (packet != nullptr) {
+        av_packet_free(&packet);
+    }
+    if (av_dict != nullptr) {
+        av_dict_free(&av_dict);
+    }
+    if (format_ctx != nullptr) {
+        avformat_free_context(format_ctx);
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
