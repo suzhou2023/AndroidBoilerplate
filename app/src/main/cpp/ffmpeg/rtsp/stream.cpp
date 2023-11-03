@@ -123,10 +123,22 @@ void openStream(const char *url) {
 
             // 返回解码后的数据
             ret = avcodec_receive_frame(codec_ctx, frame);
-            if (ret < 0) {
+            if (ret == 0) {
+                LOGD("pts = %ld", frame->pts);
+                LOGD("format = %d", frame->format); // AVPixelFormat枚举
+                LOGD("key frame flag = %d", frame->flags & AV_FRAME_FLAG_KEY);
+                LOGD("size = %dx%d", frame->width, frame->height);
+                LOGD("linesize[0] = %d", frame->linesize[0]);
+                LOGD("linesize[1] = %d", frame->linesize[1]);
+                LOGD("linesize[2] = %d", frame->linesize[2]);
+
+
+                LOGD("buf[0]->size = %d", frame->buf[0]->size);
+                LOGD("buf[1]->size = %d", frame->buf[1]->size);
+                LOGD("buf[2]->size = %d", frame->buf[2]->size);
+            } else {
                 LOGE("avcodec_receive_frame error: %s", av_err2str(ret));
             }
-            LOGD("size = %dx%d", frame->width, frame->height);
 
             // 解引用buffer，reset其它字段
             av_frame_unref(frame);
