@@ -10,17 +10,17 @@ import android.util.Log
 import android.util.Size
 import android.view.Surface
 import android.view.SurfaceHolder
-import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeCreateFbo
-import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeCreateGLContext
-import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeCreateOESTexture
-import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeCreateProgram
-import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeDestroyGLContext
-import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeDrawFrame
-import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeEGLCreateSurface
-import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeLoadVertices
-import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeSetMatrix
-import com.bbt2000.boilerplate.demos.gles.jni.Jni.nativeSurfaceChanged
-import com.bbt2000.boilerplate.demos.gles.widget.AutoFitSurfaceView
+import com.bbt2000.gles.jni.JniGL.nativeCreateFbo
+import com.bbt2000.gles.jni.JniGL.nativeCreateGLContext
+import com.bbt2000.gles.jni.JniGL.nativeCreateOESTexture
+import com.bbt2000.gles.jni.JniGL.nativeCreateProgram
+import com.bbt2000.gles.jni.JniGL.nativeDestroyGLContext
+import com.bbt2000.gles.jni.JniGL.nativeDrawFrame
+import com.bbt2000.gles.jni.JniGL.nativeEGLCreateSurface
+import com.bbt2000.gles.jni.JniGL.nativeLoadVertices
+import com.bbt2000.gles.jni.JniGL.nativeSetMatrix
+import com.bbt2000.gles.jni.JniGL.nativeSurfaceChanged
+import com.bbt2000.gles.widget.AutoFitSurfaceView
 
 
 /**

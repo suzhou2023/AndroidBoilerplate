@@ -26,7 +26,7 @@ class DemoActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         CoroutineScope(Dispatchers.IO).launch {
-            openStream("rtsp://192.168.43.87:8554/stream")
+            openStream("rtsp://192.168.101.12:8554/stream")
         }
     }
 }

@@ -68,7 +68,9 @@ android {
 }
 
 dependencies {
-
+    // gles
+    implementation project(':lib-gles')
+    // common
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.0')

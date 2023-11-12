@@ -140,8 +140,12 @@ void openStream(const char *url) {
                 LOGE("avcodec_receive_frame error: %s", av_err2str(ret));
             }
 
+            
+
             // 解引用buffer，reset其它字段
             av_frame_unref(frame);
+
+            break;
         }
     }
 
