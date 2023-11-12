@@ -4,11 +4,11 @@
  *  description : 
  */
 
-#include <jni.h>
+#include "04_ebo.h"
+
 #include <GLES3/gl3.h>
-#include <atomic>
-#include "EglUtil.h"
-#include "android_log.h"
+#include "shader_util.h"
+
 
 
 // 顶点索引缓冲对象
@@ -38,7 +38,7 @@ void ebo(JNIEnv *env, jobject thiz, jobject surface) {
             "}";
 
     // program
-    GLuint program = shaderUtil.createProgram(V_SHADER, F_SHADER);
+    GLuint program = createProgram(V_SHADER, F_SHADER);
     glUseProgram(program);
 
     float vertices[] = {

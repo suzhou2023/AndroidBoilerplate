@@ -4,10 +4,7 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.bbt2000.boilerplate.demos.ffmpeg.jni.Jni.openStream
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import androidx.compose.ui.viewinterop.AndroidView
 
 /**
  *  author : suzhou
@@ -19,14 +16,9 @@ class DemoActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContent {
-
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        CoroutineScope(Dispatchers.IO).launch {
-            openStream("rtsp://192.168.101.12:8554/stream")
+            AndroidView(factory = {
+                SurfaceViewTest(it)
+            })
         }
     }
 }

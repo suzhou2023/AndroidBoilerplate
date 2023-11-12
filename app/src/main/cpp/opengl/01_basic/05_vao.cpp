@@ -6,17 +6,13 @@
 
 #include <jni.h>
 #include <GLES3/gl3.h>
-#include <atomic>
-#include "EglUtil.h"
-#include "android_log.h"
+#include "shader_util.h"
 
 
 // VAO
 extern "C"
 void vao(JNIEnv *env, jobject thiz, jobject surface) {
     //todo: 配置EGL
-
-
     const char *V_SHADER =
             "#version 300 es\n"
             "layout (location = 0)\n"
@@ -39,7 +35,7 @@ void vao(JNIEnv *env, jobject thiz, jobject surface) {
             "}";
 
     // program
-    GLuint program = shaderUtil.createProgram(V_SHADER, F_SHADER);
+    GLuint program = createProgram(V_SHADER, F_SHADER);
     glUseProgram(program);
 
     //第一个三角形顶点属性数组

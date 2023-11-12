@@ -6,8 +6,8 @@
 
 #include <jni.h>
 #include <GLES3/gl3.h>
-#include <atomic>
 #include "shader/shader.h"
+#include "shader_util.h"
 
 
 // 结合使用
@@ -16,7 +16,7 @@ void vao_vbo_ebo(JNIEnv *env, jobject thiz, jobject surface) {
     //todo: 配置EGL
 
     // program
-    GLuint program = shaderUtil.createProgram(V_SHADER_BASIC, F_SHADER_BASIC);
+    GLuint program = createProgram(V_SHADER_BASIC, F_SHADER_BASIC);
     glUseProgram(program);
 
     float vertices[] = {

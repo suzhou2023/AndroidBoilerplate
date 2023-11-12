@@ -5,11 +5,10 @@
  */
 
 
-#ifndef ANDROIDBOILERPLATE_10_RGB2NV12_H
-#define ANDROIDBOILERPLATE_10_RGB2NV12_H
-
 #include <jni.h>
-#include "fboUtil.h"
+#include "GLContext.h"
+#include "fbo_util.h"
+#include "gl_util.h"
 
 
 extern "C"
@@ -17,11 +16,11 @@ void rgb2nv12(JNIEnv *env, jobject thiz, GLContext *glContext, jobject bitmap, j
 
     // 创建一个2d纹理并绑定，用来采样
     GLuint texture2d;
-    glUtil.genTex2D(&texture2d);
+    genTex2D(&texture2d);
 
     // 给纹理设置图像数据
     uint32_t width, height;
-    glUtil.texImage2D(env, bitmap, &width, &height);
+    texImage2D(env, bitmap, &width, &height);
 
     // 创建fbo和关联的2d纹理，作为渲染的目的地
     GLuint fbo, tex_2d;
@@ -73,8 +72,6 @@ void rgb2nv12(JNIEnv *env, jobject thiz, GLContext *glContext, jobject bitmap, j
     free(pixels);
 }
 
-
-#endif //ANDROIDBOILERPLATE_10_RGB2NV12_H
 
 
 

@@ -142,7 +142,7 @@ class SurfaceViewTest(context: Context, attrs: AttributeSet? = null) :
         const val TAG = "SurfaceViewTest"
 
         init {
-            System.loadLibrary("gl_basics")
+            System.loadLibrary("gl_basic")
         }
     }
 }

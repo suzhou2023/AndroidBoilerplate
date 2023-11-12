@@ -5,17 +5,8 @@
  */
 
 #include <jni.h>
-#include "01_native_window.h"
+#include "GLContext.h"
 #include "03_vbo.h"
-#include "04_ebo.h"
-#include "05_vao.h"
-#include "06_vao_vbo_ebo.h"
-#include "07_texture.h"
-#include "08_yuv.h"
-#include "08_yuv2.h"
-#include "09_fbo.h"
-#include "10_rgb2vyuy.h"
-#include "10_rgb2nv12.h"
 
 
 extern "C"
@@ -39,7 +30,7 @@ Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeTextu
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
-    texture(env, glContext, bitmap);
+//    texture(env, glContext, bitmap);
 }
 
 
@@ -51,7 +42,7 @@ Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeLoadY
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
-    loadYuv(env, thiz, glContext);
+//    loadYuv(env, thiz, glContext);
 }
 
 
@@ -63,7 +54,7 @@ Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeLoadY
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
-    loadYuv2(env, thiz, glContext);
+//    loadYuv2(env, thiz, glContext);
 }
 
 
@@ -75,7 +66,7 @@ Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeRgb2n
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
-    rgb2nv12(env, thiz, glContext, bitmap, callback);
+//    rgb2nv12(env, thiz, glContext, bitmap, callback);
 }
 
 
@@ -87,7 +78,7 @@ Java_com_bbt2000_boilerplate_demos_gles__101_1basics_SurfaceViewTest_nativeRgb2v
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
 
-    rgb2vyuy(env, thiz, glContext, bitmap, callback);
+//    rgb2vyuy(env, thiz, glContext, bitmap, callback);
 }
 
 

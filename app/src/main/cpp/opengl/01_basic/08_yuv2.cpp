@@ -8,7 +8,8 @@
 #include <GLES3/gl3.h>
 #include <android/asset_manager_jni.h>
 #include <thread>
-#include "shader/shader_yuv.h"
+#include "GLContext.h"
+#include "gl_util.h"
 
 
 extern "C"
@@ -18,15 +19,15 @@ void loadYuv2(JNIEnv *env, jobject thiz, GLContext *glContext) {
 
     GLuint textures[3];
 
-    glUtil.genTex2D(&textures[0]);
+    genTex2D(&textures[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE,
                  GL_UNSIGNED_BYTE, nullptr);
 
-    glUtil.genTex2D(&textures[1]);
+    genTex2D(&textures[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width / 2, height / 2, 0, GL_LUMINANCE,
                  GL_UNSIGNED_BYTE, nullptr);
 
-    glUtil.genTex2D(&textures[2]);
+    genTex2D(&textures[2]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width / 2, height / 2, 0, GL_LUMINANCE,
                  GL_UNSIGNED_BYTE, nullptr);
 
@@ -93,7 +94,7 @@ void loadYuv2(JNIEnv *env, jobject thiz, GLContext *glContext) {
                         GL_UNSIGNED_BYTE, buf[2]);
 
         // 绘制
-        glUtil.drawElements(6);
+        drawElements(6);
         eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[0]);
 
         // 线程休眠

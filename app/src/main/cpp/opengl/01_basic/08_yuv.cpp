@@ -7,8 +7,9 @@
 #include <jni.h>
 #include <GLES3/gl3.h>
 #include <cstring>
-#include "android_log.h"
-#include "AssetUtil.h"
+#include "GLContext.h"
+#include "gl_util.h"
+#include "asset_util.h"
 
 
 extern "C"
@@ -16,15 +17,15 @@ void loadYuv(JNIEnv *env, jobject thiz, GLContext *glContext) {
 
     GLuint textures[3];
 
-    glUtil.genTex2D(&textures[0]);
+    genTex2D(&textures[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 840, 1074, 0, GL_LUMINANCE,
                  GL_UNSIGNED_BYTE, nullptr);
 
-    glUtil.genTex2D(&textures[1]);
+    genTex2D(&textures[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 840 / 2, 1074 / 2, 0, GL_LUMINANCE,
                  GL_UNSIGNED_BYTE, nullptr);
 
-    glUtil.genTex2D(&textures[2]);
+    genTex2D(&textures[2]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 840 / 2, 1074 / 2, 0, GL_LUMINANCE,
                  GL_UNSIGNED_BYTE, nullptr);
 
@@ -34,7 +35,7 @@ void loadYuv(JNIEnv *env, jobject thiz, GLContext *glContext) {
     glUniform1i(glGetUniformLocation(glContext->program[0], "vTexture"), 2);
 
     // 读取yuv图片到数组中
-    GLubyte *buf = assetUtil.readFile(glContext->assetManager, "YUV_Image_840x1074");
+    GLubyte *buf = readFile(glContext->assetManager, "YUV_Image_840x1074");
     // 注意：数组过大一定要动态申请，定义局部变量会报段错误
     GLubyte *buf_y = new GLubyte[840 * 1074];
     GLubyte *buf_u = new GLubyte[840 * 1074 / 4];
@@ -78,7 +79,7 @@ void loadYuv(JNIEnv *env, jobject thiz, GLContext *glContext) {
                     GL_UNSIGNED_BYTE, buf_v);
 
     // 绘制
-    glUtil.drawElements(6);
+    drawElements(6);
     eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[0]);
 
     delete[] buf_y;

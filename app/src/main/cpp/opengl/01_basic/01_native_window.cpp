@@ -14,7 +14,6 @@
  * 这个例子用来测试，不走EGL，通过直接操作native window的方式控制屏幕显示
  * 这里用的是memset简单测试一下，操作native window的buffer
  */
-extern "C"
 void native_window(JNIEnv *env, jobject obj, jobject surface) {
 
     // 拿到java层surface对应的native window

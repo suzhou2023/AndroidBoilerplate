@@ -4,11 +4,11 @@
  *  description : 
  */
 
-#include <jni.h>
-#include <GLES3/gl3.h>
-#include "EglUtil.h"
-#include "GlUtil.h"
-#include "android_log.h"
+#include "03_vbo.h"
+
+#include "shader_util.h"
+
+
 
 // 顶点缓冲对象
 extern "C"
@@ -36,7 +36,7 @@ void vbo(JNIEnv *env, jobject thiz, GLContext *glContext) {
             "}";
 
     // program
-    GLuint program = shaderUtil.createProgram(V_SHADER, F_SHADER);
+    GLuint program = createProgram(V_SHADER, F_SHADER);
     glUseProgram(program);
 
     static float triangleVerWithColor[] = {

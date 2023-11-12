@@ -7,6 +7,9 @@
 #include <jni.h>
 #include <GLES3/gl3.h>
 #include <android/bitmap.h>
+#include "GLContext.h"
+#include "android_log.h"
+#include "gl_util.h"
 
 
 extern "C"
@@ -21,7 +24,7 @@ void texture(JNIEnv *env, GLContext *glContext, jobject bitmap) {
     void *bmpPixels;
     GLuint texture;
     // 创建2d纹理对象，绑定和配置
-    glUtil.genTex2D(&texture);
+    genTex2D(&texture);
     // 指定纹理图片
     AndroidBitmap_lockPixels(env, bitmap, &bmpPixels);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmpInfo.width, bmpInfo.height,
@@ -36,7 +39,7 @@ void texture(JNIEnv *env, GLContext *glContext, jobject bitmap) {
 
     // 绘制视口
     glViewport(200, 800, 600, 600);
-    glUtil.drawElements(6);
+    drawElements(6);
 
     // 绘制视口
     glViewport(0, 0, 600, 600);
