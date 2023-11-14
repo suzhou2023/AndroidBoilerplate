@@ -38,7 +38,7 @@ void ebo(JNIEnv *env, jobject thiz, jobject surface) {
             "}";
 
     // program
-    GLuint program = createProgram(V_SHADER, F_SHADER);
+    GLuint program = shader_createProgram(V_SHADER, F_SHADER);
     glUseProgram(program);
 
     float vertices[] = {

@@ -14,9 +14,9 @@
 #include <GLES3/gl3.h>
 
 
-GLuint loadShader(const char *source, GLuint type);
+GLuint shader_loadShader(const char *source, GLuint type);
 
-GLuint createProgram(const char *source_vShader, const char *source_fShader);
+GLuint shader_createProgram(const char *source_vShader, const char *source_fShader);
 
 
 #endif //ANDROIDBOILERPLATE_SHADER_UTIL_H

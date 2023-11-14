@@ -12,7 +12,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 
 add_subdirectory(ffmpeg)
-add_subdirectory(opengl/01_basic)
+#add_subdirectory(opengl/01_basic)
 #add_subdirectory(opengl/test/02_camera)
 
 

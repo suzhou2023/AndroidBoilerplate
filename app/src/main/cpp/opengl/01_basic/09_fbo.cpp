@@ -30,22 +30,22 @@ void fbo(JNIEnv *env, jobject surface, jobject bitmap) {
     };
 
     GLuint vbo, ebo;
-    genBuffer(&vbo, vertices, sizeof(vertices));
+    gl_genBuffer(&vbo, vertices, sizeof(vertices));
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4 * 5, 0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * 5, (void *) (3 * 4));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
-    genIndexBuffer(&ebo, indices, sizeof(indices));
+    gl_genIndexBuffer(&ebo, indices, sizeof(indices));
 
     GLuint tex;
-    genTex2D(&tex);
+    gl_genTex2D(&tex);
     // todo
 //    glUtil.texImage2D(env, bitmap);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     /*****fbo配置*****/
     GLuint fbo, tex2;
-    genTex2D(&tex2);
+    gl_genTex2D(&tex2);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1000, 1000,
                  0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -71,7 +71,7 @@ void fbo(JNIEnv *env, jobject surface, jobject bitmap) {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, tex);
-    drawElements(6);
+    gl_drawElements(6);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
@@ -79,8 +79,52 @@ void fbo(JNIEnv *env, jobject surface, jobject bitmap) {
 //    glUseProgram(program);// 正常
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, tex2);
-    drawElements(6);
+    gl_drawElements(6);
     // todo:
 
     /*****绘制阶段*****/
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

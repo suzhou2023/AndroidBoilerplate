@@ -19,15 +19,15 @@ void loadYuv2(JNIEnv *env, jobject thiz, GLContext *glContext) {
 
     GLuint textures[3];
 
-    genTex2D(&textures[0]);
+    gl_genTex2D(&textures[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE,
                  GL_UNSIGNED_BYTE, nullptr);
 
-    genTex2D(&textures[1]);
+    gl_genTex2D(&textures[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width / 2, height / 2, 0, GL_LUMINANCE,
                  GL_UNSIGNED_BYTE, nullptr);
 
-    genTex2D(&textures[2]);
+    gl_genTex2D(&textures[2]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width / 2, height / 2, 0, GL_LUMINANCE,
                  GL_UNSIGNED_BYTE, nullptr);
 
@@ -94,7 +94,7 @@ void loadYuv2(JNIEnv *env, jobject thiz, GLContext *glContext) {
                         GL_UNSIGNED_BYTE, buf[2]);
 
         // 绘制
-        drawElements(6);
+        gl_drawElements(6);
         eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[0]);
 
         // 线程休眠

@@ -16,7 +16,7 @@
 
 
 // 返回字符数组，用完后需要手动调用delete释放空间
-GLubyte *readFile(AAssetManager *assetManager, const char *filename);
+GLubyte *asset_readFile(AAssetManager *assetManager, const char *filename);
 
 
 #endif //ANDROIDBOILERPLATE_ASSET_UTIL_H

@@ -21,7 +21,7 @@
      * @param data
      * @param size
      */
-void genBuffer(GLuint *vbo, float data[], GLuint size);
+void gl_genBuffer(GLuint *vbo, float data[], GLuint size);
 
 /**
  * 创建顶点索引缓冲对象并填充数据
@@ -29,26 +29,57 @@ void genBuffer(GLuint *vbo, float data[], GLuint size);
  * @param data
  * @param size
  */
-void genIndexBuffer(GLuint *ebo, GLuint data[], GLuint size);
+void gl_genIndexBuffer(GLuint *ebo, GLuint data[], GLuint size);
 
 /**
  * 创建2d纹理对象，绑定和配置
  * @param tex_2d
  */
-void genTex2D(GLuint *tex_2d);
+void gl_genTex2D(GLuint *tex_2d);
 
 /**
  * 加载bitmap到当前绑定的2D纹理
  * @param env
  * @param bitmap
  */
-void texImage2D(JNIEnv *env, jobject bitmap, uint32_t *width, uint32_t *height);
+void gl_texImage2D(JNIEnv *env, jobject bitmap, uint32_t *width, uint32_t *height);
 
 /**
  * 绘制
  * @param vertexNum
  */
-void drawElements(GLuint vertexNum);
+void gl_drawElements(GLuint vertexNum);
 
 
 #endif //ANDROIDBOILERPLATE_GL_UTIL_H
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

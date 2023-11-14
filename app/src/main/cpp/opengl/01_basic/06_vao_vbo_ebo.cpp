@@ -16,7 +16,7 @@ void vao_vbo_ebo(JNIEnv *env, jobject thiz, jobject surface) {
     //todo: 配置EGL
 
     // program
-    GLuint program = createProgram(V_SHADER_BASIC, F_SHADER_BASIC);
+    GLuint program = shader_createProgram(V_SHADER_BASIC, F_SHADER_BASIC);
     glUseProgram(program);
 
     float vertices[] = {

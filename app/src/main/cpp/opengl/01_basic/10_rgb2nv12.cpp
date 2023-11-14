@@ -16,15 +16,15 @@ void rgb2nv12(JNIEnv *env, jobject thiz, GLContext *glContext, jobject bitmap, j
 
     // 创建一个2d纹理并绑定，用来采样
     GLuint texture2d;
-    genTex2D(&texture2d);
+    gl_genTex2D(&texture2d);
 
     // 给纹理设置图像数据
     uint32_t width, height;
-    texImage2D(env, bitmap, &width, &height);
+    gl_texImage2D(env, bitmap, &width, &height);
 
     // 创建fbo和关联的2d纹理，作为渲染的目的地
     GLuint fbo, tex_2d;
-    fboUtil_createFbo(width / 4, height * 1.5, &fbo, &tex_2d);
+    fbo_createFbo(width / 4, height * 1.5, &fbo, &tex_2d);
     // 用glContext管理起来，会统一做资源释放
     glContext->fbo[0] = fbo;
     glContext->fboTexture = tex_2d;
