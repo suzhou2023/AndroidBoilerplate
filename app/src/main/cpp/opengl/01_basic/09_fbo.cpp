@@ -4,7 +4,8 @@
  *  description :
  */
 
-#include <jni.h>
+#include "09_fbo.h"
+
 #include <GLES3/gl3.h>
 #include "android_log.h"
 #include "gl_util.h"

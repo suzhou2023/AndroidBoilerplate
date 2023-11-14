@@ -7,11 +7,10 @@
 #include "03_vbo.h"
 
 #include "shader_util.h"
-
+#include "GLContext.h"
 
 
 // 顶点缓冲对象
-extern "C"
 void vbo(JNIEnv *env, jobject thiz, GLContext *glContext) {
 
     const char *V_SHADER =

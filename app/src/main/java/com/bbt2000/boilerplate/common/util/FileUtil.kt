@@ -1,4 +1,4 @@
-package com.bbt2000.boilerplate.util
+package com.bbt2000.boilerplate.common.util
 
 import android.content.Context
 import android.graphics.Bitmap

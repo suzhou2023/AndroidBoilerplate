@@ -1,15 +1,18 @@
 /**
  *  author : suzhou
- *  date : 2023/7/15 
+ *  date : 2023/11/15 
  *  description : 
  */
 
+
+
+
+#ifndef ANDROIDBOILERPLATE_03_VBO_H
+#define ANDROIDBOILERPLATE_03_VBO_H
+
 #include <jni.h>
-#include <GLES3/gl3.h>
 #include "GLContext.h"
 
-
-
-// 顶点缓冲对象
-extern "C"
 void vbo(JNIEnv *env, jobject thiz, GLContext *glContext);
+
+#endif //ANDROIDBOILERPLATE_03_VBO_H

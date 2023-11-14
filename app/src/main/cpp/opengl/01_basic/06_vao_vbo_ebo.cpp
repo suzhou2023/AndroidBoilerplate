@@ -3,15 +3,14 @@
  *  date : 2023/7/15 
  *  description : 
  */
+#include "06_vao_vbo_ebo.h"
 
-#include <jni.h>
 #include <GLES3/gl3.h>
 #include "shader/shader.h"
 #include "shader_util.h"
 
 
 // 结合使用
-extern "C"
 void vao_vbo_ebo(JNIEnv *env, jobject thiz, jobject surface) {
     //todo: 配置EGL
 

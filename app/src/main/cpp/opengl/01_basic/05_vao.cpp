@@ -4,13 +4,13 @@
  *  description : 
  */
 
-#include <jni.h>
+#include "05_vao.h"
+
 #include <GLES3/gl3.h>
 #include "shader_util.h"
 
 
 // VAO
-extern "C"
 void vao(JNIEnv *env, jobject thiz, jobject surface) {
     //todo: 配置EGL
     const char *V_SHADER =

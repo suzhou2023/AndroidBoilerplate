@@ -1,6 +1,7 @@
 package com.bbt2000.boilerplate
 
 import android.app.Application
+import com.bbt2000.boilerplate.common.util.ContextUtil
 import com.orhanobut.logger.AndroidLogAdapter
 import com.orhanobut.logger.Logger
 
@@ -12,6 +13,7 @@ import com.orhanobut.logger.Logger
 class BpApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        ContextUtil.application = this
         asyncInit()
     }
 }

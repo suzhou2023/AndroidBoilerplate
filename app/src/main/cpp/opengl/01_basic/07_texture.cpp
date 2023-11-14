@@ -4,15 +4,14 @@
  *  description : 
  */
 
-#include <jni.h>
+#include "07_texture.h"
+
 #include <GLES3/gl3.h>
 #include <android/bitmap.h>
-#include "GLContext.h"
 #include "android_log.h"
 #include "gl_util.h"
 
 
-extern "C"
 void texture(JNIEnv *env, GLContext *glContext, jobject bitmap) {
 
     AndroidBitmapInfo bmpInfo;

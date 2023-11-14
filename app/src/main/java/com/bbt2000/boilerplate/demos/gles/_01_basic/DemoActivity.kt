@@ -1,4 +1,4 @@
-package com.bbt2000.boilerplate.demos.gles._01_basics
+package com.bbt2000.boilerplate.demos.gles._01_basic
 
 import android.Manifest
 import android.graphics.Color

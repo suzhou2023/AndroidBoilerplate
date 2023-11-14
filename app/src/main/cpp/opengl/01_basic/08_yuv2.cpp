@@ -4,15 +4,15 @@
  *  description : 
  */
 
+#include "08_yuv2.h"
+
 #include <jni.h>
 #include <GLES3/gl3.h>
 #include <android/asset_manager_jni.h>
 #include <thread>
-#include "GLContext.h"
 #include "gl_util.h"
 
 
-extern "C"
 void loadYuv2(JNIEnv *env, jobject thiz, GLContext *glContext) {
     const int width = 640;
     const int height = 272;

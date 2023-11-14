@@ -5,7 +5,7 @@ import android.media.MediaFormat
 import android.media.MediaMuxer
 import android.media.MediaMuxer.OutputFormat
 import android.util.Log
-import com.bbt2000.boilerplate.util.FileUtil
+import com.bbt2000.boilerplate.common.util.FileUtil
 import java.nio.ByteBuffer
 
 

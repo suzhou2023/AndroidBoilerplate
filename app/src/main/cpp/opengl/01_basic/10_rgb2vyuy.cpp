@@ -4,14 +4,12 @@
  *  description : rgb转yuv
  */
 
+#include "10_rgb2vyuy.h"
 
-#include <jni.h>
-#include "GLContext.h"
 #include "fbo_util.h"
 #include "gl_util.h"
 
 
-extern "C"
 void rgb2vyuy(JNIEnv *env, jobject thiz, GLContext *glContext, jobject bitmap, jobject callback) {
 
     // 创建一个2d纹理并绑定，用来采样

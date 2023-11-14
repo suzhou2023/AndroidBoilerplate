@@ -4,6 +4,8 @@
  *  description : 
  */
 
+#include "08_yuv.h"
+
 #include <jni.h>
 #include <GLES3/gl3.h>
 #include <cstring>
@@ -12,7 +14,6 @@
 #include "asset_util.h"
 
 
-extern "C"
 void loadYuv(JNIEnv *env, jobject thiz, GLContext *glContext) {
 
     GLuint textures[3];

@@ -4,15 +4,12 @@
  *  description : 
  */
 
-#include <jni.h>
+#include "01_native_window.h"
+
 #include <android/native_window_jni.h>
 #include <cstring>
 #include "android_log.h"
-#include "asset_util.h"
-#include "egl_util.h"
-#include "fbo_util.h"
-#include "gl_util.h"
-#include "shader_util.h"
+
 
 /**
  * opengles绘图都要通过EGL层才能显示在屏幕上
