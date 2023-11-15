@@ -6,8 +6,7 @@
 
 #include "03_vbo.h"
 
-#include "shader_util.h"
-#include "GLContext.h"
+#include "gl/shader_util.h"
 
 
 // 顶点缓冲对象

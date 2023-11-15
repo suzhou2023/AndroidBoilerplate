@@ -8,7 +8,7 @@
 
 #include <GLES3/gl3.h>
 #include "android_log.h"
-#include "gl_util.h"
+#include "gl/gl_util.h"
 
 
 void fbo(JNIEnv *env, jobject surface, jobject bitmap) {

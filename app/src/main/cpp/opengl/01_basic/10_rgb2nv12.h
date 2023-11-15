@@ -12,7 +12,7 @@
 
 
 #include <jni.h>
-#include "GLContext.h"
+#include "gl/GLContext.h"
 
 void rgb2nv12(JNIEnv *env, jobject thiz, GLContext *glContext, jobject bitmap, jobject callback);
 

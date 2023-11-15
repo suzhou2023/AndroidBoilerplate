@@ -6,12 +6,10 @@
 
 #include "08_yuv.h"
 
-#include <jni.h>
 #include <GLES3/gl3.h>
 #include <cstring>
-#include "GLContext.h"
-#include "gl_util.h"
-#include "asset_util.h"
+#include "gl/gl_util.h"
+#include "gl/asset_util.h"
 
 
 void loadYuv(JNIEnv *env, jobject thiz, GLContext *glContext) {

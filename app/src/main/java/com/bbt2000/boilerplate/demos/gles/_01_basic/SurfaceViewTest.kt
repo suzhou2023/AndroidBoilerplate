@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.SurfaceHolder
 import com.bbt2000.boilerplate.demos.gles._01_basic.test.apiTest
+import com.bbt2000.boilerplate.demos.gles._01_basic.test.loadYuv
 import com.bbt2000.boilerplate.demos.gles._01_basic.test.loadYuvVideo
 import com.bbt2000.boilerplate.demos.gles._01_basic.test.rgb2nv12
 import com.bbt2000.boilerplate.demos.gles._01_basic.test.rgb2vyuy
@@ -24,8 +25,7 @@ class SurfaceViewTest @JvmOverloads constructor(
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         glHandler.post {
-            Logger.d("surfaceChanged")
-            rgb2vyuy(glContext)
+            loadYuv(glContext)
         }
     }
 }

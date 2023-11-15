@@ -11,7 +11,7 @@
 #define ANDROIDBOILERPLATE_08_YUV2_H
 
 #include <jni.h>
-#include "GLContext.h"
+#include "gl/GLContext.h"
 
 void loadYuv2(JNIEnv *env, jobject thiz, GLContext *glContext);
 

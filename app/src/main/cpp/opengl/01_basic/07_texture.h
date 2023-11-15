@@ -12,7 +12,7 @@
 
 
 #include <jni.h>
-#include "GLContext.h"
+#include "gl/GLContext.h"
 
 void texture(JNIEnv *env, GLContext *glContext, jobject bitmap);
 

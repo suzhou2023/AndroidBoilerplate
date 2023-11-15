@@ -10,11 +10,14 @@ extern "C" {
 #include "libavcodec/avcodec.h"
 }
 
+#include <ctime>
+#include <thread>
 #include "stream.h"
 #include "log_callback.h"
+#include "gl.h"
 
 
-void openStream(const char *url) {
+void openStream(GLContext *glContext, const char *url) {
 
     // 必要的变量定义
     AVFormatContext *format_ctx = nullptr;
@@ -103,49 +106,84 @@ void openStream(const char *url) {
     frame = av_frame_alloc();
     // 循环读取视频帧
     while (true) {
+        struct timeval start, end;
+        gettimeofday(&start, nullptr);
         // 返回一帧视频编码数据(对于音频不止一帧)
         ret = av_read_frame(format_ctx, packet);
         if (ret < 0) {
             LOGE("av_read_frame error: %s", av_err2str(ret));
             continue;
         }
+        gettimeofday(&end, nullptr);
+        LOGD("time = %ld", (end.tv_usec - start.tv_usec) / 1000);
 
         // 如果是视频流，处理其解码、拿帧等
         if (packet->stream_index == video_stream->index) {
-            // 为codec提供原始的packet数据
+            // 为解码器提供原始的packet数据作为解码器输入
+            // 返回值：
+            // AVERROR(EAGAIN) - 当前状态输入数据未被解码器接受，需要调用avcodec_receive_frame()读取输出，然后重新调用此函数发送输入
             ret = avcodec_send_packet(codec_ctx, packet);
-            if (ret < 0) {
+            if (ret == 0) {
+                LOGD("avcodec_send_packet success");
+            } else if (ret == AVERROR(EAGAIN)) {
+                LOGE("avcodec_send_packet error: %s", av_err2str(ret));
+            } else if (ret == AVERROR_EOF) {
+                LOGE("avcodec_send_packet error: AVERROR_EOF");
+                break;
+            } else {
                 LOGE("avcodec_send_packet error: %s", av_err2str(ret));
             }
 
-            // 解引用buffer，reset其它字段
-            av_packet_unref(packet);
+            gettimeofday(&end, nullptr);
+            LOGD("time2 = %ld", (end.tv_usec - start.tv_usec) / 1000);
 
-            // 返回解码后的数据
-            ret = avcodec_receive_frame(codec_ctx, frame);
-            if (ret == 0) {
-                LOGD("pts = %ld", frame->pts);
-                LOGD("format = %d", frame->format); // AVPixelFormat枚举
-                LOGD("key frame flag = %d", frame->flags & AV_FRAME_FLAG_KEY);
-                LOGD("size = %dx%d", frame->width, frame->height);
-                LOGD("linesize[0] = %d", frame->linesize[0]);
-                LOGD("linesize[1] = %d", frame->linesize[1]);
-                LOGD("linesize[2] = %d", frame->linesize[2]);
+            while (true) {
+                // 返回值：
+                // AVERROR(EAGAIN) - 当前状态输出数据不可得，需要向解码器发送新的输入数据
+                ret = avcodec_receive_frame(codec_ctx, frame);
+                if (ret == 0) {
+                    LOGD("avcodec_receive_frame success");
+                    LOGD("pts = %ld", frame->pts);
+                    LOGD("format = %d", frame->format); // AVPixelFormat枚举
+                    LOGD("key frame flag = %d", frame->flags & AV_FRAME_FLAG_KEY);
+                    LOGD("size = %dx%d", frame->width, frame->height);
+                    LOGD("linesize[0] = %d", frame->linesize[0]);
+                    LOGD("linesize[1] = %d", frame->linesize[1]);
+                    LOGD("linesize[2] = %d", frame->linesize[2]);
 
+                    LOGD("buf[0]->size = %d", frame->buf[0]->size);
+                    LOGD("buf[1]->size = %d", frame->buf[1]->size);
+                    LOGD("buf[2]->size = %d", frame->buf[2]->size);
 
-                LOGD("buf[0]->size = %d", frame->buf[0]->size);
-                LOGD("buf[1]->size = %d", frame->buf[1]->size);
-                LOGD("buf[2]->size = %d", frame->buf[2]->size);
-            } else {
-                LOGE("avcodec_receive_frame error: %s", av_err2str(ret));
+                    gettimeofday(&end, nullptr);
+                    LOGD("time3 = %ld", (end.tv_usec - start.tv_usec) / 1000);
+
+                    // opengl绘制
+                    gl_drawFrame(glContext, frame->linesize[0], frame->linesize[1], frame->data[0], frame->data[1],
+                                 frame->data[2]);
+
+                    gettimeofday(&end, nullptr);
+                    LOGD("time4 = %ld", (end.tv_usec - start.tv_usec) / 1000);
+                } else if (ret == AVERROR(EAGAIN)) {
+                    LOGE("avcodec_receive_frame error: %s", av_err2str(ret));
+                    break;
+                } else if (ret == AVERROR_EOF) {
+                    LOGE("avcodec_receive_frame error: AVERROR_EOF");
+                    break;
+                } else {
+                    LOGE("avcodec_receive_frame error: %s", av_err2str(ret));
+                    break;
+                }
             }
-
-            
 
             // 解引用buffer，reset其它字段
             av_frame_unref(frame);
 
-            break;
+            // 解引用buffer，reset其它字段
+            av_packet_unref(packet);
+
+            // 线程休眠
+            std::this_thread::sleep_for(std::chrono::milliseconds(15));
         }
     }
 

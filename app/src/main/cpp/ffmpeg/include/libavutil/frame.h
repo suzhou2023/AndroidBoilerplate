@@ -227,13 +227,13 @@ enum AVFrameSideDataType {
 };
 
 enum AVActiveFormatDescription {
-    AV_AFD_SAME         = 8,
-    AV_AFD_4_3          = 9,
-    AV_AFD_16_9         = 10,
-    AV_AFD_14_9         = 11,
-    AV_AFD_4_3_SP_14_9  = 13,
+    AV_AFD_SAME = 8,
+    AV_AFD_4_3 = 9,
+    AV_AFD_16_9 = 10,
+    AV_AFD_14_9 = 11,
+    AV_AFD_4_3_SP_14_9 = 13,
     AV_AFD_16_9_SP_14_9 = 14,
-    AV_AFD_SP_4_3       = 15,
+    AV_AFD_SP_4_3 = 15,
 };
 
 
@@ -246,7 +246,7 @@ enum AVActiveFormatDescription {
 typedef struct AVFrameSideData {
     enum AVFrameSideDataType type;
     uint8_t *data;
-    size_t   size;
+    size_t size;
     AVDictionary *metadata;
     AVBufferRef *buf;
 } AVFrameSideData;
@@ -605,10 +605,10 @@ typedef struct AVFrame {
     /**
      * Number of elements in extended_buf.
      */
-    int        nb_extended_buf;
+    int nb_extended_buf;
 
     AVFrameSideData **side_data;
-    int            nb_side_data;
+    int nb_side_data;
 
 /**
  * @defgroup lavu_frame_flags AV_FRAME_FLAGS
@@ -850,7 +850,7 @@ int av_frame_ref(AVFrame *dst, const AVFrame *src);
  * Ensure the destination frame refers to the same data described by the source
  * frame, either by creating a new reference for each AVBufferRef from src if
  * they differ from those in dst, by allocating new buffers and copying data if
- * src is not reference counted, or by unrefencing it if src is empty.
+ * src is not reference counted, or by `unrefencing` it if src is empty.
  *
  * Frame properties on dst will be replaced by those from src.
  *
@@ -1023,7 +1023,7 @@ enum {
      * are explicitly documented to accept it. Use this flag only if you
      * absolutely know what you are doing.
      */
-    AV_FRAME_CROP_UNALIGNED     = 1 << 0,
+    AV_FRAME_CROP_UNALIGNED = 1 << 0,
 };
 
 /**

@@ -7,7 +7,7 @@
 #include "05_vao.h"
 
 #include <GLES3/gl3.h>
-#include "shader_util.h"
+#include "gl/shader_util.h"
 
 
 // VAO

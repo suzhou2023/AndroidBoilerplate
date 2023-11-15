@@ -11,5 +11,5 @@ object Jni {
         System.loadLibrary("ffmpeg-bbt")
     }
 
-    external fun openStream(url: String)
+    external fun openStream(glContext: Long, url: String)
 }

@@ -11,7 +11,7 @@
 #define ANDROIDBOILERPLATE_03_VBO_H
 
 #include <jni.h>
-#include "GLContext.h"
+#include "gl/GLContext.h"
 
 void vbo(JNIEnv *env, jobject thiz, GLContext *glContext);
 

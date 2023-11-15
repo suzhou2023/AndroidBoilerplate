@@ -7,7 +7,7 @@
 
 #include <GLES3/gl3.h>
 #include "shader/shader.h"
-#include "shader_util.h"
+#include "gl/shader_util.h"
 
 
 // 结合使用

@@ -6,11 +6,10 @@
 
 #include "08_yuv2.h"
 
-#include <jni.h>
 #include <GLES3/gl3.h>
 #include <android/asset_manager_jni.h>
 #include <thread>
-#include "gl_util.h"
+#include "gl/gl_util.h"
 
 
 void loadYuv2(JNIEnv *env, jobject thiz, GLContext *glContext) {
@@ -105,6 +104,45 @@ void loadYuv2(JNIEnv *env, jobject thiz, GLContext *glContext) {
     delete[] buf[1];
     delete[] buf[2];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

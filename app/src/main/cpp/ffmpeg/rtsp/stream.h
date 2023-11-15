@@ -10,9 +10,11 @@
 #ifndef BBT_COLPOSCOPE_PATIENT_STREAM_H
 #define BBT_COLPOSCOPE_PATIENT_STREAM_H
 
+#include "gl/GLContext.h"
+
 extern "C" {
-void openStream(const char *url);
-};
+void openStream(GLContext *glContext, const char *url);
+}
 
 
 #endif //BBT_COLPOSCOPE_PATIENT_STREAM_H

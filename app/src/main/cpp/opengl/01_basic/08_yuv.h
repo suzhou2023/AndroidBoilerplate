@@ -7,8 +7,8 @@
 #ifndef ANDROIDBOILERPLATE_08_YUV_H
 #define ANDROIDBOILERPLATE_08_YUV_H
 
-
-#include "GLContext.h"
+#include <jni.h>
+#include "gl/GLContext.h"
 
 void loadYuv(JNIEnv *env, jobject thiz, GLContext *glContext);
 

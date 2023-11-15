@@ -9,7 +9,7 @@
 #include <GLES3/gl3.h>
 #include <android/bitmap.h>
 #include "android_log.h"
-#include "gl_util.h"
+#include "gl/gl_util.h"
 
 
 void texture(JNIEnv *env, GLContext *glContext, jobject bitmap) {

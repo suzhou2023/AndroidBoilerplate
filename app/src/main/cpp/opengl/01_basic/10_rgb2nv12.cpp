@@ -6,8 +6,8 @@
 
 #include "10_rgb2nv12.h"
 
-#include "fbo_util.h"
-#include "gl_util.h"
+#include "gl/fbo_util.h"
+#include "gl/gl_util.h"
 
 
 void rgb2nv12(JNIEnv *env, jobject thiz, GLContext *glContext, jobject bitmap, jobject callback) {
