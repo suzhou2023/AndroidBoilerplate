@@ -11,6 +11,6 @@
 
 #include "gl/GLContext.h"
 
-void gl_drawFrame(GLContext *glContext, int width, int height, void *data_y, void *data_u, void *data_v);
+void gl_drawYuv(GLContext *glContext, int width, int height, void *data_y, void *data_u, void *data_v);
 
 #endif //ANDROIDBOILERPLATE_GL_H

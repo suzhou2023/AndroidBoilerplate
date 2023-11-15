@@ -51,7 +51,7 @@ void gl_texImage2D(JNIEnv *env, jobject bitmap, uint32_t *width, uint32_t *heigh
 void gl_drawElements(GLuint vertexNum);
 
 
-#endif //ANDROIDBOILERPLATE_GL_UTIL_H
+#endif //ANDROIDBOILERPLATE_GL_H
 
 
 

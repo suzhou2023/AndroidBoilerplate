@@ -20,7 +20,7 @@ class SurfaceViewTest(
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         glHandler.post {
             JniGL.nativeCreateProgram(glContext, "shader/v_simple_m_flip.glsl", "shader/f_yuv2rgb.glsl")
-            Jni.openStream(glContext, "rtsp://192.168.43.87:8554/stream")
+            Jni.openRtspStream(glContext, "rtsp://192.168.43.182:8554/stream")
         }
     }
 }

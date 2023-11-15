@@ -36,9 +36,9 @@ target_link_libraries( # Specifies the target library.
         swresample
         # opengl
         gl-bbt
-        # for openGLES
+        # openGLES
         GLESv3
-        # for EGL
+        # EGL
         EGL
         android
         jnigraphics

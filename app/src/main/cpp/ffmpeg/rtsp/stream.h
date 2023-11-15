@@ -13,7 +13,7 @@
 #include "gl/GLContext.h"
 
 extern "C" {
-void openStream(GLContext *glContext, const char *url);
+void openRtspStream(GLContext *glContext, const char *url);
 }
 
 
