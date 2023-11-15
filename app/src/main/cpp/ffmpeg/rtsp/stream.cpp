@@ -116,7 +116,9 @@ void openRtspStream(GLContext *glContext, const char *url) {
             continue;
         }
 
+        // 只处理视频流
         if (packet->stream_index != video_stream->index) {
+            av_packet_unref(packet);
             continue;
         }
 
