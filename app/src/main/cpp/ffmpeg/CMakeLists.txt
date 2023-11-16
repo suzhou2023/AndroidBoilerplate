@@ -19,8 +19,8 @@ add_library(
         SHARED
 
         jni.cpp
-        rtsp/stream.cpp
-        rtsp/gl.cpp
+        common/FFContext.cpp
+        common/gl.cpp
 )
 
 

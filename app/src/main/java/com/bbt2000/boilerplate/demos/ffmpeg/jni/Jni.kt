@@ -11,5 +11,9 @@ object Jni {
         System.loadLibrary("ffmpeg-bbt")
     }
 
-    external fun openRtspStream(glContext: Long, url: String)
+    external fun createFFContext(): Long
+    external fun openRtspStream(ffContext: Long, url: String): Boolean
+    external fun readFrames(ffContext: Long, glContext: Long)
+    external fun readOneFrame(ffContext: Long, glContext: Long): Int
+    external fun destroyFFContext(ffContext: Long)
 }
