@@ -25,7 +25,7 @@ void rgb2nv12(JNIEnv *env, jobject thiz, GLContext *glContext, jobject bitmap, j
     fbo_createFbo(width / 4, height * 1.5, &fbo, &tex_2d);
     // 用glContext管理起来，会统一做资源释放
     glContext->fbo[0] = fbo;
-    glContext->fboTexture = tex_2d;
+    glContext->fboTexture[0] = tex_2d;
 
     // 启用fbo
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);

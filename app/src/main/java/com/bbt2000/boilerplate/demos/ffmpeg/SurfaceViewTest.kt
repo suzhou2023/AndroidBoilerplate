@@ -37,12 +37,12 @@ class SurfaceViewTest(
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         glHandler.post {
             // 创建opengl程序
-            JniGL.nativeCreateProgram(glContext, "shader/v_simple_m_flip.glsl", "shader/f_yuv2rgb.glsl")
+            JniGL.createProgram(glContext, "shader/v_simple_m_flip.glsl", "shader/f_yuv2rgb.glsl")
             // 打开流
-            val ret = Jni.openRtspStream(ffContext, "rtsp://192.168.43.87:8554/stream")
+            val ret = Jni.openRtspStream(ffContext, "rtsp://192.168.43.182:8554/stream")
             if (!ret) return@post
             // 设置opengl矩阵
-            Jni.glSetMatrix(
+            Jni.glConfigMatrix(
                 ffContext = ffContext,
                 glContext = glContext,
                 windowW = width,
@@ -58,7 +58,7 @@ class SurfaceViewTest(
         glHandler.post {
             Jni.destroyFFContext(ffContext)
             ffContext = 0
-            JniGL.nativeDestroyGLContext(glContext)
+            JniGL.destroyGLContext(glContext)
             glContext = 0
         }
         glHandler.looper.quitSafely()

@@ -18,7 +18,7 @@ object Jni {
     external fun openRtspStream(ffContext: Long, url: String): Boolean
 
     // 设置opengl渲染矩阵
-    external fun glSetMatrix(
+    external fun glConfigMatrix(
         ffContext: Long, glContext: Long, programIndex: Int = 0,
         windowW: Int, windowH: Int, scaleType: Int = 1, rotate: Boolean = true
     )

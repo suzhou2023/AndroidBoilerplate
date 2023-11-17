@@ -45,9 +45,9 @@ Java_com_bbt2000_boilerplate_demos_ffmpeg_jni_Jni_openRtspStream(JNIEnv *env, jo
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_bbt2000_boilerplate_demos_ffmpeg_jni_Jni_glSetMatrix(JNIEnv *env, jobject thiz, jlong ff_context,
-                                                              jlong gl_context, jint program_index, jint window_w,
-                                                              jint window_h, jint scale_type, jboolean rotate) {
+Java_com_bbt2000_boilerplate_demos_ffmpeg_jni_Jni_glConfigMatrix(JNIEnv *env, jobject thiz, jlong ff_context,
+                                                                 jlong gl_context, jint program_index, jint window_w,
+                                                                 jint window_h, jint scale_type, jboolean rotate) {
     if (ff_context <= 0) return;
     if (gl_context <= 0) return;
     auto *ffContext = reinterpret_cast<FFContext *>(ff_context);
@@ -56,7 +56,7 @@ Java_com_bbt2000_boilerplate_demos_ffmpeg_jni_Jni_glSetMatrix(JNIEnv *env, jobje
     int frame_w = ffContext->codec_ctx->width;
     int frame_h = ffContext->codec_ctx->height;
 
-    gl_setMatrix(glContext->program[program_index], frame_w, frame_h, window_w, window_h, scale_type, rotate);
+    glContext->configMatrix(program_index, frame_w, frame_h, window_w, window_h, scale_type, rotate);
 }
 
 

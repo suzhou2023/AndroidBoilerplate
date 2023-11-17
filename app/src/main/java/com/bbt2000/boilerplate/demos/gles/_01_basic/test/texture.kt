@@ -13,7 +13,7 @@ import com.bbt2000.gles.jni.JniGL
  *  description : 渲染图片
  */
 fun texture(glContext: Long) {
-    JniGL.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_tex_flip.glsl")
+    JniGL.createProgram(glContext, "shader/v_simple.glsl", "shader/f_tex_flip.glsl")
     // 注意：android系统有可能会对图片进行缩放
     val bitmap = ContextUtil.application.resources.getDrawable(R.drawable.profile_432x432)
         .toBitmap(config = Bitmap.Config.ARGB_8888)

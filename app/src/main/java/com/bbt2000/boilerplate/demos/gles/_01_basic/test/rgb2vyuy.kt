@@ -16,7 +16,7 @@ import java.nio.ByteBuffer
  *  description :
  */
 fun rgb2vyuy(glContext: Long) {
-    JniGL.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2vyuy.glsl")
+    JniGL.createProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2vyuy.glsl")
     val bitmap = ContextUtil.application.resources.getDrawable(R.drawable.wy_300x200).toBitmap()
 
     val begin = System.currentTimeMillis()

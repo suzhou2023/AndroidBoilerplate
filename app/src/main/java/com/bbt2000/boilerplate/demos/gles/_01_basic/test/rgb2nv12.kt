@@ -17,8 +17,8 @@ import java.nio.ByteBuffer
  *  description :
  */
 fun rgb2nv12(glContext: Long) {
-    JniGL.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2nv12_y.glsl", 0)
-    JniGL.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2nv12_uv.glsl", 1)
+    JniGL.createProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2nv12_y.glsl", 0)
+    JniGL.createProgram(glContext, "shader/v_simple.glsl", "shader/f_rgb2nv12_uv.glsl", 1)
     val bitmap = ContextUtil.application.resources.getDrawable(R.drawable.profile_432x432).toBitmap()
 
     val begin = System.currentTimeMillis()

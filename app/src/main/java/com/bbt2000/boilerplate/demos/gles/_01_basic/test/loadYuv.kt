@@ -9,6 +9,6 @@ import com.bbt2000.gles.jni.JniGL
  *  description : 渲染yuv图片
  */
 fun loadYuv(glContext: Long) {
-    JniGL.nativeCreateProgram(glContext, "shader/v_simple.glsl", "shader/f_yuv2rgb.glsl")
+    JniGL.createProgram(glContext, "shader/v_simple.glsl", "shader/f_yuv2rgb.glsl")
     Jni.nativeLoadYuv(glContext)
 }

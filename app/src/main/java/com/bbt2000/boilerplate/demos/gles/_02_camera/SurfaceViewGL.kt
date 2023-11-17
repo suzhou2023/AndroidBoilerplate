@@ -10,16 +10,7 @@ import android.util.Log
 import android.util.Size
 import android.view.Surface
 import android.view.SurfaceHolder
-import com.bbt2000.gles.jni.JniGL.nativeCreateFbo
-import com.bbt2000.gles.jni.JniGL.nativeCreateGLContext
-import com.bbt2000.gles.jni.JniGL.nativeCreateOESTexture
-import com.bbt2000.gles.jni.JniGL.nativeCreateProgram
-import com.bbt2000.gles.jni.JniGL.nativeDestroyGLContext
-import com.bbt2000.gles.jni.JniGL.nativeDrawFrame
-import com.bbt2000.gles.jni.JniGL.nativeEGLCreateSurface
-import com.bbt2000.gles.jni.JniGL.nativeLoadVertices
-import com.bbt2000.gles.jni.JniGL.nativeSetMatrix
-import com.bbt2000.gles.jni.JniGL.nativeSurfaceChanged
+import com.bbt2000.gles.jni.JniGL
 import com.bbt2000.gles.widget.AutoFitSurfaceView
 
 
@@ -75,26 +66,26 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
     fun createEncodeSurface(surface: Surface) {
         if (mGLContext <= 0) return
         mHandler.post {
-            nativeEGLCreateSurface(mGLContext, surface, 1)
+            JniGL.createEGLSurface(mGLContext, surface, 1)
         }
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         Log.d(TAG, "Surface created.")
         mHandler.post {
-            mGLContext = nativeCreateGLContext(assetManager = context.assets)
+            mGLContext = JniGL.createGLContext(assetManager = context.assets)
             if (mGLContext <= 0) return@post
-            val success = nativeEGLCreateSurface(mGLContext, holder.surface, 0)
+            val success = JniGL.createEGLSurface(mGLContext, holder.surface, 0)
             if (!success) return@post
-            nativeCreateProgram(mGLContext, "shader/v_simple_m.glsl", "shader/f_oes.glsl")
-            nativeLoadVertices(mGLContext)
-            val oesTexture = nativeCreateOESTexture(mGLContext)
+            JniGL.createProgram(mGLContext, "shader/v_simple_m.glsl", "shader/f_oes.glsl")
+            JniGL.loadVertices(mGLContext)
+            val oesTexture = JniGL.createOESTexture(mGLContext)
             if (oesTexture < 0) return@post
             mSurfaceTexture = SurfaceTexture(oesTexture)
             mSurfaceTexture?.setOnFrameAvailableListener {
                 mSurfaceTexture ?: return@setOnFrameAvailableListener
                 mSurfaceTexture?.updateTexImage()
-                nativeDrawFrame(mGLContext)
+                JniGL.drawFrame(mGLContext)
             }
             if (mPreviewSize != null) {
                 mSurfaceTexture!!.setDefaultBufferSize(mPreviewSize!!.width, mPreviewSize!!.height)
@@ -109,8 +100,9 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
         mCallback?.onSurfaceChanged(mWindowSize!!)
         setMatrix()
         mHandler.post {
-            nativeSurfaceChanged(mGLContext, format, width, height)
-            nativeCreateFbo(mGLContext, width, height)
+            // todo
+//            nativeSurfaceChanged(mGLContext, format, width, height)
+            JniGL.createFbo(mGLContext, width, height, 0)
         }
     }
 
@@ -118,7 +110,7 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         Log.d(TAG, "Surface destroyed.")
         mHandler.post {
-            nativeDestroyGLContext(mGLContext)
+            JniGL.destroyGLContext(mGLContext)
             mSurfaceTexture?.release()
             mSurfaceTexture = null
         }
@@ -153,7 +145,7 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
                     Log.d(TAG, "scaleY = $scaleY")
                     Matrix.scaleM(matrix, 0, 1f, scaleY, 1f)
                 }
-                nativeSetMatrix(mGLContext, matrix)
+                JniGL.setMatrix(mGLContext, matrix)
             }
         }
     }
