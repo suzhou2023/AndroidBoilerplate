@@ -47,10 +47,9 @@ class SurfaceViewTest(
                 glContext = glContext,
                 windowW = width,
                 windowH = height,
-                rotate = false,
             )
-//            Jni.readFrames(ffContext, glContext)
             glHandler.post(runnable)
+            // Jni.readFrames(ffContext, glContext)
         }
     }
 

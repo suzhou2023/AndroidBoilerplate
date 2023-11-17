@@ -25,7 +25,7 @@ class SurfaceViewTest @JvmOverloads constructor(
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         glHandler.post {
-            loadYuv(glContext)
+            texture(glContext)
         }
     }
 }

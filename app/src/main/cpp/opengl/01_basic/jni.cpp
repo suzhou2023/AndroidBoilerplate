@@ -29,10 +29,8 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_bbt2000_boilerplate_demos_gles__101_1basic_jni_Jni_nativeTexture(
         JNIEnv *env, jobject thiz, jlong gl_context, jobject bitmap) {
-
     if (gl_context <= 0) return;
     auto *glContext = reinterpret_cast<GLContext *>(gl_context);
-
     texture(env, glContext, bitmap);
 }
 

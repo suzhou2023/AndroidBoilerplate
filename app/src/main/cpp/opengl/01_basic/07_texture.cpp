@@ -13,7 +13,6 @@
 
 
 void texture(JNIEnv *env, GLContext *glContext, jobject bitmap) {
-
     AndroidBitmapInfo bmpInfo;
     if (AndroidBitmap_getInfo(env, bitmap, &bmpInfo) < 0) {
         LOGE("Get bitmap info failed.");
@@ -37,14 +36,14 @@ void texture(JNIEnv *env, GLContext *glContext, jobject bitmap) {
     glBindTexture(GL_TEXTURE_2D, texture);
 
     // 绘制视口
-    glViewport(200, 800, 600, 600);
-    gl_drawElements(6);
+    // glViewport(200, 800, 600, 600);
+    // gl_drawElements(6);
 
     // 绘制视口
-    glViewport(0, 0, 600, 600);
-    // 不要清屏
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void *) 0);
+    // glViewport(0, 0, 600, 600);
+    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void *) 0);
 
+    gl_drawElements(6);
     eglSwapBuffers(glContext->eglDisplay, glContext->eglSurface[0]);
 }
 
