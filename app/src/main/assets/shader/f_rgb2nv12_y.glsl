@@ -1,7 +1,7 @@
 #version 300 es
 precision mediump float;
 // 输入的纹理坐标
-in vec2 texCoord2;
+in vec2 tex_coord2;
 
 // 输出坐标点颜色
 out vec4 color;
@@ -15,10 +15,10 @@ uniform float offset;
 void main() {
     vec4 rgb0, rgb1, rgb2, rgb3;
     // 4次采样，纹理坐标做一定的偏移
-    rgb0 = texture(texture2d, vec2(texCoord2.x - offset * 1.5, texCoord2.y));
-    rgb1 = texture(texture2d, vec2(texCoord2.x - offset * 0.5, texCoord2.y));
-    rgb2 = texture(texture2d, vec2(texCoord2.x + offset * 0.5, texCoord2.y));
-    rgb3 = texture(texture2d, vec2(texCoord2.x + offset * 1.5, texCoord2.y));
+    rgb0 = texture(texture2d, vec2(tex_coord2.x - offset * 1.5, tex_coord2.y));
+    rgb1 = texture(texture2d, vec2(tex_coord2.x - offset * 0.5, tex_coord2.y));
+    rgb2 = texture(texture2d, vec2(tex_coord2.x + offset * 0.5, tex_coord2.y));
+    rgb3 = texture(texture2d, vec2(tex_coord2.x + offset * 1.5, tex_coord2.y));
 
     vec3 yuv0, yuv1, yuv2, yuv3;
     // 套公式rgb转yuv

@@ -77,9 +77,9 @@ int FFContext::readOneFrame(GLContext *glContext) {
         LOGD("linesize[0] = %d", frame->linesize[0]);
         LOGD("linesize[1] = %d", frame->linesize[1]);
         LOGD("linesize[2] = %d", frame->linesize[2]);
+
         // opengl绘制
-        gl_drawYuv(glContext, frame->linesize[0], frame->height, frame->data[0], frame->data[1],
-                   frame->data[2]);
+        gl_drawYuv(glContext, frame->linesize[0], frame->height, frame->data[0], frame->data[1], frame->data[2]);
     } else if (ret == AVERROR(EAGAIN)) {
         LOGE("avcodec_receive_frame error: %s", av_err2str(ret));
     } else if (ret == AVERROR_EOF) {

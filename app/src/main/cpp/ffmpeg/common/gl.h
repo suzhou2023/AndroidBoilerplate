@@ -11,6 +11,51 @@
 
 #include "gl/GLContext.h"
 
-void gl_drawYuv(GLContext *glContext, int width, int height, void *data_y, void *data_u, void *data_v);
+
+/**
+ * opengl绘制yuv
+ *
+ * @param glContext
+ * @param frame_w - 帧width
+ * @param frame_h - 帧height
+ * @param data_y
+ * @param data_u
+ * @param data_v
+ */
+void gl_drawYuv(GLContext *glContext, int frame_w, int frame_h, void *data_y, void *data_u, void *data_v);
 
 #endif //ANDROIDBOILERPLATE_GL_H
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

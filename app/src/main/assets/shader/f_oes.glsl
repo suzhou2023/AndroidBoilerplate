@@ -2,12 +2,12 @@
 // OES片段着色器
 #extension GL_OES_EGL_image_external_essl3 : require
 precision mediump float;
-in vec2 texCoord2;
+in vec2 tex_coord2;
 out vec4 color;
 
-uniform samplerExternalOES oesTexture;
+uniform samplerExternalOES oes_texture;
 
 void main()
 {
-    color = texture(oesTexture, texCoord2);
+    color = texture(oes_texture, tex_coord2);
 }

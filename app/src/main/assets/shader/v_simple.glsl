@@ -3,11 +3,11 @@
 layout (location = 0)
 in vec4 v_position;
 layout (location = 1)
-in vec2 texCoord;
+in vec2 tex_coord;
 
-out vec2 texCoord2;
+out vec2 tex_coord2;
 
 void main() {
     gl_Position = v_position;
-    texCoord2 = texCoord;
+    tex_coord2 = tex_coord;
 }
