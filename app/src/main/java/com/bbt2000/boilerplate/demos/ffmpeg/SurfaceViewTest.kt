@@ -20,11 +20,40 @@ class SurfaceViewTest(
 
     private var ffContext: Long = 0
 
-    private val runnable: Runnable = object : Runnable {
+    // 打开流
+    private val openStream: Runnable = object : Runnable {
         override fun run() {
             if (ffContext > 0 && glContext > 0) {
-                Jni.readOneFrame(ffContext, glContext)
-                glHandler.post(this)
+                // 打开流
+                val success = Jni.openRtspStream(ffContext, "rtsp://192.168.43.87:8554/stream")
+                if (success) {
+                    // 设置opengl矩阵
+                    Jni.glConfigMatrix(
+                        ffContext = ffContext,
+                        glContext = glContext,
+                        windowW = width,
+                        windowH = height,
+                        scaleType = 2,
+                        rotate = false
+                    )
+                    glHandler.post(readFrame)
+                } else {
+                    postDelayed(this, 3000)
+                }
+            }
+        }
+    }
+
+    // 读取帧
+    private val readFrame: Runnable = object : Runnable {
+        override fun run() {
+            if (ffContext > 0 && glContext > 0) {
+                val ret = Jni.readOneFrame(ffContext, glContext)
+                if (ret != -541478725) { // EOF
+                    glHandler.post(this)
+                } else {
+                    glHandler.post(openStream)
+                }
             }
         }
     }
@@ -38,18 +67,9 @@ class SurfaceViewTest(
         glHandler.post {
             // 创建opengl程序
             JniGL.createProgram(glContext, "shader/v_simple_m_flip.glsl", "shader/f_yuv2rgb.glsl")
+
             // 打开流
-            val ret = Jni.openRtspStream(ffContext, "rtsp://192.168.43.182:8554/stream")
-            if (!ret) return@post
-            // 设置opengl矩阵
-            Jni.glConfigMatrix(
-                ffContext = ffContext,
-                glContext = glContext,
-                windowW = width,
-                windowH = height,
-            )
-            glHandler.post(runnable)
-            // Jni.readFrames(ffContext, glContext)
+            glHandler.post(openStream)
         }
     }
 
