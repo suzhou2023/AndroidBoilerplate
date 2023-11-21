@@ -25,7 +25,7 @@ class SurfaceViewTest(
         override fun run() {
             if (ffContext > 0 && glContext > 0) {
                 // 打开流
-//                val success = Jni.openRtspStream(ffContext, "rtsp://192.168.43.87:8554/stream")
+                // val success = Jni.openRtspStream(ffContext, "rtsp://192.168.43.87:8554/stream")
                 val success = Jni.openRtspStream(ffContext, "rtsp://192.168.1.1:7070/webcam")
                 if (success) {
                     // 设置opengl矩阵
