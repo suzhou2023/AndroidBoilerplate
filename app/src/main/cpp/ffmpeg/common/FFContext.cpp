@@ -123,7 +123,7 @@ bool FFContext::openRtspStream(const char *url) {
     // 设置最大延时 3s
     av_dict_set(&av_dict, "max_delay", "3000000", 0);
     // 设置打开方式 tcp/udp
-    av_dict_set(&av_dict, "rtsp_transport", "tcp", 0);
+    av_dict_set(&av_dict, "rtsp_transport", "udp", 0);
 
     // 打开流
     int ret = avformat_open_input(&format_ctx, url, nullptr, &av_dict);
