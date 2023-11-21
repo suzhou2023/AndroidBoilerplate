@@ -1,7 +1,5 @@
 package com.bbt2000.boilerplate.demos.gles._01_basic.test
 
-import com.bbt2000.boilerplate.demos.gles._01_basic.jni.Jni.nativeApiTest
-
 /**
  *  author : suzhou
  *  date : 2023/11/15

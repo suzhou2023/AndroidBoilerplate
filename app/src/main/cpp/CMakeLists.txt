@@ -8,11 +8,12 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+include_directories("include")
 
 
 add_subdirectory(ffmpeg)
 add_subdirectory(opengl/01_basic)
+add_subdirectory(opengl/02_3d)
 
 
 

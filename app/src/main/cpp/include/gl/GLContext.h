@@ -23,8 +23,19 @@ public:
     // 创建着色器程序
     int createProgram(JNIEnv *env, jobject thiz, jstring v_name, jstring f_name, jint index);
 
+    // 设置渲染窗口尺寸
+    void setWindowSize(jint window_w, jint window_h);
+
     // 加载顶点坐标和纹理坐标
     void loadVertices();
+
+    // 加载顶点坐标和纹理坐标
+    // vertices - 顶点属性数组
+    // vNum - 顶点个数
+    // lineLen - 每行的长度
+    // indices - 索引数组
+    // iNum - 索引个数
+    void loadVertices2(float vertices[], int vNum, int lineLen, GLuint indices[], int iNum);
 
     // 创建oes纹理
     int createOesTexture();
@@ -36,7 +47,8 @@ public:
     void setMatrix(JNIEnv *env, jlong gl_context, jfloatArray matrix);
 
     // 矩阵配置：根据图形和窗口的尺寸配置合适的矩阵(顶点坐标变换矩阵、纹理坐标变换矩阵)
-    void configMatrix(int program_index, int frame_w, int frame_h, int window_w, int window_h, int scale_type, bool rotate);
+    void
+    configMatrix(int program_index, int frame_w, int frame_h, int window_w, int window_h, int scale_type, bool rotate);
 
     GLContext() {};
 
@@ -107,9 +119,9 @@ public:
     EGLConfig eglConfig{nullptr};
     EGLContext eglContext{nullptr};
     EGLSurface eglSurface[5]{nullptr};
+    int windowW{0}; // 窗口宽度
+    int windowH{0}; // 窗口高度
     AAssetManager *assetManager{nullptr}; // native层资源管理器
-    GLsizei width{0}; // 帧宽度
-    GLsizei height{0}; // 帧高度
     GLuint program[5]{};
     GLuint vbo[5]{0};
     GLuint ebo[5]{0};
@@ -121,3 +133,36 @@ public:
 
 
 #endif //ANDROIDBOILERPLATE_GLCONTEXT_H
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
