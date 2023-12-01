@@ -2,7 +2,6 @@ package com.bbt2000.boilerplate.demos.gles._02_camera
 
 import android.content.Context
 import android.graphics.SurfaceTexture
-import android.opengl.Matrix
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.AttributeSet
@@ -47,12 +46,10 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
 
     fun setPreviewRotation(rotation: Int) {
         mPreviewRotation = rotation
-        setMatrix()
     }
 
     fun setPreviewSize(previewSize: Size) {
         mPreviewSize = previewSize
-        setMatrix()
         if (mSurfaceTexture != null) {
             mSurfaceTexture!!.setDefaultBufferSize(mPreviewSize!!.width, mPreviewSize!!.height)
             mCallback?.onTextureAvailable(mSurfaceTexture!!)
@@ -85,7 +82,7 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
             mSurfaceTexture?.setOnFrameAvailableListener {
                 mSurfaceTexture ?: return@setOnFrameAvailableListener
                 mSurfaceTexture?.updateTexImage()
-                JniGL.drawFrame(mGLContext)
+                // todo
             }
             if (mPreviewSize != null) {
                 mSurfaceTexture!!.setDefaultBufferSize(mPreviewSize!!.width, mPreviewSize!!.height)
@@ -98,10 +95,7 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
         Log.d(TAG, "Surface changed: width = $width, height = $height")
         mWindowSize = Size(width, height)
         mCallback?.onSurfaceChanged(mWindowSize!!)
-        setMatrix()
         mHandler.post {
-            // todo
-//            nativeSurfaceChanged(mGLContext, format, width, height)
             JniGL.createFbo(mGLContext, width, height, 0)
         }
     }
@@ -116,39 +110,6 @@ class SurfaceViewGL(context: Context, attrs: AttributeSet? = null) :
         }
     }
 
-    private fun setMatrix() {
-        if (mPreviewRotation != null && mPreviewSize != null && mWindowSize != null) {
-            mHandler.post {
-                val matrix = FloatArray(16)
-                Matrix.setIdentityM(matrix, 0)
-                Log.d(TAG, "mPreviewRotation = $mPreviewRotation")
-                // 旋转角度
-                Matrix.setRotateM(matrix, 0, mPreviewRotation!!.toFloat(), 0f, 0f, -1f)
-                // OES纹理坐标到底是什么方向？
-                // 前摄要不要左右镜面翻转？
-                if (mIsFrontCamera)
-                    Matrix.scaleM(matrix, 0, 1f, -1f, 1f)
-                // 根据窗口尺寸和预览尺寸，设置缩放
-                val windowRatio = mWindowSize!!.width / mWindowSize!!.height.toFloat()
-                Log.d(TAG, "windowRatio = $windowRatio")
-                var previewRatio = mPreviewSize!!.width / mPreviewSize!!.height.toFloat()
-                Log.d(TAG, "previewRatio = $previewRatio")
-                if (mPreviewRotation!! % 180 == 90) previewRatio = 1 / previewRatio
-                Log.d(TAG, "1/previewRatio = $previewRatio")
-                if (windowRatio > previewRatio) {
-                    // todo: 为什么是x坐标放大
-                    val scaleX = windowRatio / previewRatio
-                    Log.d(TAG, "scaleX = $scaleX")
-                    Matrix.scaleM(matrix, 0, scaleX, 1f, 1f)
-                } else {
-                    val scaleY = previewRatio / windowRatio
-                    Log.d(TAG, "scaleY = $scaleY")
-                    Matrix.scaleM(matrix, 0, 1f, scaleY, 1f)
-                }
-                JniGL.setMatrix(mGLContext, matrix)
-            }
-        }
-    }
 
     companion object {
         private val TAG = SurfaceViewGL::class.simpleName

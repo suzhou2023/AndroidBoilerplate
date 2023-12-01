@@ -35,7 +35,7 @@ target_link_libraries( # Specifies the target library.
         avfilter
         swresample
         # opengl
-        gl-bbt
+        gl-common
         # openGLES
         GLESv3
         # EGL
