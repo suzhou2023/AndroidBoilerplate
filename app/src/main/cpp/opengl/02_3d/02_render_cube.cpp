@@ -27,7 +27,7 @@ void render_cube(GLContext *glContext) {
     glEnable(GL_CULL_FACE);
 
 
-    float f = 0.0f;
+    float f = 0.f;
     while (f >= 0) {
         // 模型矩阵，将局部坐标转换为世界坐标
         mat4 model = mat4(1.0f);
@@ -37,9 +37,9 @@ void render_cube(GLContext *glContext) {
         mat4 proj = mat4(1.0f);
 
         // 沿x轴旋转
-        model = rotate(model, radians(f), vec3(0.5f, 1.0f, 0.0f));
+        model = rotate(model, radians(f), vec3(1.0f, 1.0f, 1.0f));
         // 平移
-        view = translate(view, vec3(0.0f, 0.0f, -5.0f));
+        view = translate(view, vec3(0.0f, 0.0f, -5.f));
         // 视场角45度，近平面0.1，远平面100
         proj = perspective(radians(45.0f), (float) glContext->windowW / glContext->windowH, 0.1f, 100.0f);
 

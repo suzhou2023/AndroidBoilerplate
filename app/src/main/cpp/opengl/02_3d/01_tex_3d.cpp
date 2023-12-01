@@ -25,9 +25,9 @@ void tex_3d(JNIEnv *env, GLContext *glContext, int pIndex, int win_w, int win_h,
     mat4 proj = mat4(1.0f);
 
     // 沿x轴旋转
-    rotate(model, radians(-45.0f), vec3(1.0f, 0.0f, 0.0f));
+    rotate(model, radians(45.0f), vec3(1.0f, 1.0f, 0.0f));
     // 平移
-    translate(view, vec3(0.0f, 0.0f, -3.0f));
+    translate(view, vec3(0.0f, 0.0f, -30.0f));
     // 视场角45度，近平面0.1，远平面100
     proj = perspective(radians(45.0f), (float) win_w / win_h, 0.1f, 100.0f);
 

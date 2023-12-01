@@ -35,7 +35,7 @@ add_library(
 target_link_libraries(
         ${PROJECT_NAME}
 
-        gl-bbt
+        gl-common
         # for openGLES
         GLESv3
         # for EGL
