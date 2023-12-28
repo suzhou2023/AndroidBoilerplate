@@ -1,5 +1,5 @@
 #version 300 es
-// 简单顶点着色器，顶点坐标、纹理坐标、纹理坐标翻转
+// 简单顶点着色器，顶点坐标、纹理坐标
 layout (location = 0)
 in vec4 v_position;
 layout (location = 1)

@@ -34,7 +34,7 @@ class SurfaceViewTest @JvmOverloads constructor(
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         super.surfaceChanged(holder, format, width, height)
         glHandler.post {
-            texture(glContext)
+            rgb2nv12(glContext)
         }
     }
 }
