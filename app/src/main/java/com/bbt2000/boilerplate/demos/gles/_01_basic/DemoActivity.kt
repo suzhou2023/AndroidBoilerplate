@@ -31,7 +31,7 @@ class DemoActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         setContent {
-            val showSurfaceView = remember { mutableStateOf(true) }
+            val showSurfaceView = remember { mutableStateOf(false) }
 
             Box(modifier = Modifier.fillMaxSize()) {
                 if (showSurfaceView.value) {
