@@ -5,12 +5,11 @@ project(${PROJECT_NAME} VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-
 set(JNILIBS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/${ANDROID_ABI}")
 
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/libusb")
 link_directories("${JNILIBS_DIRECTORY}")
 
 
@@ -20,6 +19,7 @@ add_library(
         SHARED
 
         jni.cpp
+        common/LibusbWrapper.cpp
         hid.cpp
 )
 

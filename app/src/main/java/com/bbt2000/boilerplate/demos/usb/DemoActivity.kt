@@ -20,10 +20,7 @@ import com.bbt2000.boilerplate.common.util.ContextUtil
 import com.orhanobut.logger.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  *  author : suzhou
@@ -43,8 +40,6 @@ class DemoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-
-
         setContent {
             Box(
                 modifier = Modifier
@@ -52,17 +47,8 @@ class DemoActivity : AppCompatActivity() {
                     .background(Color.LightGray)
             ) {
                 Button(onClick = {
-                    //HidDeviceUtil.print()
-
-                    //inputManagerTest()
-
                     CoroutineScope(Dispatchers.IO).launch {
-//                        repeat(Int.MAX_VALUE) {
-//                            delay(50)
-//                            HidDeviceUtil.bulkTransfer()
-//                        }
-
-                        HidDeviceUtil.intTransfer2()
+                        HidDeviceUtil.hidRead()
                     }
                 }) {
                     Text("controlTransfer")

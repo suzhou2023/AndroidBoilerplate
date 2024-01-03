@@ -9,6 +9,8 @@
 #define ANDROIDBOILERPLATE_HID_H
 
 
-int hidRead(int file_descriptor);
+#include "common/LibusbWrapper.h"
+
+void hidRead(LibusbWrapper *wrapper, int file_descriptor);
 
 #endif //ANDROIDBOILERPLATE_HID_H

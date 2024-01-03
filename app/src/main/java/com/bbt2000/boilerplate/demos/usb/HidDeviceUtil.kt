@@ -5,11 +5,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.hardware.usb.UsbConstants
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbEndpoint
-import android.hardware.usb.UsbInterface
 import android.hardware.usb.UsbManager
 import android.hardware.usb.UsbRequest
 import android.os.Parcel
@@ -27,11 +25,8 @@ import java.nio.ByteBuffer
 object HidDeviceUtil {
     const val ACTION_USB_PERMISSION = "com.android.hardware.USB_PERMISSION"
     private val usbManager by lazy { ContextCompat.getSystemService(ContextUtil.application, UsbManager::class.java) }
-    var hidDevice: UsbDevice? = null // hid设备
-    private var usbInterface: UsbInterface? = null // hid接口
-    private var inEndpoint: UsbEndpoint? = null // 输入端点
+    var usbDevice: UsbDevice? = null // hid设备
     private var connection: UsbDeviceConnection? = null // usb连接
-    var packetSize: Int? = null // 包大小
     private var onDeviceOpened: (() -> Unit)? = null // 设备打开回调
 
     init {
@@ -47,18 +42,18 @@ object HidDeviceUtil {
 
             if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) {
                 Logger.i("ACTION_USB_DEVICE_ATTACHED")
-                if (hidDevice == null) {
+                if (usbDevice == null) {
                     enumDevice()
                 }
             } else if (intent.action == UsbManager.ACTION_USB_DEVICE_DETACHED) {
                 Logger.i("ACTION_USB_DEVICE_DETACHED")
-                if (hidDevice != null) {
+                if (usbDevice != null) {
                     closeDevice()
                 }
             } else if (intent.action == ACTION_USB_PERMISSION) {
                 if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                     Logger.i("EXTRA_PERMISSION_GRANTED true.")
-                    if (device == hidDevice) {
+                    if (device == usbDevice) {
                         openDevice()
                     }
                 } else {
@@ -77,38 +72,10 @@ object HidDeviceUtil {
         if (deviceList.isNullOrEmpty()) return
 
         for (device in deviceList.values) {
-            Logger.d("device.interfaceCount = ${device.interfaceCount}")
-            hidDevice = device
-//            for (index in 0 until device.interfaceCount) {
-//                val intf = device.getInterface(index)
-//                if (intf.interfaceClass == 3) { // hid
-//                    usbInterface = intf
-//                    hidDevice = device
-//                    break
-//                }
-//            }
+            usbDevice = device
         }
 
         requestPermission()
-
-        if (usbInterface == null) {
-            Logger.e("no device.")
-            return
-        }
-
-        for (index in 0 until usbInterface!!.endpointCount) {
-            val endpoint = usbInterface!!.getEndpoint(index)
-            if (endpoint.direction == UsbConstants.USB_DIR_IN && endpoint.type == UsbConstants.USB_ENDPOINT_XFER_INT) {
-                inEndpoint = endpoint
-                packetSize = endpoint.maxPacketSize
-                Logger.i("found inEndpoint.")
-                break
-            }
-        }
-
-        if (inEndpoint != null) {
-            requestPermission()
-        }
     }
 
     fun registerReceiver() {
@@ -124,7 +91,7 @@ object HidDeviceUtil {
 
     private fun requestPermission() {
         usbManager ?: return
-        if (usbManager!!.hasPermission(hidDevice)) {
+        if (usbManager!!.hasPermission(usbDevice)) {
             Logger.i("hasPermission.")
             openDevice()
         } else {
@@ -135,16 +102,14 @@ object HidDeviceUtil {
                 Intent(ACTION_USB_PERMISSION),
                 PendingIntent.FLAG_MUTABLE
             )
-            usbManager!!.requestPermission(hidDevice, pendingIntent)
+            usbManager!!.requestPermission(usbDevice, pendingIntent)
         }
     }
 
     // 打开设备
     fun openDevice() {
-        connection = usbManager?.openDevice(hidDevice)
+        connection = usbManager?.openDevice(usbDevice)
         Logger.i("openDevice success: ${connection != null}")
-//        val ret = connection?.claimInterface(usbInterface, true)
-//        Logger.i("claimInterface: $ret")
 
         if (connection != null) {
             onDeviceOpened?.invoke()
@@ -156,29 +121,12 @@ object HidDeviceUtil {
 
     // 关闭设备
     fun closeDevice() {
-        val ret = connection?.releaseInterface(usbInterface)
-        Logger.i("releaseInterface success: $ret")
         connection?.close()
         Logger.i("connection closed.")
         connection = null
-        hidDevice = null
+        usbDevice = null
     }
 
-    // 读取数据
-    fun read(array: ByteArray, size: Int, timeout: Int = 0): Int {
-        if (connection != null) {
-            return connection!!.bulkTransfer(inEndpoint, array, size, timeout)
-        }
-        return -1
-    }
-
-    fun print() {
-//        Logger.d("hidDevice = $hidDevice")
-//        Logger.d("manufacturerName = ${hidDevice?.manufacturerName}")
-//        Logger.d("serialNumber = ${hidDevice?.serialNumber}")
-//        Logger.d("configurationCount = ${hidDevice?.configurationCount}")
-//        Logger.d("interfaceCount = ${hidDevice?.interfaceCount}")
-    }
 
     fun controlTransfer() {
         val array = ByteArray(1024)
@@ -203,44 +151,14 @@ object HidDeviceUtil {
         Logger.d("ret = $ret")
     }
 
-    fun intTransfer() {
-        val endpoint = UsbEndpoint.CREATOR.createFromParcel(Parcel.obtain().apply {
-            writeInt(0x83)
-            writeInt(0x03)
-            writeInt(16)
-            writeInt(32)
-        }) as UsbEndpoint
-
-        val buffer = ByteBuffer.allocate(16)
-        val request = UsbRequest()
-        val ret = request.initialize(connection, endpoint)
-        Logger.d("ret = $ret")
-
-        while (true) {
-            if (request.queue(buffer, buffer.capacity())) {
-                // 等待请求完成
-                if (connection?.requestWait() === request) {
-                    // 从 buffer 中读取数据
-                    val data = ByteArray(buffer.remaining())
-                    buffer.get(data)
-                    // 处理接收到的数据
-                    Logger.d("data.size = ${data.size}")
-                }
-            } else {
-                Logger.d("queue fail")
-                break
-            }
-        }
-    }
-
-    fun intTransfer2() {
-        hidDevice ?: return
+    fun hidRead() {
+        usbDevice ?: return
         connection ?: return
 
-        hidRead(hidDevice!!.vendorId, hidDevice!!.productId, connection!!.fileDescriptor)
+        hidRead(usbDevice!!.vendorId, usbDevice!!.productId, connection!!.fileDescriptor)
     }
 
-    private external fun hidRead(vendorId: Int, productId: Int, fileDescriptor: Int): Int
+    private external fun hidRead(vendorId: Int, productId: Int, fileDescriptor: Int)
 }
 
 
