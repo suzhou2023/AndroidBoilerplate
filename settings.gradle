@@ -16,4 +16,3 @@ dependencyResolutionManagement {
 rootProject.name = "AndroidBoilerplate"
 include ':app'
 include ':lib-gles'
-include ':lib-usb'

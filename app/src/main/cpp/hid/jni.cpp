@@ -1,5 +1,5 @@
 #include <jni.h>
-#include "hid.h"
+#include "common/LibusbWrapper.h"
 
 /**
  *  author : sz

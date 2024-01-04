@@ -19,14 +19,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "../libusbi.h"
+#include "libusbi.h"
 
 #include <errno.h>
-
 #if defined(__ANDROID__)
-
 # include <unistd.h>
-
 #elif defined(__HAIKU__)
 # include <os/kernel/OS.h>
 #elif defined(__linux__)
@@ -42,88 +39,91 @@
 # include <sys/lwp.h>
 #endif
 
-void usbi_cond_init(pthread_cond_t *cond) {
+void usbi_cond_init(pthread_cond_t *cond)
+{
 #ifdef HAVE_PTHREAD_CONDATTR_SETCLOCK
-    pthread_condattr_t condattr;
+	pthread_condattr_t condattr;
 
-    PTHREAD_CHECK(pthread_condattr_init(&condattr));
-    PTHREAD_CHECK(pthread_condattr_setclock(&condattr, CLOCK_MONOTONIC));
-    PTHREAD_CHECK(pthread_cond_init(cond, &condattr));
-    PTHREAD_CHECK(pthread_condattr_destroy(&condattr));
+	PTHREAD_CHECK(pthread_condattr_init(&condattr));
+	PTHREAD_CHECK(pthread_condattr_setclock(&condattr, CLOCK_MONOTONIC));
+	PTHREAD_CHECK(pthread_cond_init(cond, &condattr));
+	PTHREAD_CHECK(pthread_condattr_destroy(&condattr));
 #else
-    PTHREAD_CHECK(pthread_cond_init(cond, NULL));
+	PTHREAD_CHECK(pthread_cond_init(cond, NULL));
 #endif
 }
 
 int usbi_cond_timedwait(pthread_cond_t *cond,
-                        pthread_mutex_t *mutex, const struct timeval *tv) {
-    struct timespec timeout;
-    int r;
+	pthread_mutex_t *mutex, const struct timeval *tv)
+{
+	struct timespec timeout;
+	int r;
 
 #ifdef HAVE_PTHREAD_CONDATTR_SETCLOCK
-    usbi_get_monotonic_time(&timeout);
+	usbi_get_monotonic_time(&timeout);
 #else
-    usbi_get_real_time(&timeout);
+	usbi_get_real_time(&timeout);
 #endif
 
-    timeout.tv_sec += tv->tv_sec;
-    timeout.tv_nsec += tv->tv_usec * 1000L;
-    if (timeout.tv_nsec >= NSEC_PER_SEC) {
-        timeout.tv_nsec -= NSEC_PER_SEC;
-        timeout.tv_sec++;
-    }
+	timeout.tv_sec += tv->tv_sec;
+	timeout.tv_nsec += tv->tv_usec * 1000L;
+	if (timeout.tv_nsec >= NSEC_PER_SEC) {
+		timeout.tv_nsec -= NSEC_PER_SEC;
+		timeout.tv_sec++;
+	}
 
-    r = pthread_cond_timedwait(cond, mutex, &timeout);
-    if (r == 0)
-        return 0;
-    else if (r == ETIMEDOUT)
-        return LIBUSB_ERROR_TIMEOUT;
-    else
-        return LIBUSB_ERROR_OTHER;
+	r = pthread_cond_timedwait(cond, mutex, &timeout);
+	if (r == 0)
+		return 0;
+	else if (r == ETIMEDOUT)
+		return LIBUSB_ERROR_TIMEOUT;
+	else
+		return LIBUSB_ERROR_OTHER;
 }
 
-unsigned int usbi_get_tid(void) {
-    static _Thread_local unsigned int tl_tid;
-    int tid;
+unsigned int usbi_get_tid(void)
+{
+	static _Thread_local unsigned int tl_tid;
+	int tid;
 
-    if (tl_tid)
-        return tl_tid;
+	if (tl_tid)
+		return tl_tid;
 
 #if defined(__ANDROID__)
-    tid = gettid();
+	tid = gettid();
 #elif defined(__APPLE__)
 #ifdef HAVE_PTHREAD_THREADID_NP
-    uint64_t thread_id;
+	uint64_t thread_id;
 
-    if (pthread_threadid_np(NULL, &thread_id) == 0)
-        tid = (int)thread_id;
-    else
-        tid = -1;
+	if (pthread_threadid_np(NULL, &thread_id) == 0)
+		tid = (int)thread_id;
+	else
+		tid = -1;
 #else
-    tid = (int)pthread_mach_thread_np(pthread_self());
+	tid = (int)pthread_mach_thread_np(pthread_self());
 #endif
 #elif defined(__HAIKU__)
-    tid = get_pthread_thread_id(pthread_self());
+	tid = get_pthread_thread_id(pthread_self());
 #elif defined(__linux__)
-    tid = (int)syscall(SYS_gettid);
+	tid = (int)syscall(SYS_gettid);
 #elif defined(__NetBSD__)
-    tid = _lwp_self();
+	tid = _lwp_self();
 #elif defined(__OpenBSD__)
-    /* The following only works with OpenBSD > 5.1 as it requires
-     * real thread support. For 5.1 and earlier, -1 is returned. */
-    tid = syscall(SYS_getthrid);
+	/* The following only works with OpenBSD > 5.1 as it requires
+	 * real thread support. For 5.1 and earlier, -1 is returned. */
+	tid = syscall(SYS_getthrid);
 #elif defined(__sun__)
-    tid = _lwp_self();
+	tid = _lwp_self();
 #else
-    tid = -1;
+	tid = -1;
 #endif
 
-    if (tid == -1) {
-        /* If we don't have a thread ID, at least return a unique
-         * value that can be used to distinguish individual
-         * threads. */
-        tid = (int) (intptr_t) pthread_self();
-    }
+	if (tid == -1) {
+		/* If we don't have a thread ID, at least return a unique
+		 * value that can be used to distinguish individual
+		 * threads. */
+		tid = (int)(intptr_t)pthread_self();
+	}
 
-    return tl_tid = (unsigned int) tid;
+	return tl_tid = (unsigned int)tid;
 }

@@ -13,7 +13,6 @@ include_directories("include")
 
 add_subdirectory(ffmpeg)
 add_subdirectory(hid)
-add_subdirectory(hid/libusb)
 add_subdirectory(opengl/01_basic)
 add_subdirectory(opengl/02_3d)
 
