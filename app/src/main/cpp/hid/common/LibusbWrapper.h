@@ -16,7 +16,9 @@ public:
 
     int prepare(int file_descriptor);
 
-    void exit();
+    void release();
+
+    int hidRead() const;
 
     LibusbWrapper() {}
 
@@ -30,3 +32,32 @@ public:
 };
 
 #endif //ANDROIDBOILERPLATE_LIBUSBWRAPPER_H
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

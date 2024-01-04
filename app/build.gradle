@@ -7,6 +7,15 @@ android {
     namespace 'com.bbt2000.boilerplate'
     compileSdk 33
 
+    signingConfigs {
+        release {
+            storeFile file('app_keystore.jks')
+            storePassword 'bbt2000.'
+            keyAlias 'boilerplate'
+            keyPassword 'boilerplate'
+        }
+    }
+
     defaultConfig {
         applicationId "com.bbt2000.boilerplate"
         minSdk 21
@@ -24,14 +33,21 @@ android {
             }
         }
         ndk {
+            //noinspection ChromeOsAbiSupport
             abiFilters "arm64-v8a"
         }
     }
 
     buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
     compileOptions {

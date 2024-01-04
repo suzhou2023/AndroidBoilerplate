@@ -25,7 +25,7 @@ void hidRead(LibusbWrapper *wrapper, int file_descriptor) {
 
     libusb_context *context{nullptr};
     libusb_device_handle *dev_handle{nullptr};
-    struct libusb_config_descriptor *config_desc;
+    struct libusb_config_descriptor *config_desc{nullptr};
     int intf_number{-1};
     int ep_int_in{-1};
 
