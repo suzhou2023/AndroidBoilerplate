@@ -1,6 +1,5 @@
 package com.bbt2000.boilerplate.demos.usb
 
-import android.Manifest
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
@@ -18,7 +17,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.orhanobut.logger.Logger
-import com.permissionx.guolindev.PermissionX
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -34,14 +32,13 @@ class DemoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        requireCameraPermission()
-
         setContent {
             var deviceOpened by remember { mutableStateOf(false) }
 
             DisposableEffect(key1 = Unit) {
                 HidDeviceUtil.registerReceiver()
                 HidDeviceUtil.enumDevice { deviceOpened = it }
+
                 onDispose {
                     HidDeviceUtil.unregisterReceiver()
                 }
@@ -68,21 +65,6 @@ class DemoActivity : AppCompatActivity() {
                 val state = if (deviceOpened) "打开" else "关闭"
                 Text(text = "设备状态：$state")
             }
-        }
-    }
-
-    private fun requireCameraPermission() {
-        if (PermissionX.isGranted(this, Manifest.permission.CAMERA)) {
-
-        } else {
-            PermissionX
-                .init(this)
-                .permissions(Manifest.permission.CAMERA)
-                .request { allGranted, _, _ ->
-                    if (allGranted) {
-
-                    }
-                }
         }
     }
 }

@@ -111,9 +111,9 @@ void LibusbWrapper::release() {
     LOGD("LibusbWrapper::release success.");
 }
 
-int LibusbWrapper::hidRead() const {
+int LibusbWrapper::hidRead() {
     // 中断传输
-    unsigned char buffer[8];
+    unsigned char buffer[2];
     int transferred;
     int ret = libusb_interrupt_transfer(dev_handle, ep_int_in, buffer, sizeof(buffer), &transferred, 0);
     if (ret != 0) {
@@ -144,6 +144,8 @@ int LibusbWrapper::hidRead() const {
         return 0;
     }
 }
+
+
 
 
 

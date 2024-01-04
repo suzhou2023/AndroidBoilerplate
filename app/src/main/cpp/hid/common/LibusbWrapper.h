@@ -18,7 +18,7 @@ public:
 
     void release();
 
-    int hidRead() const;
+    int hidRead();
 
     LibusbWrapper() {}
 

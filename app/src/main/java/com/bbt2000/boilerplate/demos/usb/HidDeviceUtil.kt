@@ -34,9 +34,8 @@ object HidDeviceUtil {
 
 
     fun enumDevice(onDeviceOpened: ((Boolean) -> Unit)? = null) {
-        this.onDeviceOpened = onDeviceOpened
-
         if (usbDevice == null) {
+            this.onDeviceOpened = onDeviceOpened
             val deviceList = usbManager?.deviceList
             Logger.i("deviceList = $deviceList")
             if (deviceList.isNullOrEmpty()) return
@@ -128,7 +127,7 @@ object HidDeviceUtil {
             val device = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
             if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) {
                 if (usbDevice == null) {
-                    enumDevice()
+                    enumDevice(onDeviceOpened)
                 }
             } else if (intent.action == UsbManager.ACTION_USB_DEVICE_DETACHED) {
                 if (device == usbDevice) {
