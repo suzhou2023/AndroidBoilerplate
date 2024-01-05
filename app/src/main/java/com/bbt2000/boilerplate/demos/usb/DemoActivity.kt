@@ -14,6 +14,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,19 +49,17 @@ class DemoActivity : AppCompatActivity() {
             }
 
             LaunchedEffect(key1 = deviceOpened) {
-                if (deviceOpened) {
-                    withContext(Dispatchers.IO) {
-                        repeat(Int.MAX_VALUE) {
-                            delay(1000)
-                            Logger.d("hidReadTest...")
-                            HidDeviceUtil.hidReadTest(object : HidDeviceUtil.KeyCallback {
-                                override fun onKey(value: Int) {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        Toast.makeText(this@DemoActivity, value.toString(), Toast.LENGTH_SHORT).show()
-                                    }
+                withContext(Dispatchers.IO) {
+                    while (deviceOpened) {
+                        delay(100)
+                        Logger.d("hidReadTest...")
+                        HidDeviceUtil.hidReadTest(object : HidDeviceUtil.KeyCallback {
+                            override fun onKey(value: Int) {
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    Toast.makeText(this@DemoActivity, value.toString(), Toast.LENGTH_SHORT).show()
                                 }
-                            })
-                        }
+                            }
+                        })
                     }
                 }
             }

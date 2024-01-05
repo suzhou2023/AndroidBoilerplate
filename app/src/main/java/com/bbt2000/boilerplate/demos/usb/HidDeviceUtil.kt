@@ -80,6 +80,7 @@ object HidDeviceUtil {
 
     // 关闭设备连接
     private fun closeDevice() {
+        onDeviceOpened?.invoke(false)
         if (libusbWrapper > 0) {
             libusbRelease(libusbWrapper)
             libusbWrapper = 0
@@ -87,7 +88,6 @@ object HidDeviceUtil {
         connection?.close()
         connection = null
         usbDevice = null
-        onDeviceOpened?.invoke(false)
         Logger.i("connection closed.")
     }
 
