@@ -113,10 +113,10 @@ object HidDeviceUtil {
         Logger.d("ret = $ret")
     }
 
-    fun hidReadTest() {
+    fun hidReadTest(keyCallback: KeyCallback) {
         connection ?: return
         if (libusbWrapper > 0) {
-            libusbHidRead(libusbWrapper)
+            libusbHidRead(libusbWrapper, keyCallback)
         }
     }
 
@@ -159,9 +159,14 @@ object HidDeviceUtil {
     }
 
 
+    interface KeyCallback {
+        fun onKey(value: Int)
+    }
+
     private external fun libusbPrepare(fileDescriptor: Int): Long
     private external fun libusbRelease(libusbWrapper: Long)
-    private external fun libusbHidRead(libusbWrapper: Long)
+    private external fun libusbHidRead(libusbWrapper: Long, keyCallback: KeyCallback)
+    private external fun libusbHidReadAsync(libusbWrapper: Long)
 }
 
 

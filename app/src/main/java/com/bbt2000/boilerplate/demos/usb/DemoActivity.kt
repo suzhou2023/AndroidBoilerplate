@@ -2,6 +2,7 @@ package com.bbt2000.boilerplate.demos.usb
 
 import android.os.Bundle
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Arrangement
@@ -17,8 +18,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.orhanobut.logger.Logger
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -50,7 +53,13 @@ class DemoActivity : AppCompatActivity() {
                         repeat(Int.MAX_VALUE) {
                             delay(1000)
                             Logger.d("hidReadTest...")
-                            HidDeviceUtil.hidReadTest()
+                            HidDeviceUtil.hidReadTest(object : HidDeviceUtil.KeyCallback {
+                                override fun onKey(value: Int) {
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        Toast.makeText(this@DemoActivity, value.toString(), Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            })
                         }
                     }
                 }

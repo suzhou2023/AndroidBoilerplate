@@ -18,7 +18,11 @@ public:
 
     void release();
 
-    int hidRead();
+    int hidRead() const;
+
+    int hidReadAsync() const;
+
+    static void transfer_callback(struct libusb_transfer *transfer);
 
     LibusbWrapper() {}
 
@@ -26,7 +30,7 @@ public:
 
     libusb_context *context{nullptr};
     libusb_device_handle *dev_handle{nullptr};
-    struct libusb_config_descriptor *config_desc;
+    struct libusb_config_descriptor *config_desc{nullptr};
     int intf_number{-1};
     int ep_int_in{-1};
 };

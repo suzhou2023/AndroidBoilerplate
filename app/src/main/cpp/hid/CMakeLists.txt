@@ -20,6 +20,7 @@ add_library(
         SHARED
 
         jni.cpp
+        hid.cpp
         common/LibusbWrapper.cpp
 )
 

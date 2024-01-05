@@ -1,41 +1,55 @@
 /**
- *  author : suzhou
- *  date : 2024/1/3 
+ *  author : sz
+ *  date : 2024/1/5
  *  description : 
  */
 
 
-#include "LibusbWrapper.h"
+#include "hid.h"
+
 #include "android_log.h"
+#include "libusbi.h"
 
 
-int LibusbWrapper::prepare(int file_descriptor) {
+void hidRead(int file_descriptor) {
     // 跳过设备发现流程
     int ret = libusb_set_option(nullptr, LIBUSB_OPTION_NO_DEVICE_DISCOVERY);
     if (ret != 0) {
         LOGE("libusb_set_option fail: %d", ret);
-        return -1;
+        return;
     }
+
+    libusb_context *context{nullptr};
+    libusb_device_handle *dev_handle{nullptr};
+    struct libusb_config_descriptor *config_desc{nullptr};
+    int intf_number{-1};
+    int ep_int_in{-1};
 
     // 初始化libusb
     ret = libusb_init(&context);
     if (ret != 0) {
         LOGE("libusb_init fail: %d", ret);
-        return -1;
+        goto FREE;
     }
 
     // 将现有的系统设备包装成libusb设备对象
-    ret = libusb_wrap_sys_device(context, (intptr_t) file_descriptor, &dev_handle);
-    if (ret != 0) {
-        LOGE("libusb_wrap_sys_device fail: %d", ret);
-        return -1;
+//    ret = libusb_wrap_sys_device(context, (intptr_t) file_descriptor, &dev_handle);
+//    if (ret != 0) {
+//        LOGE("libusb_wrap_sys_device fail: %d", ret);
+//        goto FREE;
+//    }
+
+    dev_handle = libusb_open_device_with_vid_pid(context, 0x0bda, 0x5842);
+    if (dev_handle == nullptr) {
+        LOGE("libusb_open_device_with_vid_pid fail: %d", ret);
+        goto FREE;
     }
 
     // 获取配置描述符
     ret = libusb_get_config_descriptor(libusb_get_device(dev_handle), 0, &config_desc);
     if (ret != 0) {
         LOGE("libusb_get_config_descriptor fail: %d", ret);
-        return -1;
+        goto FREE;
     }
 
     // 寻找中断输入端点
@@ -60,14 +74,14 @@ int LibusbWrapper::prepare(int file_descriptor) {
     // 没有找到中断输入端点
     if (ep_int_in < 0) {
         LOGE("endpoint not found.");
-        return -1;
+        goto FREE;
     }
 
     // 使能自动卸载内核驱动
     ret = libusb_set_auto_detach_kernel_driver(dev_handle, 1);
     if (ret != 0) {
         LOGE("libusb_set_auto_detach_kernel_driver fail: %d", ret);
-        return -1;
+        goto FREE;
     }
 
     // 声明接口使用权
@@ -75,22 +89,34 @@ int LibusbWrapper::prepare(int file_descriptor) {
     if (ret != 0) {
         LOGE("libusb_claim_interface fail: %d", ret);
         intf_number = -1;
-        return -1;
+        goto FREE;
     }
 
-    LOGD("LibusbWrapper::prepare success.");
-    return 0;
-}
+    // 中断传输
+    unsigned char buffer[2];
+    int transferred;
+    ret = libusb_interrupt_transfer(dev_handle, ep_int_in, buffer, sizeof(buffer), &transferred, 0);
+    if (ret != 0) {
+        if (ret == LIBUSB_ERROR_TIMEOUT) {
+            LOGI("libusb_interrupt_transfer timeout.");
+        } else {
+            LOGE("libusb_interrupt_transfer fail: %d", ret);
+        }
+    } else {
+        LOGD("libusb_interrupt_transfer transferred = %d", transferred);
+        LOGD("buffer[0] = %d", buffer[0]);
+        LOGD("buffer[1] = %d", buffer[1]);
+        LOGD("buffer[2] = %d", buffer[2]);
+        LOGD("buffer[3] = %d", buffer[3]);
+    }
 
-void LibusbWrapper::release() {
+
+    FREE:
     // 释放接口
-    int ret{-1};
     if (intf_number >= 0) {
         ret = libusb_release_interface(dev_handle, intf_number);
         if (ret != 0) {
             LOGE("libusb_release_interface %d, fail: %d", intf_number, ret);
-        } else {
-            intf_number = -1;
         }
     }
     // 释放配置描述符
@@ -108,68 +134,12 @@ void LibusbWrapper::release() {
         libusb_exit(context);
         context = nullptr;
     }
-    LOGD("LibusbWrapper::release success.");
 }
 
-int LibusbWrapper::hidRead() const {
-    // 中断传输
-    unsigned char buffer[2];
-    int transferred;
-    int ret = libusb_interrupt_transfer(dev_handle, ep_int_in, buffer, sizeof(buffer), &transferred, 0);
-    if (ret != 0) {
-        if (ret == LIBUSB_ERROR_TIMEOUT) {
-            LOGI("libusb_interrupt_transfer timeout.");
-        } else {
-            LOGE("libusb_interrupt_transfer fail: %d", ret);
-        }
-        return -1;
-    } else {
-        LOGD("libusb_interrupt_transfer transferred = %d", transferred);
-        LOGD("buffer[0] = %d", buffer[0]);
-        LOGD("buffer[1] = %d", buffer[1]);
-        LOGD("buffer[2] = %d", buffer[2]);
-        LOGD("buffer[3] = %d", buffer[3]);
 
-        // 返回第一个按键值
-        for (unsigned char value: buffer) {
-            if (value > 0) return value;
-        }
 
-        return 0;
-    }
-}
 
-int LibusbWrapper::hidReadAsync() const {
-    unsigned char buffer[2];
 
-    struct libusb_transfer *transfer = libusb_alloc_transfer(0);
-    if (transfer == nullptr) {
-        LOGE("libusb_alloc_transfer error.");
-        return -1;
-    }
-
-    // 填充libusb_transfer结构体
-    libusb_fill_interrupt_transfer(transfer, dev_handle, ep_int_in, buffer, sizeof(buffer), transfer_callback, nullptr, 0);
-
-    // 提交传输
-    int ret = libusb_submit_transfer(transfer);
-    if (ret != 0) {
-        LOGE("libusb_submit_transfer error.");
-        return -1;
-    }
-    LOGD("libusb_submit_transfer success.");
-
-    libusb_handle_events(context);
-    libusb_free_transfer(transfer);
-
-    return 0;
-}
-
-void LibusbWrapper::transfer_callback(struct libusb_transfer *transfer) {
-    LOGD("transfer_callback called.");
-    LOGD("transfer->buffer[0] = %d", transfer->buffer[0]);
-    LOGD("transfer->buffer[1] = %d", transfer->buffer[1]);
-}
 
 
 
