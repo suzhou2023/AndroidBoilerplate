@@ -113,29 +113,50 @@ void LibusbWrapper::release() {
 
 int LibusbWrapper::hidRead() const {
     // 中断传输
-    unsigned char buffer[2];
+    unsigned char buffer[1];
     int transferred;
-    int ret = libusb_interrupt_transfer(dev_handle, ep_int_in, buffer, sizeof(buffer), &transferred, 0);
-    if (ret != 0) {
-        if (ret == LIBUSB_ERROR_TIMEOUT) {
-            LOGI("libusb_interrupt_transfer timeout.");
-        } else {
-            LOGE("libusb_interrupt_transfer fail: %d", ret);
-        }
-        return -1;
-    } else {
-        LOGD("libusb_interrupt_transfer transferred = %d", transferred);
+//    int ret = libusb_interrupt_transfer(dev_handle, ep_int_in, buffer, sizeof(buffer), &transferred, 0);
+//    if (ret == 0) {
+//        LOGD("libusb_interrupt_transfer transferred = %d", transferred);
+//        LOGD("buffer[0] = %d", buffer[0]);
+//        LOGD("buffer[1] = %d", buffer[1]);
+//        LOGD("buffer[2] = %d", buffer[2]);
+//        LOGD("buffer[3] = %d", buffer[3]);
+//
+//        // 返回第一个按键值
+//        for (unsigned char value: buffer) {
+//            if (value > 0) return value;
+//        }
+//
+//        return 0;
+//    } else {
+//        if (ret == LIBUSB_ERROR_TIMEOUT) {
+//            LOGI("libusb_interrupt_transfer timeout.");
+//        } else {
+//            LOGE("libusb_interrupt_transfer fail: %d", ret);
+//        }
+//        return -1;
+//    }
+
+    int ret = libusb_control_transfer(dev_handle,
+                                      LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE,
+                                      (LIBUSB_DT_REPORT << 8) | 0x00,
+                                      0,
+                                      0,
+                                      buffer,
+                                      sizeof(buffer),
+                                      0);
+    if (ret >= 0) {
+        LOGD("libusb_control_transfer transferred = %d", ret);
         LOGD("buffer[0] = %d", buffer[0]);
         LOGD("buffer[1] = %d", buffer[1]);
         LOGD("buffer[2] = %d", buffer[2]);
         LOGD("buffer[3] = %d", buffer[3]);
 
-        // 返回第一个按键值
-        for (unsigned char value: buffer) {
-            if (value > 0) return value;
-        }
-
         return 0;
+    } else {
+        LOGE("libusb_control_transfer fail: %d", ret);
+        return -1;
     }
 }
 

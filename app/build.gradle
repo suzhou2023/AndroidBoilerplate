@@ -38,6 +38,13 @@ android {
         }
     }
 
+    // ffmpeg libs
+    sourceSets {
+        main {
+            //jniLibs.srcDirs = ['src/main/cpp/ffmpeg/jniLibs']
+        }
+    }
+
     buildTypes {
         debug {
             minifyEnabled false

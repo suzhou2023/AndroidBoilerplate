@@ -6,11 +6,10 @@ project(${PROJECT_NAME} VERSION 1.0)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(JNILIBS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../jniLibs/${ANDROID_ABI}")
-
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
-link_directories("${JNILIBS_DIRECTORY}")
+link_directories("${CMAKE_CURRENT_SOURCE_DIR}/jniLibs/${ANDROID_ABI}")
+link_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../jniLibs/${ANDROID_ABI}")
 
 
 add_library(
