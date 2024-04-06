@@ -43,6 +43,9 @@
         <activity
             android:name=".leak.LeakActivity"
             android:theme="@style/AppCompatTheme" />
+        <activity
+            android:name=".leak.AnrActivity"
+            android:theme="@style/AppCompatTheme" />
     </application>
 
 </manifest>

@@ -9,4 +9,6 @@ import android.app.Activity
  */
 object Leak1 {
     var activityLeak: Activity? = null
+    var innerClass: Any? = null
+    var staticInnerClass: Any? = null
 }

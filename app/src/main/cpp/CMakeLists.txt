@@ -15,7 +15,7 @@ add_subdirectory(opengl/01_basic)
 add_subdirectory(opengl/02_3d)
 add_subdirectory(ffmpeg)
 add_subdirectory(hid)
-add_subdirectory(lua-test)
+#add_subdirectory(lua-test)
 
 
 
