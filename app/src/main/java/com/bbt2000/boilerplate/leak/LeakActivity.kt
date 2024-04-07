@@ -15,6 +15,7 @@ import com.orhanobut.logger.Logger
 import java.lang.ref.WeakReference
 
 class LeakActivity : ComponentActivity() {
+    private val handler = MyHandler()
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             Logger.d("onReceive...")
@@ -28,23 +29,24 @@ class LeakActivity : ComponentActivity() {
         }
 
         // 场景1：单例或静态变量持有Activity的引用
-        //Leak1.activityLeak = this
+        Leak.activityLeak = this
 
         // 场景2：非静态内部类(匿名内部类)生命周期长于外部类
-        //Leak1.innerClass = InnerClass()
+        Leak.innerClass = InnerClass()
 
         // 弱引用避免内存泄漏
-//        Leak1.staticInnerClass = StaticInnerClass().apply {
-//            activity = WeakReference(this@LeakActivity)
-//        }
+        Leak.staticInnerClass = StaticInnerClass().apply {
+            activity = WeakReference(this@LeakActivity)
+        }
 
-//        MyHandler().sendEmptyMessage(1)
+        // Handler造成的内存泄漏
+        handler.sendEmptyMessage(1)
 
         // 广播接收器造成的内存泄漏
         registerReceiver(screenReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
     }
 
-    // 场景2
+    // 非静态内部类造成的内存泄漏
     inner class InnerClass {
         // ...
     }
@@ -62,9 +64,11 @@ class LeakActivity : ComponentActivity() {
         }
     }
 
-    // 广播接收器造成的内存泄漏
     override fun onDestroy() {
         super.onDestroy()
+        Leak.activityLeak = null
+        Leak.innerClass = null
+        handler.removeCallbacksAndMessages(null)
         unregisterReceiver(screenReceiver)
     }
 }
