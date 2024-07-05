@@ -1,4 +1,4 @@
-package com.bbt2000.boilerplate.leak
+package com.bbt2000.boilerplate.interview
 
 import android.app.Activity
 import android.content.BroadcastReceiver

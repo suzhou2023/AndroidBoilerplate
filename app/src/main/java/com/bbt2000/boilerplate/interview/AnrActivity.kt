@@ -1,4 +1,4 @@
-package com.bbt2000.boilerplate.leak
+package com.bbt2000.boilerplate.interview
 
 import android.os.Bundle
 import android.widget.Toast
@@ -17,6 +17,9 @@ class AnrActivity : ComponentActivity() {
                 Text(text = "AnrActivity")
 
                 Button(onClick = {
+                    // 模拟器会弹出无响应窗口，华为手机不会
+                    // 看logcat会提示到具体的Activity，主线程有耗时操作
+                    // 也可以利用命令导出系统bugreport: adb bugreport > bugreport.txt，搜索ANR关键字也可定位到Activity
                     Thread.sleep(10000)
                     Toast.makeText(this@AnrActivity, "Toast sth", Toast.LENGTH_SHORT).show()
                 }) {

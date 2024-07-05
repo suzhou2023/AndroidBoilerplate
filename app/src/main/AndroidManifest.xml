@@ -31,7 +31,7 @@
         android:theme="@style/AppTheme"
         tools:targetApi="31">
         <activity
-            android:name=".leak.DemoActivity"
+            android:name=".interview.AnrActivity"
             android:exported="true"
             android:theme="@style/AppCompatTheme">
             <intent-filter>
@@ -40,12 +40,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".leak.LeakActivity"
-            android:theme="@style/AppCompatTheme" />
-        <activity
-            android:name=".leak.AnrActivity"
-            android:theme="@style/AppCompatTheme" />
     </application>
 
 </manifest>
