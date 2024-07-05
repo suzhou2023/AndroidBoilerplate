@@ -30,9 +30,8 @@
         android:theme="@style/AppTheme"
         tools:targetApi="31">
         <activity
-            android:name=".interview.lifecycle.FirstActivity"
+            android:name=".interview.SaveStateActivity"
             android:exported="true"
-            android:configChanges="orientation|screenSize"
             android:theme="@style/AppCompatTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
