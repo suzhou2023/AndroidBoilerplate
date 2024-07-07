@@ -30,7 +30,7 @@
         android:theme="@style/AppTheme"
         tools:targetApi="31">
         <activity
-            android:name=".interview.SaveStateActivity"
+            android:name=".interview.animation.PropertyAnimActivity"
             android:exported="true"
             android:theme="@style/AppCompatTheme">
             <intent-filter>
