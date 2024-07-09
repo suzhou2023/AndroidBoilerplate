@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".interview.service.TestServiceActivity">
+
+    <Button
+        android:id="@+id/btn_start"
+        android:text="Start"
+        android:layout_width="match_parent"
+        android:layout_height="44dp" />
+
+    <Button
+        android:id="@+id/btn_stop"
+        android:text="Stop"
+        android:layout_width="match_parent"
+        android:layout_height="44dp" />
+
+    <Button
+        android:id="@+id/btn_bind"
+        android:text="Bind"
+        android:layout_width="match_parent"
+        android:layout_height="44dp" />
+
+    <Button
+        android:id="@+id/btn_unbind"
+        android:text="Unbind"
+        android:layout_width="match_parent"
+        android:layout_height="44dp" />
+
+</LinearLayout>
