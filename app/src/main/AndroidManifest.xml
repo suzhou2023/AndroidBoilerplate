@@ -35,7 +35,7 @@
             android:exported="false" />
 
         <activity
-            android:name=".interview.service.TestServiceActivity"
+            android:name=".interview.design.builder.BuilderActivity"
             android:exported="true"
             android:theme="@style/AppCompatTheme">
             <intent-filter>
