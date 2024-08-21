@@ -1,4 +1,7 @@
 ##### 视图动画
+又叫做补间动画（Tween），可以对View产生移动、缩放、旋转、透明度四种动画效果
+View的状态只是视觉上的效果，实际属性值没有改变
+建议使用xml文件定义，更具可读性、可重用性
 
 ##### 属性动画
 插值器Interpolator
@@ -28,4 +31,25 @@ LayoutTransition
 从ViewGroup中添加、删除子View时，对子View的动画
 系统默认动画淡入淡出，在xml的ViewGroup中配置animateLayoutChanges
 可以自定义动画效果
+
+##### 过渡动画（Transition）
+需要对window设置属性：
+window.requestFeature(Window.FEATURE_CONTENT_TRANSITIONS)
+并设置window的enterTransition和returnTransition，系统自带有Explode、Slide、Fade三种效果
+启动Activity时，使用ActivityOptionsCompat.makeSceneTransitionAnimation()构造options；如果有共享元素动画，需传入共享元素View和共用的名字
+退出Activity，需调用finishAfterTransition()
+
+##### 揭露动画（Reveal Effect）
+略
+
+##### 视图状态动画（View State）
+略
+
+##### 触摸反馈动画（Ripple Effect）
+略
+
+##### ConstraintLayout动画
+略
+##### AnimatedVectorDrawable（矢量图动画）
+略
 
