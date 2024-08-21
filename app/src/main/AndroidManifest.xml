@@ -29,13 +29,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:targetApi="31">
+
         <service
             android:name=".interview.service.SurvivalService"
             android:enabled="true"
             android:exported="false" />
 
         <activity
-            android:name=".interview.design.builder.BuilderActivity"
+            android:name=".interview.anim.TransitionActivity1"
             android:exported="true"
             android:theme="@style/AppCompatTheme">
             <intent-filter>
@@ -44,6 +45,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".interview.anim.TransitionActivity2"
+            android:exported="false"
+            android:theme="@style/AppCompatTheme" />
     </application>
 
 </manifest>
