@@ -5,8 +5,8 @@
 
     <style name="AppCompatTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowContentTransitions">true</item>
-        <item name="android:windowEnterTransition">@transition/activity_explode</item>
-        <item name="android:windowReturnTransition">@transition/activity_fade</item>
+        <!-- <item name="android:windowEnterTransition">@transition/activity_explode</item>-->
+        <!-- <item name="android:windowReturnTransition">@transition/activity_fade</item>-->
     </style>
     <!-- Base application theme. -->
     <style name="Base.AppTheme" parent="Theme.Material3.DayNight.NoActionBar">

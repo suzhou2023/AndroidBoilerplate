@@ -1,8 +1,7 @@
 package com.bbt2000.boilerplate.interview.anim
 
 import android.os.Bundle
-import android.transition.Explode
-import android.transition.Slide
+import android.transition.Fade
 import android.transition.TransitionInflater
 import android.view.Window
 import android.widget.Button
@@ -23,11 +22,10 @@ class TransitionActivity2 : AppCompatActivity() {
     }
 
     private fun setupTransition() {
-//        val explode = TransitionInflater.from(this).inflateTransition(R.transition.activity_explode)
+        val explode = TransitionInflater.from(this).inflateTransition(R.transition.activity_explode)
         val slide = TransitionInflater.from(this).inflateTransition(R.transition.activity_slide)
-        val explode = Explode().setDuration(1000)
-//        val slide = Slide().setDuration(1000)
-        window.enterTransition = slide
+        val fade = Fade().setDuration(1000)
+        window.enterTransition = explode
         window.returnTransition = explode
     }
 }
