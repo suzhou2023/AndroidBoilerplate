@@ -1,16 +1,14 @@
 ##### Java数据类型
-
 8个基本数据类型：byte、short、int、long、float、double、char、boolean；
 剩下的为引用类型：String、数组、集合类、包装类、普通类、接口、枚举；
 Java中的数组没有专门的Array类，表示方式为：byte[]、float[]、String[]；
 对于Kotlin来说，没有基本类型和引用类型的区分，所有类型都是对象；
 Java中的8个基本数据类型对应于：Byte、Short、Int、Long、Float、Double、Char、Boolean；
-Kotlin中有专门的数组类型：Array<T>、IntArray、DoubleArray；
+Kotlin中有专门的数组类型：Array<T>、ByteArray、IntArray、DoubleArray；
 Kotlin中的String比Java中更为强大；
 Java中的char、Kotlin中的Char以及两者的String类型都是Unicode字符集；
 
 ##### 面向对象的三个基本特征?
-
 封装、继承、多态
 举例说明：
 Horse、Cat继承了Animal，前两者都有了sleep行为，这叫继承；
@@ -18,30 +16,25 @@ Horse和Cat对sleep进行重写，Horse站着睡，Cat趴着睡，这叫多态�
 将Cat的age属性定义为private，只能通过getAge方法获取age信息，对外隐藏了age属性，就叫封装；
 
 ##### 访问修饰符public，private，protected，以及不写时的区别？
-
 public是所有类都能访问；
 private只有当前类能够访问；
-protected是子类访问权限，不写是包访问权限，包访问权限比子类访问权限大。具体就是，protected同包下都能访问，不写则不同包中的子类不能访问。
+protected是子类访问权限，不写是包访问权限，包访问权限比子类访问权限大。具体就是，protected同包和子类都能访问，不写是同包能访问，不同包中的子类不能访问。
 
 ##### String是Java的基本数据类型吗？
-
 Java 中的基本数据类型只有8个：byte、short、int、long、float、double、char、boolean；除了基本类型（primitive type），剩下的都是引用类型（reference
 type）。
 基本数据类型：数据直接存储在栈上
 引用数据类型区别：数据存储在堆上，栈上只存储引用地址
 
 ##### String 类可以继承吗？
-
 不行。String 类使用 final 修饰，无法被继承。
 
 ##### String和StringBuilder、StringBuffer的区别？
-
 String：String 的值被创建后不能修改，任何对 String 的修改都会引发新的 String 对象的生成。
 StringBuffer：跟 String 类似，但是值可以被修改，使用 synchronized 来保证线程安全。
 StringBuilder：StringBuffer 的非线程安全版本，没有使用 synchronized，具有更高的性能，推荐优先使用。
 
 ##### == 和 equals 的区别是什么？
-
 ==：运算符，用于比较基础类型变量和引用类型变量。
 对于基础类型变量，比较的变量保存的值是否相同，类型不一定要相同。
 对于引用类型变量，比较的是两个对象的地址是否相同。
@@ -49,24 +42,20 @@ equals：Object 类中定义的方法，通常用于比较两个对象的值是�
 equals 在 Object 方法中其实等同于 ==，但是在实际的使用中，equals 通常被重写用于比较两个对象的值是否相同。
 
 ##### 两个对象的 hashCode() 相同，则 equals() 也一定为 true，对吗？
-
 当有 a.equals(b) == true 时，则 a.hashCode() == b.hashCode() 必然成立
 反过来，当 a.hashCode() == b.hashCode() 时，a.equals(b) 不一定为 true。
 对象值相同，但有可能是两个对象，即两个不同的引用。而equals比较的有可能是值，也有可能是引用。
 
 ##### 什么是反射？
-
 反射是指在运行状态中，对于任意一个类都能够知道这个类所有的属性和方法；并且对于任意一个对象，都能够调用它的任意一个方法；这种动态获取信息以及动态调用对象方法的功能称为反射机制。
 
 ##### 深拷贝和浅拷贝区别是什么？
-
 数据分为基本数据类型和引用数据类型。基本数据类型：数据直接存储在栈中；引用数据类型：存储在栈中的是对象的引用地址，真实的对象数据存放在堆内存里。
 浅拷贝：对于基础数据类型：直接复制数据值；对于引用数据类型：只是复制了对象的引用地址，新旧对象属性指向同一个内存地址，修改其中一个对象的值，另一个对象的值随之改变。
 深拷贝：对于基础数据类型：直接复制数据值；对于引用数据类型：开辟新的内存空间，在新的内存空间里复制一个一模一样的对象，新老对象不共享内存，修改其中一个对象的值，不会影响另一个对象。
 深拷贝相比于浅拷贝速度较慢并且花销较大。
 
 ##### 并发和并行有什么区别？
-
 关键在于多个事件是否在同一时刻发生。并行是真正意义上，同一时刻做多件事情，而并发在同一时刻只会做一件事件，只是可以将时间切碎，交替做多件事情。
 网上有个例子挺形象的：
 你吃饭吃到一半，电话来了，你一直到吃完了以后才去接，这就说明你不支持并发也不支持并行。
@@ -74,11 +63,9 @@ equals 在 Object 方法中其实等同于 ==，但是在实际的使用中，eq
 你吃饭吃到一半，电话来了，你一边打电话一边吃饭，这说明你支持并行。
 
 ##### 构造器是否可被重写?
-
 Constructor 不能被 override（重写），但是可以 overload（重载），所以你可以看到⼀个类中有多个构造函数的情况。
 
 ##### Java中方法参数传递方式是按值传递还是引用传递？
-
 不知道谁发明的这个题目，很容易字面意思的误解当中。
 我们只需要理解：
 对于局部变量和形参，都在栈里面有独立的内存空间；

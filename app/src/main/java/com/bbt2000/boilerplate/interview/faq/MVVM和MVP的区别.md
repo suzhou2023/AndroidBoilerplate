@@ -2,7 +2,7 @@ MVVM（Model-View-ViewModel）和MVP（Model-View-Presenter）是两种常见的
 
 ##### MVP
 架构组成：
-Model：负责处理数据和业务逻辑。
+Model：负责数据的管理和持久化。
 View：负责展示数据，处理用户交互，但不包含业务逻辑。
 Presenter：充当Model和View之间的中介，处理业务逻辑并更新View。
 
@@ -19,9 +19,9 @@ Presenter持有View的引用，可以更新View。
 
 ##### MVVM
 架构组成：
-Model：与MVP中的Model相同，处理数据和业务逻辑。
+Model：与MVP中的Model相同，负责数据的管理和持久化。
 View：与MVP中的View类似，负责展示数据和处理用户交互。
-ViewModel：充当Model和View之间的中介，持有View的数据并处理业务逻辑。
+ViewModel：充当Model和View之间的中介，负责处理业务逻辑，并通过数据绑定机制自动更新View。
 
 工作原理：
 View绑定到ViewModel，通过数据绑定（Data Binding）机制自动更新。

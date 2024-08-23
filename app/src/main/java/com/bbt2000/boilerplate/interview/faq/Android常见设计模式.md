@@ -7,7 +7,7 @@
 
 ##### 适配器模式
 适配器是两个不兼容接口之间的桥梁，使由于接口不兼容而无法在一起工作的两个类能够在一起工作。
-比如ListView的BaseAdapter，只需要实现其getCount、getView等接口，便可以让不同的数据和View适配ListView进行工作。
+比如ListView的BaseAdapter，只需要实现其getCount、getView等接口，便可以让不同的数据和ViewItem适配ListView进行工作。
 
 ##### 迭代器模式
 提供一种方法顺序访问一个容器对象中的各个元素，而不需要暴露该对象的内部表示。

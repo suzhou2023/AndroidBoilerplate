@@ -17,7 +17,7 @@ ValueAnimator
 
 ObjectAnimator
 可以对某个View的某个属性做动画
-ObjectAnimator.ofFloat
+ObjectAnimator.ofFloat(View)
 ObjectAnimator.ofPropertyValuesHolder
 
 AnimatorSet
