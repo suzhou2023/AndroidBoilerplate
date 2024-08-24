@@ -5,6 +5,7 @@
     android:orientation="vertical">
 
     <com.bbt2000.boilerplate.interview.customview.GraphicsView
+        android:id="@+id/graphics"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
