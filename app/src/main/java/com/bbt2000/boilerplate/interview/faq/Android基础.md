@@ -1,11 +1,11 @@
 ##### Activity启动模式？
-standard
+standard（栈顶可以存在多个实例）
 默认模式，每次启动Activity时，都会创建一个新的实例，并将其放入当前任务的栈顶。适用于大多数情况，适合希望每次启动都创建新实例的Activity。
-singleTop
+singleTop（栈顶只能存在一个实例）
 如果要启动的Activity实例已经在任务栈的栈顶，则不会创建新的实例，而是重用栈顶的实例，并调用它的onNewIntent方法；否则，会创建新的实例。适用于那些在栈顶时不需要重复创建实例的Activity。
-singleTask
+singleTask（任务栈只能存在一个实例）
 系统会检查任务栈中是否存在要启动的Activity实例，如果存在，则会把该实例之上的所有Activity出栈，使该实例成为栈顶；如果不存在，则创建新的实例并将其放在新任务的栈顶。适用于希望一个任务中只有一个实例的Activity，如应用的主页面或启动页面。
-singleInstance
+singleInstance（任务栈有且仅有一个实例）
 系统会创建一个新的任务栈，并且这个任务栈中只有这个Activity实例。任何其他应用启动这个Activity时，都会重用这个唯一实例。适用于需要独立运行，且不与其他Activity共享任务栈的Activity，如特殊的工具应用。
 
 ##### Android怎么加速启动Activity？

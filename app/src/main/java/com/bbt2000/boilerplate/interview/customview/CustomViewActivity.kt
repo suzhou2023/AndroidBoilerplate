@@ -12,18 +12,18 @@ class CustomViewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_custom_view)
 
-        val graphics = findViewById<GraphicsView>(R.id.graphics)
-
-        val func = fun(x: Double): Double {
-            return sin(x)
-        }
-        graphics.setFunc(
-            func,
-            xMin = -Math.PI.toFloat() * 2,
-            xMax = Math.PI.toFloat() * 2,
-            interval = 0.2f,
-            margin = 0.5f,
-            drawOriginalPoints = false
-        )
+//        val graphics = findViewById<GraphicsView>(R.id.graphics)
+//
+//        val func = fun(x: Double): Double {
+//            return cos(x)
+//        }
+//        graphics.setFunc(
+//            func,
+//            xMin = -Math.PI.toFloat() * 2,
+//            xMax = Math.PI.toFloat() * 2,
+//            interval = 0.2f,
+//            margin = 0.5f,
+//            drawOriginalPoints = false
+//        )
     }
 }
