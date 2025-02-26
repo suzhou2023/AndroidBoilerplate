@@ -67,7 +67,7 @@ int FFContext::readOneFrame(GLContext *glContext) {
         LOGE("avcodec_send_packet error: %s", av_err2str(ret));
     }
 
-    // 得到解码后的数据帧，返回值：
+    // 获取解码后的数据帧，返回值：
     // AVERROR(EAGAIN) - 输出数据不可得，需向解码器发送新的输入数据
     ret = avcodec_receive_frame(codec_ctx, frame);
     if (ret == 0) {
